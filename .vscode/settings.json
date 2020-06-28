@@ -1,0 +1,15 @@
+{
+  "files.associations": {
+    "*.html": "njk",
+    "*.tcc": "cpp",
+    "unordered_map": "cpp",
+    "fstream": "cpp",
+    "istream": "cpp",
+    "numeric": "cpp",
+    "ostream": "cpp",
+    "sstream": "cpp",
+    "*.inc": "cpp",
+    "*.def": "cpp",
+    "typeinfo": "cpp"
+  }
+}

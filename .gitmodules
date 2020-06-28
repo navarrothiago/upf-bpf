@@ -1,0 +1,3 @@
+[submodule "extern/libbpf"]
+	path = extern/libbpf
+	url = git@github.com:libbpf/libbpf.git

@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.1.0)
+
+# Clang target triple
+SET(TARGET bpf)
+
+# specify the compiler
+SET(CMAKE_C_COMPILER_TARGET ${TARGET})
+SET(CMAKE_C_COMPILER clang)
+SET(CMAKE_CXX_COMPILER_TARGET ${TARGET})
+SET(CMAKE_CXX_COMPILER clang++)
+SET(CMAKE_ASM_COMPILER_TARGET ${TARGET})
+SET(CMAKE_ASM_COMPILER clang)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -target bpf")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ${CXX_ISYSTEM_DIRS}")
+
+include_directories(${CMAKE_SOURCE_DIR}/include)
