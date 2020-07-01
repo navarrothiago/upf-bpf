@@ -32,6 +32,6 @@ all-verbose: ## Build all in verbose mode
 
 run-samples: all ## Build all and run BPF XDP hello world sample
 	pushd $(BPF_SAMPLES_DIR) && \
-	sudo ./xdp_hello_world
+	sudo ./xdp_hello_world | sudo cat /sys/kernel/debug/tracing/trace
 
 	

@@ -31,6 +31,13 @@ The directory structure was created based on this [notes](https://blogs.oracle.c
 ├── LICENSE: File license
 ├── Makefile: Encapsulate cmake calls for build, run samples, clean, etc
 ├── README.md: Readme file
-├── samples: samples like XDP BPF hello world
-└── src: source files directory
+├── samples: Samples like XDP BPF hello world
+└── src: Source files directory
 ```
+
+## Contact
+
+- :sunglasses:: Thiago Navarro  
+- :mailbox:: navarro.ime@gmail.com  
+- Discord: navarrothiago#9698
+- INTRIG IRC: https://discord.gg/ZcBHze8
