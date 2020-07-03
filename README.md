@@ -17,6 +17,7 @@ User plane function using BPF for mobile network (4G/5G).
 - clang >= version 3.4.0
 - llvm >= version 3.7.1
 - kernel-headers
+- scapy v2.4.3
 
 ## Tree
 

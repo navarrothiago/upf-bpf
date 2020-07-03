@@ -1,5 +1,7 @@
 include(${CMAKE_SOURCE_DIR}/cmake/toolchain.cmake)
 
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
 add_library(xdp_hello_world_bpf OBJECT xdp_hello_world_bpf.c)
 
 # Copy object to a specific directory.

@@ -2,6 +2,7 @@
 PROJECT_DIR=$(CURDIR)
 
 BPF_SAMPLES_DIR=build/samples
+BPF_BINARY_DIR=build/src
 NUM_THREADS=4
 
 .PHONY: help
@@ -20,7 +21,8 @@ all: ## Build all
 	make && \
 	popd && \
 	make && \
-	make copy_bpf_objs
+	make copy_bpf_objs && \
+	make copy_upf_xdp_bpf_objs
 
 clean: ## Clean all build files
 	rm -R build
@@ -34,4 +36,10 @@ run-samples: all ## Build all and run BPF XDP hello world sample
 	pushd $(BPF_SAMPLES_DIR) && \
 	sudo ./xdp_hello_world | sudo cat /sys/kernel/debug/tracing/trace
 
+run: all ## Build all and run BPF XDP hello world sample
+	pushd $(BPF_BINARY_DIR) && \
+	sudo ./upf_xdp_user | sudo cat /sys/kernel/debug/tracing/trace
+
+run-scapy: ## Run scapy for packet manipulation
+	sudo ./extern/scapy/run_scapy
 	
