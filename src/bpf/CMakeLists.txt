@@ -1,6 +1,7 @@
 include(${CMAKE_SOURCE_DIR}/cmake/toolchain.cmake)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(upf_xdp_bpf OBJECT upf_xdp_bpf.c)
 
