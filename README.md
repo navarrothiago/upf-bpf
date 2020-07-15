@@ -1,6 +1,19 @@
-User plane function using BPF for mobile network (4G/5G).
+User plane function using BPF and XDP for mobile communication network (4G/5G).
 
 ## Usage
+
+### Testing
+
+![setup-for-GPDU-debug-issue-2-upf-bpf](https://user-images.githubusercontent.com/42647168/86470179-4486cc80-bd11-11ea-8f55-fee848b12e11.png)
+
+- Open terminal in `Linux #0` 
+- Build, load and run program with `make run` in `Linux #0`
+- Generate GTP G-PDU using [Scapy](https://github.com/secdev/scapy) with `gtpu-traffic-generator.py`  in `Linux #1`
+- Open other terminal tab in `Linux #0`
+- Run `sudo tcpdump -i <NIC1 INTEFACE>`, where `NIC1 INTERFACE` is the network interface
+- Open other terminal tab in `Linux #0`
+- Run `sudo cat /sys/kernel/debug/tracing/trace | grep "GPDU"`  in `Linux #0`
+- Check if there is a message `GTP GPDU received`
 
 ### Make Commands
 

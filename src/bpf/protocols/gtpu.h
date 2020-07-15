@@ -1,7 +1,8 @@
-#ifndef BPF_PROTOCOLS_GTPU_H
-#define BPF_PROTOCOLS_GTPU_H
+#if !defined(PROTOCOLS_GTP_H)
+#define PROTOCOLS_GTP_H
 
-#include <endian.h>
+#include <types.h>
+#include <linux/bpf.h>
 #include <stdint.h>
 
 // TS 29 281
@@ -54,19 +55,6 @@ struct gtpuhdr
   /*The options start here. */
 };
 
-static u32 gtp_handle(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
-{
-  void *data_end = (void *)(long)ctx->data_end;
+static u32 gtp_handle(struct xdp_md *ctx, struct gtpuhdr *gtpuh);
 
-  if (gtpuh + 1 > data_end)
-  {
-    bpf_debug("Invalid GTPU packet\n");
-    return XDP_DROP;
-  }
-  if (gtpuh->message_type != GTPU_G_PDU)
-    bpf_debug("Message type 0x%x is not GTPU GPDU(0x%x)\n", gtpuh->message_type, GTPU_G_PDU);
-
-  bpf_debug("GTP GPDU received\n");
-  return XDP_PASS;
-}
-#endif
+#endif // PROTOCOLS_GTP_H
