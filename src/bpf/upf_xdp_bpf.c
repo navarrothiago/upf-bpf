@@ -1,7 +1,9 @@
+#define KBUILD_MODNAME upf_xdp_bpf
+
 #include <protocols/eth.h>
 #include <protocols/ip.h>
 #include <protocols/udp.h>
-#include <protocols/gtp.h>
+#include <protocols/gtpu.h>
 #include <linux/if_ether.h>
 #include <linux/if_vlan.h>
 #include <linux/in.h>
@@ -10,18 +12,20 @@
 #include <types.h>
 #include <utils/logger.h>
 #include <utils/utils.h>
+#include <maps.h>
 
 /////////////////////////////////////////////////////////////////////////
 ///////////////////// GTP FUNCTIONS /////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
-
 static u32 gtp_handle(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
 {
   void *data_end = (void *)(long)ctx->data_end;
-  struct iphdr* iph;
+  struct iphdr *iph;
   u8 ret;
+  create_pdr_t *pPdr;
+  teid_t teid;
 
-  if (gtpuh + 1 > data_end)
+      if (gtpuh + 1 > data_end)
   {
     bpf_debug("Invalid GTPU packet\n");
     return XDP_DROP;
@@ -30,11 +34,17 @@ static u32 gtp_handle(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
     bpf_debug("Message type 0x%x is not GTPU GPDU(0x%x)\n", gtpuh->message_type, GTPU_G_PDU);
 
   bpf_debug("GTP GPDU received\n");
-  // ret = ip_inner_check_ipv4(ctx, iph);
-  if(!ip_inner_check_ipv4(ctx, (struct iphdr* ) (gtpuh + 1)))
+
+  if (!ip_inner_check_ipv4(ctx, (struct iphdr *)(gtpuh + 1)))
     return XDP_DROP;
 
-  bpf_debug("GTP GPDU with IPv4 payload received\n");
+  teid = htonl(gtpuh->teid);
+  bpf_debug("GTP GPDU teid %d with IPv4 payload received\n", teid);
+  pPdr = bpf_map_lookup_elem(&seid_pdr_map, &teid);
+  if(!pPdr)
+    return XDP_DROP;
+
+  bpf_debug("PDR associated with teid %d found! Rule id is %d\n", teid, pPdr->pdr_id.rule_id);
   return XDP_PASS;
 }
 

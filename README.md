@@ -1,4 +1,4 @@
-User plane function using BPF and XDP for mobile communication network (4G/5G).
+User plane function using BPF and XDP for mobile core network (4G/5G).
 
 ## Usage
 

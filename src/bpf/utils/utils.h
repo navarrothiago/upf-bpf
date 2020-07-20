@@ -5,4 +5,8 @@
 #define htons(x) __constant_htons((x))
 #endif
 
+#ifndef htonl
+#define htonl(x) __constant_htonl((x))
+#endif
+
 #endif

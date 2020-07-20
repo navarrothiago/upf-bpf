@@ -38,7 +38,7 @@ run-samples: all ## Build all and run BPF XDP hello world sample
 
 run: all ## Build all and run BPF XDP hello world sample
 	pushd $(BPF_BINARY_DIR) && \
-	sudo ./upf_xdp_user | sudo cat /sys/kernel/debug/tracing/trace
+	sudo ./upf_xdp_user 
 
 run-scapy: ## Run scapy for packet manipulation
 	sudo ./extern/scapy/run_scapy

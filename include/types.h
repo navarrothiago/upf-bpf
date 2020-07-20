@@ -1,3 +1,6 @@
+#if !defined(TYPES_H)
+#define TYPES_H
+
 #include <linux/types.h>
 
 typedef __u64 u64;
@@ -11,3 +14,5 @@ typedef __s16 s16;
 
 typedef __u8  u8;
 typedef __s8  s8;
+
+#endif // TYPES_H

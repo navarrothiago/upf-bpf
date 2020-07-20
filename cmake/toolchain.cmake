@@ -1,4 +1,5 @@
 set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_BUILD_TYPE Release)
 
 # Clang target triple
 SET(triple bpf)
