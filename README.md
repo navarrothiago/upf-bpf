@@ -54,4 +54,6 @@ The directory structure was created based on this [notes](https://blogs.oracle.c
 - :sunglasses:: Thiago Navarro  
 - :mailbox:: navarro.ime@gmail.com  
 - Discord: navarrothiago#9698
-- INTRIG IRC: https://discord.gg/ZcBHze8
+- INTRIG Discord server: https://discord.gg/ZcBHze8
+
+## Feel free to contribuite

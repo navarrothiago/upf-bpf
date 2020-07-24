@@ -13,6 +13,7 @@
 #include <utils/logger.h>
 #include <utils/utils.h>
 #include <maps.h>
+#include <pfcp/pfcp_pdr.h>
 
 /////////////////////////////////////////////////////////////////////////
 ///////////////////// GTP FUNCTIONS /////////////////////////////////////
@@ -22,10 +23,15 @@ static u32 gtp_handle(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
   void *data_end = (void *)(long)ctx->data_end;
   struct iphdr *iph;
   u8 ret;
-  create_pdr_t *pPdr;
+  pfcp_pdr_t *p_pdr_list;
+  pfcp_session_t *p_session;
+  u32 *p_pdr_counter;
+  u32 *p_session_pdrs_counter;
   teid_t teid;
+  seid_t seid;
+  u32 index = 0;
 
-      if (gtpuh + 1 > data_end)
+  if (gtpuh + 1 > data_end)
   {
     bpf_debug("Invalid GTPU packet\n");
     return XDP_DROP;
@@ -40,11 +46,36 @@ static u32 gtp_handle(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
 
   teid = htonl(gtpuh->teid);
   bpf_debug("GTP GPDU teid %d with IPv4 payload received\n", teid);
-  pPdr = bpf_map_lookup_elem(&seid_pdr_map, &teid);
-  if(!pPdr)
+
+  // Get number of allocated PDR by teid.
+  p_pdr_counter = bpf_map_lookup_elem(&m_teid_pdrs_counter, &teid);
+  if (!p_pdr_counter || *p_pdr_counter <= 0)
     return XDP_DROP;
 
-  bpf_debug("PDR associated with teid %d found! Rule id is %d\n", teid, pPdr->pdr_id.rule_id);
+  bpf_debug("Number of PDRs found %d by teid %d\n", *p_pdr_counter, teid);
+  p_pdr_list = bpf_map_lookup_elem(&m_teid_pdrs, &teid);
+  if (!p_pdr_list)
+    return XDP_DROP;
+
+  seid = p_pdr_list->local_seid;
+  bpf_debug("PDR associated with teid %d found! Rule id is %d and seid is %d\n", teid, p_pdr_list->pdr.pdr_id.rule_id, seid);
+
+  // Get number of PDRs in session.
+  p_session_pdrs_counter = bpf_map_lookup_elem(&m_seid_pdrs_counter, &seid);
+  if (!p_session_pdrs_counter || *p_session_pdrs_counter <= 0)
+    return XDP_DROP;
+
+  bpf_debug("Number of PDRs found %d by seid %d\n", *p_session_pdrs_counter, seid);
+  p_session = bpf_map_lookup_elem(&m_seid_session, &seid);
+
+  if (!p_session)
+    return XDP_DROP;
+
+  index = 0;
+  if (*p_session_pdrs_counter == 0 && *p_session_pdrs_counter > SESSION_PDRS_SIZE)
+    return XDP_DROP;
+
+  bpf_debug("Session %d FOUND! Rule id is %d. PDR index %d\n", p_session->seid, p_session->pdrs[index].pdr.pdr_id.rule_id, index);
   return XDP_PASS;
 }
 

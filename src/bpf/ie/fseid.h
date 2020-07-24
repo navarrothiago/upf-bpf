@@ -3,7 +3,10 @@
 
 #include <ie/ie_base.h>
 #include <types.h>
-#include <
+#include <linux/in.h>
+#include <linux/in6.h>
+
+typedef u64 seid_t;
 
 //-------------------------------------
 // 8.2.37 F-SEID

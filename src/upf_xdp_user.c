@@ -6,15 +6,17 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/resource.h>
-
 #include <libbpf.h>
 #include <assert.h>
+#include <pfcp/pfcp_pdr.h>
+#include <pfcp/pfcp_session.h>
 
-#include <ie/group_ie/create_pdr.h>
+#define VAR(var) #var
 
 static int ifindex;
 static __u32 xdp_flags = XDP_FLAGS_UPDATE_IF_NOEXIST;
 static __u32 prog_id;
+static int prog_fd, map_fd_pdrs, map_fd_pdrs_counter, map_fd_seid_pdrs_counter, map_fd_seid_session;
 
 static void int_exit(int sig)
 {
@@ -36,46 +38,59 @@ static void int_exit(int sig)
 
 /* simple per-protocol drop counter
  */
-static void poll_stats(int map_fd, int interval)
+static void poll_stats(int interval)
 {
-  create_pdr_t pValue, prev[UINT8_MAX] = {0};
-  int i;
+  pfcp_pdr_t pdr, prev[UINT8_MAX] = {0};
 
   printf("pool stats\n");
   while (1)
   {
     __u32 key_teid = UINT32_MAX;
-
     sleep(interval);
 
-    while (bpf_map_get_next_key(map_fd, &key_teid, &key_teid) != -1)
+    while (bpf_map_get_next_key(map_fd_pdrs, &key_teid, &key_teid) != -1)
     {
-      __u64 sum = 0;
-
-      if (bpf_map_lookup_elem(map_fd, &key_teid, &pValue) != 0)
+      if (bpf_map_lookup_elem(map_fd_pdrs, &key_teid, &pdr) != 0)
       {
         perror("lookup error");
         continue;
       }
-      printf("pdr pdi_id rules %d\n", pValue.pdr_id.rule_id);
+      printf("pdr pdi_id rules %d\n", pdr.pdr.pdr_id.rule_id);
     }
   }
 }
 
-int insert_create_pdr(int map_fd, __u32 key_teid)
+int insert_elements(u32 key_teid)
 {
-  create_pdr_t value;
+  pfcp_pdr_t value;
+  pfcp_session_t session;
+  u32 counter = 0;
+  u32 seid_pdrs_counter = 0;
+  u32 seid = 1;
 
-  // Rule id is equal do rule id for while.
-  value.pdr_id.rule_id = key_teid; 
+  // Fill the PDR entry
+  value.teid = key_teid;
+  value.local_seid = seid + 1;
+  value.pdr.pdr_id.rule_id = key_teid; 
+  counter += 1;
 
-  printf("Update create_pdr at key %d\n", key_teid);
-  if (bpf_map_update_elem(map_fd, &key_teid, &value, BPF_NOEXIST) != 0)
+  // Fill the session entry
+  session.seid = value.local_seid;
+  session.pdrs[seid_pdrs_counter] = value;
+  seid_pdrs_counter += 1;
+  session.iter = seid_pdrs_counter;
+  
+  printf("Update create_pdr at key %d, counter\n", key_teid, counter);
+  if (bpf_map_update_elem(map_fd_pdrs, &value.teid, &value, BPF_NOEXIST) != 0 
+      || bpf_map_update_elem(map_fd_pdrs_counter, &key_teid, &counter, BPF_NOEXIST) != 0 
+      || bpf_map_update_elem(map_fd_seid_session, &session.seid, &session, BPF_NOEXIST) != 0 
+      || bpf_map_update_elem(map_fd_seid_pdrs_counter, &value.local_seid, &seid_pdrs_counter, BPF_NOEXIST) != 0 
+      )
   {
     perror("Update error");
-    return 1;
+    int_exit(0);
   }
-  printf("Updated create_pdr at key %d\n", key_teid);
+  printf("Updated create_pdr at teid %d, counter %d\n", key_teid, counter);
   return 0;
 }
 
@@ -87,9 +102,13 @@ int main(int argc, char **argv)
   };
   struct bpf_prog_info info = {};
   __u32 info_len = sizeof(info);
-  int prog_fd, map_fd;
+  // TODO create map string to int (map_fd)
   struct bpf_object *obj = NULL;
-  struct bpf_map *map = NULL;
+  struct bpf_map *m_teid_pdrs_counter = NULL;
+  struct bpf_map *m_teid_pdrs = NULL;
+  struct bpf_map *m_seid_pdrs_counter  = NULL;
+  struct bpf_map *m_seid_session = NULL;
+  
   int err;
 
   if (setrlimit(RLIMIT_MEMLOCK, &r))
@@ -112,13 +131,20 @@ int main(int argc, char **argv)
   if (bpf_prog_load_xattr(&prog_load_attr, &obj, &prog_fd))
     return 1;
 
-  map = bpf_map__next(NULL, obj);
-  if (!map)
+  m_teid_pdrs = bpf_object__find_map_by_name(obj, VAR(m_teid_pdrs));
+  m_teid_pdrs_counter = bpf_object__find_map_by_name(obj, VAR(m_teid_pdrs_counter));
+  m_seid_pdrs_counter = bpf_object__find_map_by_name(obj, VAR(m_seid_pdrs_counter));
+  m_seid_session = bpf_object__find_map_by_name(obj, VAR(m_seid_session));
+
+  if (!m_teid_pdrs || !m_teid_pdrs_counter || !m_seid_session || !m_seid_pdrs_counter)
   {
     printf("finding a map in obj file failed\n");
-    return 1;
+    int_exit(SIGTERM);
   }
-  map_fd = bpf_map__fd(map);
+  map_fd_pdrs = bpf_map__fd(m_teid_pdrs);
+  map_fd_pdrs_counter = bpf_map__fd(m_teid_pdrs_counter);
+  map_fd_seid_pdrs_counter = bpf_map__fd(m_seid_pdrs_counter);
+  map_fd_seid_session = bpf_map__fd(m_seid_session);
 
   signal(SIGINT, int_exit);
   signal(SIGTERM, int_exit);
@@ -127,24 +153,24 @@ int main(int argc, char **argv)
   if (bpf_set_link_xdp_fd(ifindex, prog_fd, xdp_flags) < 0)
   {
     printf("link set xdp fd failed\n");
-    return 1;
+    int_exit(SIGTERM);
   }
 
   err = bpf_obj_get_info_by_fd(prog_fd, &info, &info_len);
   if (err)
   {
     printf("can't get prog info - %s\n", strerror(errno));
-    return err;
+    int_exit(SIGTERM);
   }
   prog_id = info.id;
 
   // The value 100 will must be equal to GPDU tunnelId. 
   // TODO navarrothiago remove hardcoded.
-  if (insert_create_pdr(map_fd, 100))
+  if (insert_elements(100))
   {
-    return 1;
+    int_exit(SIGTERM);
   }
-  poll_stats(map_fd, 2);
+  poll_stats(2);
 
   while (1)
   {
