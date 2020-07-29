@@ -21,8 +21,6 @@
 static u32 gtp_handle(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
 {
   void *data_end = (void *)(long)ctx->data_end;
-  struct iphdr *iph;
-  u8 ret;
   pfcp_pdr_t *p_pdr_list;
   pfcp_session_t *p_session;
   u32 *p_pdr_counter;
@@ -31,7 +29,7 @@ static u32 gtp_handle(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
   seid_t seid;
   u32 index = 0;
 
-  if (gtpuh + 1 > data_end)
+  if ((void *)gtpuh + sizeof(*gtpuh) > data_end)
   {
     bpf_debug("Invalid GTPU packet\n");
     return XDP_DROP;
@@ -87,7 +85,7 @@ static u32 udp_handle(struct xdp_md *ctx, struct udphdr *udph)
   void *data_end = (void *)(long)ctx->data_end;
   u32 dport;
   /* Hint: +1 is sizeof(struct udphdr) */
-  if (udph + 1 > data_end)
+  if ((void *)udph + sizeof(*udph) > data_end)
   {
     bpf_debug("Invalid UDP packet\n");
     return XDP_ABORTED;
@@ -115,7 +113,7 @@ static u32 ipv4_handle(struct xdp_md *ctx, struct iphdr *iph)
   u32 ip_dest;
 
   // Hint: +1 is sizeof(struct iphdr)
-  if (iph + 1 > data_end)
+  if ((void *)iph + sizeof(*iph) > data_end)
   {
     bpf_debug("Invalid IPv4 packet\n");
     return XDP_ABORTED;
@@ -136,11 +134,9 @@ static u32 ipv4_handle(struct xdp_md *ctx, struct iphdr *iph)
 static u8 ip_inner_check_ipv4(struct xdp_md *ctx, struct iphdr *iph)
 {
   void *data_end = (void *)(long)ctx->data_end;
-  // Type need to match map.
-  u32 ip_dest;
 
   // Hint: +1 is sizeof(struct iphdr)
-  if (iph + 1 > data_end)
+  if ((void *)iph + sizeof(*iph) > data_end)
   {
     bpf_debug("Invalid IPv4 packet\n");
     return XDP_ABORTED;
@@ -204,8 +200,8 @@ static u32 eth_handle(struct xdp_md *ctx, struct ethhdr *ethh)
 /////////////////////////////////////////////////////////////////////////
 ///////////////////// SECTION FUNCTIONS //////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
-SEC("gtp_process_chain")
-int xdp_prog1(struct xdp_md *ctx)
+SEC("xdp")
+int upf_chain(struct xdp_md *ctx)
 {
   void *data = (void *)(long)ctx->data;
   struct ethhdr *eth = data;

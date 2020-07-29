@@ -9,7 +9,7 @@
 #include <sys/resource.h>
 
 #include <linux/bpf.h>
-#include "libbpf.h"
+#include <bpf/libbpf.h>
 
 static int ifindex;
 static __u32 xdp_flags = XDP_FLAGS_UPDATE_IF_NOEXIST;

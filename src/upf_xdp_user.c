@@ -1,15 +1,18 @@
-// Example based on https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/samples/bpf/xdp1_user.c
+// upf_xdp_bpf_c based on https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/samples/bpf/xdp1_user.c
 #include <linux/if_link.h>
+#include <net/if.h>
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/resource.h>
-#include <libbpf.h>
+#include <bpf/libbpf.h>
 #include <assert.h>
 #include <pfcp/pfcp_pdr.h>
 #include <pfcp/pfcp_session.h>
+#include <stdlib.h>
+#include <upf_xdp_bpf_skel.h>
 
 #define VAR(var) #var
 
@@ -71,7 +74,7 @@ int insert_elements(u32 key_teid)
   // Fill the PDR entry
   value.teid = key_teid;
   value.local_seid = seid + 1;
-  value.pdr.pdr_id.rule_id = key_teid; 
+  value.pdr.pdr_id.rule_id = key_teid;
   counter += 1;
 
   // Fill the session entry
@@ -79,13 +82,12 @@ int insert_elements(u32 key_teid)
   session.pdrs[seid_pdrs_counter] = value;
   seid_pdrs_counter += 1;
   session.iter = seid_pdrs_counter;
-  
+
   printf("Update create_pdr at key %d, counter\n", key_teid, counter);
   if (bpf_map_update_elem(map_fd_pdrs, &value.teid, &value, BPF_NOEXIST) != 0 
-      || bpf_map_update_elem(map_fd_pdrs_counter, &key_teid, &counter, BPF_NOEXIST) != 0 
+      || bpf_map_update_elem(map_fd_pdrs_counter, &key_teid, &counter, BPF_NOEXIST) != 0
       || bpf_map_update_elem(map_fd_seid_session, &session.seid, &session, BPF_NOEXIST) != 0 
-      || bpf_map_update_elem(map_fd_seid_pdrs_counter, &value.local_seid, &seid_pdrs_counter, BPF_NOEXIST) != 0 
-      )
+      || bpf_map_update_elem(map_fd_seid_pdrs_counter, &value.local_seid, &seid_pdrs_counter, BPF_NOEXIST) != 0)
   {
     perror("Update error");
     int_exit(0);
@@ -96,19 +98,10 @@ int insert_elements(u32 key_teid)
 
 int main(int argc, char **argv)
 {
+  struct upf_xdp_bpf_c *skel;
   struct rlimit r = {RLIM_INFINITY, RLIM_INFINITY};
-  struct bpf_prog_load_attr prog_load_attr = {
-      .prog_type = BPF_PROG_TYPE_XDP,
-  };
   struct bpf_prog_info info = {};
   __u32 info_len = sizeof(info);
-  // TODO create map string to int (map_fd)
-  struct bpf_object *obj = NULL;
-  struct bpf_map *m_teid_pdrs_counter = NULL;
-  struct bpf_map *m_teid_pdrs = NULL;
-  struct bpf_map *m_seid_pdrs_counter  = NULL;
-  struct bpf_map *m_seid_session = NULL;
-  
   int err;
 
   if (setrlimit(RLIMIT_MEMLOCK, &r))
@@ -117,34 +110,32 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  // TODO navarrothiago Remove hardcode path.
-  prog_load_attr.file = "bpf/upf_xdp_bpf.c.o";
+  skel = upf_xdp_bpf_c__open();
+  if (!skel)
+    goto cleanup;
 
   ifindex = if_nametoindex("enp0s20f0u1");
-
   if (!ifindex)
   {
     perror("if_nametoindex");
     return 1;
   }
 
-  if (bpf_prog_load_xattr(&prog_load_attr, &obj, &prog_fd))
-    return 1;
+  err = upf_xdp_bpf_c__load(skel);
+  if (err)
+    goto cleanup;
 
-  m_teid_pdrs = bpf_object__find_map_by_name(obj, VAR(m_teid_pdrs));
-  m_teid_pdrs_counter = bpf_object__find_map_by_name(obj, VAR(m_teid_pdrs_counter));
-  m_seid_pdrs_counter = bpf_object__find_map_by_name(obj, VAR(m_seid_pdrs_counter));
-  m_seid_session = bpf_object__find_map_by_name(obj, VAR(m_seid_session));
+  // Attach is not support by XDP programs.
+  // This call doesnt do anything.
+  err = upf_xdp_bpf_c__attach(skel);
+  if (err)
+    goto cleanup;
 
-  if (!m_teid_pdrs || !m_teid_pdrs_counter || !m_seid_session || !m_seid_pdrs_counter)
-  {
-    printf("finding a map in obj file failed\n");
-    int_exit(SIGTERM);
-  }
-  map_fd_pdrs = bpf_map__fd(m_teid_pdrs);
-  map_fd_pdrs_counter = bpf_map__fd(m_teid_pdrs_counter);
-  map_fd_seid_pdrs_counter = bpf_map__fd(m_seid_pdrs_counter);
-  map_fd_seid_session = bpf_map__fd(m_seid_session);
+  prog_fd = bpf_program__fd(skel->progs.upf_chain);
+  map_fd_pdrs = bpf_map__fd(skel->maps.m_teid_pdrs);
+  map_fd_pdrs_counter = bpf_map__fd(skel->maps.m_teid_pdrs_counter);
+  map_fd_seid_pdrs_counter = bpf_map__fd(skel->maps.m_seid_pdrs_counter);
+  map_fd_seid_session = bpf_map__fd(skel->maps.m_seid_session);
 
   signal(SIGINT, int_exit);
   signal(SIGTERM, int_exit);
@@ -164,7 +155,7 @@ int main(int argc, char **argv)
   }
   prog_id = info.id;
 
-  // The value 100 will must be equal to GPDU tunnelId. 
+  // The value 100 will must be equal to GPDU tunnelId.
   // TODO navarrothiago remove hardcoded.
   if (insert_elements(100))
   {
@@ -176,4 +167,8 @@ int main(int argc, char **argv)
   {
   };
   return 0;
+
+cleanup:
+  upf_xdp_bpf_c__destroy(skel);
+  return err;
 }

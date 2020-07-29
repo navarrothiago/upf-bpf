@@ -21,8 +21,8 @@ all: ## Build all
 	make && \
 	popd && \
 	make && \
-	make copy_bpf_objs && \
-	make copy_upf_xdp_bpf_objs
+	make copy_samples_objs && \
+	make copy_objs
 
 clean: ## Clean all build files
 	rm -R build
@@ -31,6 +31,12 @@ all-verbose: ## Build all in verbose mode
 	mkdir -p build && \
 	pushd build && \
 	cmake .. -DCMAKE_VERBOSE_MAKEFILE=ON && \
+	pushd ../extern/libbpf/src && \
+	make V=1 && \
+	popd && \
+	make V=1 && \
+	make copy_samples_objs V=1 && \
+	make copy_objs V=1
 
 run-samples: all ## Build all and run BPF XDP hello world sample
 	pushd $(BPF_SAMPLES_DIR) && \
