@@ -13,7 +13,7 @@
 typedef struct outer_header_removal_s
 {
   ie_base_t ie_base;
-  uint8_t outer_header_removal_description;
+  u8 outer_header_removal_description;
 } outer_header_removal_t;
 
 #endif // IE_OUTER_HEADER_REMOVAL

@@ -7,7 +7,7 @@
 #include <ie/fteid.h>
 #include <ie/network_instance.h>
 #include <ie/ue_ip_address.h>
-#include <ie/traffic_endpot_id.h>
+#include <ie/traffic_endpoint_id.h>
 #include <ie/sdf_filter.h>
 #include <ie/application_id.h>
 #include <ie/ethernet_pdu_session_information.h>

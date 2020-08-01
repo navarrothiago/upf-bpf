@@ -3,6 +3,7 @@
         {
             "name": "Linux",
             "includePath": [
+                "${workspaceFolder}/src/bpf",
                 "${workspaceFolder}/include",
                 "${workspaceFolder}/build/src/bpf/skel",
                 "${workspaceFolder}/**"

@@ -70,5 +70,5 @@
     "thread": "cpp",
     "valarray": "cpp",
     "variant": "cpp"
-  }
+  },
 }

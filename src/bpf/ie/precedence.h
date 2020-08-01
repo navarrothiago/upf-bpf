@@ -8,7 +8,7 @@
 // 8.2.11 Precedence
 typedef struct precedence_s
 {
-  uint32_t precedence;
+  u32 precedence;
 } precedence_t;
 
 #endif // __PRECEDENCE_H__

@@ -22,13 +22,6 @@ struct bpf_map_def SEC("maps") m_teid_pdrs = {
 	.max_entries = 100000,
 };
 
-struct bpf_map_def SEC("maps") m_seid_pdrs_counter = {
-	.type        = BPF_MAP_TYPE_HASH,
-	.key_size    = sizeof(seid_t), // seid 
-	.value_size  = sizeof(u32), // number of allocated PDR in seid
-	.max_entries = 100000,
-};
-
 struct bpf_map_def SEC("maps") m_seid_session = {
 	.type        = BPF_MAP_TYPE_HASH,
 	.key_size    = sizeof(seid_t), // seid 

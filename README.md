@@ -29,7 +29,7 @@ User plane function using BPF and XDP for mobile core network (4G/5G).
 - libz
 - clang >= version 3.4.0
 - llvm >= version 3.7.1
-- kernel-headers
+- kernel-headers => version 5.3
 - bpftool 
 - scapy v2.4.3
 
