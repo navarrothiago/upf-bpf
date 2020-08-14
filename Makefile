@@ -5,6 +5,10 @@ BPF_SAMPLES_DIR=build/samples
 BPF_BINARY_DIR=build/src
 NUM_THREADS=4
 
+# TODO navarrothiago - Remove hardcoded.
+DEVICE_IN=wlp0s20f3
+DEVICE_OUT=veth0
+
 .PHONY: help
 
 help:
@@ -38,14 +42,26 @@ all-verbose: ## Build all in verbose mode
 	make copy_samples_objs V=1 && \
 	make copy_objs V=1
 
-run-samples: all ## Build all and run BPF XDP hello world sample
+config-veth-pair: ## Config veth pair. It must be run before <run-*> targets
+	sudo ./tests/config_veth_pair.sh $(DEVICE_IN)
+
+run-hello-world-samples: all ## Build all and run BPF XDP hello world sample
 	pushd $(BPF_SAMPLES_DIR) && \
 	sudo ./xdp_hello_world | sudo cat /sys/kernel/debug/tracing/trace
 
-run: all ## Build all and run BPF XDP hello world sample
+run-redirect-map-sample: all ## Build all and run BPF XDP redirect sample
+	pushd $(BPF_SAMPLES_DIR) && \
+	sudo ./xdp_redirect_map -S $(DEVICE_IN) $(DEVICE_OUT)
+
+run: all ## Build all and run BPF XDP UPF
 	pushd $(BPF_BINARY_DIR) && \
-	sudo ./upf_xdp_user 
+	sudo ./upf_xdp_user
 
 run-scapy: ## Run scapy for packet manipulation
 	sudo ./extern/scapy/run_scapy
-	
+
+force-xdp-deload: ## Force deload XDP programs
+	sudo ip link set dev $(DEVICE_IN) xdpgeneric off
+	sudo ip link set dev $(DEVICE_OUT) xdpgeneric off
+
+

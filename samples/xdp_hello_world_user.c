@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <sys/resource.h>
 
-#include <linux/bpf.h>
 #include <bpf/libbpf.h>
 
 static int ifindex;

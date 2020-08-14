@@ -14,9 +14,29 @@
       }
     },
     {
-      "label": "Build all Verbose",
+      "label": "Build all verbose",
       "type": "shell",
       "command": "make all-verbose",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Config veth pair",
+      "type": "shell",
+      "command": "make config-veth-pair",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Deload",
+      "type": "shell",
+      "command": "make force-xdp-deload",
       "problemMatcher": [],
       "group": {
         "kind": "build",
@@ -34,9 +54,9 @@
       }
     },
     {
-      "label": "Run samples",
+      "label": "Run HelloWorld sample",
       "type": "shell",
-      "command": "make run-samples",
+      "command": "make run-hello-world-sample",
       "problemMatcher": [],
       "group": {
         "kind": "build",
@@ -46,6 +66,19 @@
         "focus": true,
       }
     },
+    {
+      "label": "Run RedirectMap sample",
+      "type": "shell",
+      "command": "make run-redirect-map-sample",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "focus": true,
+      }
+    }
     {
       "label": "Run",
       "type": "shell",
@@ -86,4 +119,3 @@
       }
     },
   ]
-}

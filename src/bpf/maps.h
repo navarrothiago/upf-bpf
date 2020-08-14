@@ -29,5 +29,18 @@ struct bpf_map_def SEC("maps") m_seid_session = {
 	.max_entries = 100000,
 };
 
+struct bpf_map_def SEC("maps") m_id_txport = {
+	.type        = BPF_MAP_TYPE_DEVMAP,
+	.key_size    = sizeof(u32), // id
+	.value_size  = sizeof(u32), // tx port
+	.max_entries = 10,
+};
+
+struct bpf_map_def SEC("maps") m_id_txcnt = {
+	.type        = BPF_MAP_TYPE_DEVMAP,
+	.key_size    = sizeof(u32), // id
+	.value_size  = sizeof(u32), // tx counter
+	.max_entries = 1,
+};
 
 #endif // __MAPS_H__

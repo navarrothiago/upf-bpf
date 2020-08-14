@@ -1,7 +1,7 @@
 #define KBUILD_MODNAME upf_xdp_bpf
 
 // clang-format off
-#include <types.h> 
+#include <types.h>
 // clang-format on
 #include <bpf_helpers.h>
 #include <endian.h>
@@ -18,6 +18,22 @@
 #include <utils/logger.h>
 #include <utils/utils.h>
 
+/* Defines xdp_stats_map */
+#include "xdp_stats_kern_user.h"
+#include "xdp_stats_kern.h"
+
+// TODO navarrothiago - Put dummy in test folder.
+/**
+ * @brief Redirect require an XDP bpf_prog loaded on the TX device.
+ */
+SEC("xdp_redirect_dummy")
+int xdp_redirect_gtpu(struct xdp_md *p_ctx)
+{
+  // PASS.
+  bpf_debug("Redirecting packets\n");
+  return XDP_PASS;
+}
+
 /**
  * PFCP SECTION.
  */
@@ -25,17 +41,26 @@
 /**
  * @brief Apply forwarding action rules.
  *
- * @param gtpuh
- * @param p_session
- * @return u32
+ * @param p_gtpuh The GTPU header.
+ * @param p_session The session of this context.
+ * @return u32 XDP action.
  */
-static u32 pfcp_far_apply(struct gtpuhdr *gtpuh, pfcp_session_t *p_session)
+static u32 pfcp_far_apply(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, pfcp_session_t *p_session)
 {
   u32 index = p_session->fars_counter - 1;
   pfcp_far_t *p_far;
+  void *p_data_end = (void *)(long)p_ctx->data_end;
+  void *p_data = (void *)(long)p_ctx->data;
+  struct ethhdr *eth = p_ctx->data;
+  u64 nh_off;
+
+  nh_off = sizeof(*eth);
+  if(p_data + nh_off > p_data_end)
+    return XDP_DROP;
 
   // Check if it is a valid index.
-  if(index >= SESSION_FARS_MAX_SIZE) return XDP_DROP;
+  if(index >= SESSION_FARS_MAX_SIZE)
+    return XDP_DROP;
 
   // Get FAR from the selected session.
   p_far = &p_session->fars[index];
@@ -51,9 +76,12 @@ static u32 pfcp_far_apply(struct gtpuhdr *gtpuh, pfcp_session_t *p_session)
       switch(p_far->forwarding_parameters.outer_header_creation.outer_header_creation_description) {
       case OUTER_HEADER_CREATION_UDP_IPV4:
         bpf_debug("OUTER_HEADER_CREATION_UDP_IPV4\n");
+        // swap_src_dst_mac(p_data);
+        return bpf_redirect_map(&m_id_txport, 0, 0);
         break;
       case OUTER_HEADER_CREATION_UDP_IPV6:
         bpf_debug("OUTER_HEADER_CREATION_UDP_IPV6\n");
+        // TODO navarrothiago
         break;
       }
     }
@@ -62,19 +90,19 @@ static u32 pfcp_far_apply(struct gtpuhdr *gtpuh, pfcp_session_t *p_session)
 }
 
 /**
- * @brief Check the PDRs attribuites with match with access way.
+ * @brief Match the PDRs attribuites accoding to data flow (UP, DL).
  * - The TEID from GTP GPDU with the TEID stored in PDR.
  * - Source IP from IP header with source address stored in PDI.
  * - Interface from PDI with ACCESS or CORE interface (it depends on if it is UL or DL).
  *
- * @param p_pdr
- * @param p_iph
- * @return u8
+ * @param p_pdr The PDR to be match with the header.
+ * @param p_iph The IP header.
+ * @return u8 True if match. False cc.
  */
 static u32 pfcp_pdr_match_attribute(pfcp_pdr_t *p_pdr, struct iphdr *p_iph, teid_t teid)
 {
   // clang-format off
-  if(p_pdr->outer_header_removal.outer_header_removal_description != OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4 
+  if(p_pdr->outer_header_removal.outer_header_removal_description != OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4
       || p_pdr->pdi.source_interface.interface_value != INTERFACE_VALUE_ACCESS
       || p_pdr->pdi.fteit.teid != teid
       || p_pdr->pdi.ue_ip_address.ipv4_address != p_iph->saddr
@@ -105,11 +133,11 @@ static u32 pfcp_pdr_match_attribute(pfcp_pdr_t *p_pdr, struct iphdr *p_iph, teid
  * - Interface from PDI with ACCESS or CORE interface (it depends on if it is UL or DL).
  * After match all field, get the session id in the found PDR.
  *
- * @param ctx
- * @param gtpuh
+ * @param p_ctx The user accessible metadata for xdp packet hook.
+ * @param p_gtpuh
  * @return u32
  */
-static u32 pfcp_session_lookup(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
+static u32 pfcp_session_lookup(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
 {
   pfcp_pdr_t *p_pdr_list;
   pfcp_session_t *p_session;
@@ -121,16 +149,19 @@ static u32 pfcp_session_lookup(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
   u32 i;
 
   // We have already assumed that the packet is a GPDU.
-  u8 *p_iph = (u8 *)gtpuh + GTPV1U_MSG_HEADER_MIN_SIZE;
+  u8 *p_iph = (u8 *)p_gtpuh + GTPV1U_MSG_HEADER_MIN_SIZE;
 
-  teid = htonl(gtpuh->teid);
+  teid = htonl(p_gtpuh->teid);
   bpf_debug("GTP GPDU teid %d with IPv4 payload received\n", teid);
 
   // Get number of allocated PDR by teid.
   p_pdr_counter = bpf_map_lookup_elem(&m_teid_pdrs_counter, &teid);
 
   // Check if there are PDRs. If not, DROP the packet.
-  if(!p_pdr_counter || *p_pdr_counter == 0) return XDP_DROP;
+  if(!p_pdr_counter || *p_pdr_counter == 0) {
+    bpf_debug("Invalid counter");
+    return XDP_DROP;
+  }
 
   // For each PDR, check the its attributes.
   for(i = 0; i < MAX_LENGTH; i++) {
@@ -154,7 +185,10 @@ static u32 pfcp_session_lookup(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
         p_session = bpf_map_lookup_elem(&m_seid_session, &seid);
 
         // Check if the session is valid.
-        if(!p_session) return XDP_DROP;
+        if(!p_session) {
+          bpf_debug("Invalid session");
+          return XDP_DROP;
+        }
 
         // Number of valid PDRs.
         pdrs_counter = p_session->pdrs_counter;
@@ -162,12 +196,15 @@ static u32 pfcp_session_lookup(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
         index = pdrs_counter - 1;
 
         // Check if index is valid.
-        if(index >= SESSION_PDRS_MAX_SIZE) return XDP_DROP;
+        if(index >= SESSION_PDRS_MAX_SIZE) {
+          bpf_debug("Index greater than the maximum");
+          return XDP_DROP;
+        }
 
         bpf_debug("Session %d FOUND! Rule id is %d. PDR index %d\n", p_session->seid, p_session->pdrs[index].pdr_id.rule_id, index);
 
         // Lets apply the forwarding actions rule.
-        pfcp_far_apply(gtpuh, p_session);
+        return pfcp_far_apply(p_ctx, p_gtpuh, p_session);
       }
     }
   }
@@ -181,27 +218,33 @@ static u32 pfcp_session_lookup(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
 /**
  * @brief Check if GTP packet is a GPDU. If so, process the next block chain.
  *
- * @param ctx
- * @param gtpuh
- * @return u32
+ * @param p_ctx The user accessible metadata for xdp packet hook.
+ * @param p_gtpuh The GTP header.
+ * @return u32 The XDP action.
  */
-static u32 gtp_handle(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
+static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
 {
-  void *data_end = (void *)(long)ctx->data_end;
+  void *p_data_end = (void *)(long)p_ctx->data_end;
 
-  if((void *)gtpuh + sizeof(*gtpuh) > data_end) {
+  if((void *)p_gtpuh + sizeof(*p_gtpuh) > p_data_end) {
     bpf_debug("Invalid GTPU packet\n");
     return XDP_DROP;
   }
 
   // TODO navarrothiago - handle other PDU.
-  if(gtpuh->message_type != GTPU_G_PDU) bpf_debug("Message type 0x%x is not GTPU GPDU(0x%x)\n", gtpuh->message_type, GTPU_G_PDU);
+  if(p_gtpuh->message_type != GTPU_G_PDU) {
+    bpf_debug("Message type 0x%x is not GTPU GPDU(0x%x)\n", p_gtpuh->message_type, GTPU_G_PDU);
+    return XDP_PASS;
+  }
 
   bpf_debug("GTP GPDU received\n");
 
-  if(!ip_inner_check_ipv4(ctx, (struct iphdr *)(gtpuh + 1))) return XDP_DROP;
+  if(!ip_inner_check_ipv4(p_ctx, (struct iphdr *)(p_gtpuh + 1))) {
+    bpf_debug("Invalid IP inner");
+    return XDP_DROP;
+  }
 
-  return pfcp_session_lookup(ctx, gtpuh);
+  return pfcp_session_lookup(p_ctx, p_gtpuh);
 }
 
 /**
@@ -211,17 +254,17 @@ static u32 gtp_handle(struct xdp_md *ctx, struct gtpuhdr *gtpuh)
 /**
  * @brief Handle UDP header.
  *
- * @param ctx
- * @param udph
- * @return u32
+ * @param p_ctx The user accessible metadata for xdp packet hook.
+ * @param udph The UDP header.
+ * @return u32 The XDP action.
  */
-static u32 udp_handle(struct xdp_md *ctx, struct udphdr *udph)
+static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph)
 {
-  void *data_end = (void *)(long)ctx->data_end;
+  void *p_data_end = (void *)(long)p_ctx->data_end;
   u32 dport;
 
   /* Hint: +1 is sizeof(struct udphdr) */
-  if((void *)udph + sizeof(*udph) > data_end) {
+  if((void *)udph + sizeof(*udph) > p_data_end) {
     bpf_debug("Invalid UDP packet\n");
     return XDP_ABORTED;
   }
@@ -231,7 +274,7 @@ static u32 udp_handle(struct xdp_md *ctx, struct udphdr *udph)
 
   switch(dport) {
   case GTP_UDP_PORT:
-    return gtp_handle(ctx, (struct gtpuhdr *)(udph + 1));
+    return gtp_handle(p_ctx, (struct gtpuhdr *)(udph + 1));
   default:
     bpf_debug("GTP port %lu not valid\n", dport);
     return XDP_PASS;
@@ -245,18 +288,18 @@ static u32 udp_handle(struct xdp_md *ctx, struct udphdr *udph)
 /**
  * @brief Handle IPv4 header.
  *
- * @param ctx
- * @param iph
- * @return u32
+ * @param p_ctx The user accessible metadata for xdp packet hook.
+ * @param iph The IP header.
+ * @return u32 The XDP action.
  */
-static u32 ipv4_handle(struct xdp_md *ctx, struct iphdr *iph)
+static u32 ipv4_handle(struct xdp_md *p_ctx, struct iphdr *iph)
 {
-  void *data_end = (void *)(long)ctx->data_end;
+  void *p_data_end = (void *)(long)p_ctx->data_end;
   // Type need to match map.
   u32 ip_dest;
 
   // Hint: +1 is sizeof(struct iphdr)
-  if((void *)iph + sizeof(*iph) > data_end) {
+  if((void *)iph + sizeof(*iph) > p_data_end) {
     bpf_debug("Invalid IPv4 packet\n");
     return XDP_ABORTED;
   }
@@ -265,19 +308,27 @@ static u32 ipv4_handle(struct xdp_md *ctx, struct iphdr *iph)
   bpf_debug("Valid IPv4 packet: raw daddr:0x%x\n", ip_dest);
   switch(iph->protocol) {
   case IPPROTO_UDP:
-    return udp_handle(ctx, (struct udphdr *)(iph + 1));
+    return udp_handle(p_ctx, (struct udphdr *)(iph + 1));
   case IPPROTO_TCP:
   default:
+    bpf_debug("TCP protocol L4\n");
     return XDP_PASS;
   }
 }
 
-static u8 ip_inner_check_ipv4(struct xdp_md *ctx, struct iphdr *iph)
+/**
+ * @brief Check if inner IP header is IPv4.
+ *
+ * @param p_ctx The user accessible metadata for xdp packet hook.
+ * @param iph The IP header.
+ * @return u8 The XDP action.
+ */
+static u8 ip_inner_check_ipv4(struct xdp_md *p_ctx, struct iphdr *iph)
 {
-  void *data_end = (void *)(long)ctx->data_end;
+  void *p_data_end = (void *)(long)p_ctx->data_end;
 
   // Hint: +1 is sizeof(struct iphdr)
-  if((void *)iph + sizeof(*iph) > data_end) {
+  if((void *)iph + sizeof(*iph) > p_data_end) {
     bpf_debug("Invalid IPv4 packet\n");
     return XDP_ABORTED;
   }
@@ -294,20 +345,24 @@ struct vlan_hdr {
   __be16 h_vlan_encapsulated_proto;
 };
 
-/*
- * Parse Ethernet layer 2, extract network layer 3 offset and protocol
+/**
+ *
+ * @brief Parse Ethernet layer 2, extract network layer 3 offset and protocol
  * Call next protocol handler (e.g. ipv4).
- * Returns The XDP action.
+ *
+ * @param p_ctx
+ * @param ethh
+ * @return u32 The XDP action.
  */
-static u32 eth_handle(struct xdp_md *ctx, struct ethhdr *ethh)
+static u32 eth_handle(struct xdp_md *p_ctx, struct ethhdr *ethh)
 {
-  void *data_end = (void *)(long)ctx->data_end;
+  void *p_data_end = (void *)(long)p_ctx->data_end;
   u16 eth_type;
   u64 offset;
   struct vlan_hdr *vlan_hdr;
 
   offset = sizeof(*ethh);
-  if((void *)ethh + offset > data_end) {
+  if((void *)ethh + offset > p_data_end) {
     bpf_debug("Cannot parse L2\n");
     return XDP_PASS;
   }
@@ -320,9 +375,10 @@ static u32 eth_handle(struct xdp_md *ctx, struct ethhdr *ethh)
   case ETH_P_8021AD:
     vlan_hdr = (void *)ethh + offset;
     offset += sizeof(*vlan_hdr);
-    if(!((void *)ethh + offset > data_end)) eth_type = htons(vlan_hdr->h_vlan_encapsulated_proto);
+    if(!((void *)ethh + offset > p_data_end))
+      eth_type = htons(vlan_hdr->h_vlan_encapsulated_proto);
   case ETH_P_IP:
-    return ipv4_handle(ctx, (struct iphdr *)((void *)ethh + offset));
+    return ipv4_handle(p_ctx, (struct iphdr *)((void *)ethh + offset));
   case ETH_P_IPV6:
   // Skip non 802.3 Ethertypes
   case ETH_P_ARP:
@@ -334,13 +390,14 @@ static u32 eth_handle(struct xdp_md *ctx, struct ethhdr *ethh)
   }
 }
 
-SEC("xdp")
-int upf_chain(struct xdp_md *ctx)
+SEC("xdp_redirect_map")
+int upf_chain(struct xdp_md *p_ctx)
 {
-  void *data = (void *)(long)ctx->data;
-  struct ethhdr *eth = data;
-
-  return eth_handle(ctx, eth);
+  void *p_data = (void *)(long)p_ctx->data;
+  struct ethhdr *eth = p_data;
+  u32 action = xdp_stats_record_action(p_ctx, eth_handle(p_ctx, eth));
+  bpf_debug("Action %d\n", action);
+  return action;
 }
 
 char _license[] SEC("license") = "GPL";
