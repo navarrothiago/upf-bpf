@@ -5,13 +5,22 @@ include_directories(${CMAKE_SOURCE_DIR}/build/src/bpf/skel)
 
 add_subdirectory(bpf)
 
-add_executable(upf_xdp_user upf_xdp_user.c)
+add_executable(upf_xdp_user
+  Main.cpp
+  UPFProgramManager.cpp
+  wrappers/BPFMaps.cpp
+  wrappers/BPFMap.cpp
+  utils/Logger.cpp
+)
+
 add_dependencies(upf_xdp_user upf_xdp_bpf)
 add_dependencies(upf_xdp_user gen_skeleton)
 
 link_directories(${CMAKE_SOURCE_DIR}/extern/libbpf/src)
-target_link_libraries(upf_xdp_user 
+target_link_libraries(upf_xdp_user
   ${CMAKE_SOURCE_DIR}/extern/libbpf/src/libbpf.a
+  spdlog::spdlog
   elf
   z
 )
+

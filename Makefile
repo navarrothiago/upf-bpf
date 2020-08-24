@@ -5,6 +5,9 @@ BPF_SAMPLES_DIR=build/samples
 BPF_BINARY_DIR=build/src
 NUM_THREADS=4
 
+# Get all PIDs from *xdp* that is running.
+PIDS := $(shell ps -aux | grep xdp | awk '{print $$2}')
+
 # TODO navarrothiago - Remove hardcoded.
 DEVICE_IN=wlp0s20f3
 DEVICE_OUT=veth0
@@ -17,16 +20,29 @@ help:
 	@echo "Comandos:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "- \033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+# TODO navarrothiago - if you put the in the make, a race condition occur.
+	# pushd ../extern/spdlog && \
+  # mkdir -p build && cd build && \
+  # cmake .. && make -j \
+	# popd && \
+
 all: ## Build all
 	mkdir -p build && \
 	pushd build && \
 	cmake .. && \
 	pushd ../extern/libbpf/src && \
-	make && \
+	make -j && \
 	popd && \
 	make && \
 	make copy_samples_objs && \
 	make copy_objs
+
+install: ## Install dependencies
+	pushd extern/spdlog && \
+  mkdir -p build && cd build && \
+  cmake .. && make -j && sudo make install \
+
+rebuild: clean deload all ## Clean, deload and build all
 
 clean: ## Clean all build files
 	rm -R build
@@ -57,11 +73,14 @@ run: all ## Build all and run BPF XDP UPF
 	pushd $(BPF_BINARY_DIR) && \
 	sudo ./upf_xdp_user
 
+rerun: force-xdp-deload run ## Build all and run BPF XDP UPF
+
 run-scapy: ## Run scapy for packet manipulation
 	sudo ./extern/scapy/run_scapy
 
-force-xdp-deload: ## Force deload XDP programs
+force-xdp-deload: ## Kill all and force deload XDP programs
 	sudo ip link set dev $(DEVICE_IN) xdpgeneric off
 	sudo ip link set dev $(DEVICE_OUT) xdpgeneric off
+	sudo kill -9 $(PIDS)
 
 

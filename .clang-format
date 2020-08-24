@@ -1,0 +1,16 @@
+---
+ BasedOnStyle: LLVM
+ UseTab: Never
+ IndentWidth: 2
+ TabWidth: 2
+ BreakBeforeBraces: Linux
+ AllowShortIfStatementsOnASingleLine: false
+ IndentCaseLabels: false
+ ColumnLimit: 300
+ AccessModifierOffset: -4
+ AllowShortLoopsOnASingleLine: false
+ AllowShortBlocksOnASingleLine:  false
+ SpaceBeforeParens: false
+ BreakConstructorInitializersBeforeComma: true
+ AccessModifierOffset: -2
+ AlwaysBreakTemplateDeclarations: Yes

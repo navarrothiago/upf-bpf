@@ -31,12 +31,41 @@
       "group": {
         "kind": "build",
         "isDefault": true
+      },
+      "presentation": {
+        "focus": true,
       }
     },
     {
       "label": "Deload",
       "type": "shell",
       "command": "make force-xdp-deload",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "focus": true,
+      }
+    },
+    {
+      "label": "Rerun",
+      "type": "shell",
+      "command": "make rerun",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "focus": true,
+      }
+    },
+    {
+      "label": "Rebuild",
+      "type": "shell",
+      "command": "make rebuild",
       "problemMatcher": [],
       "group": {
         "kind": "build",
@@ -78,7 +107,7 @@
       "presentation": {
         "focus": true,
       }
-    }
+    },
     {
       "label": "Run",
       "type": "shell",
@@ -117,5 +146,6 @@
       "presentation": {
         "focus": true,
       }
-    },
+    }
   ]
+}

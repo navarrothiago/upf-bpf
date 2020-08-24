@@ -28,6 +28,5 @@ static const char *xdp_action_names[XDP_ACTION_MAX] = {
 };
 // clang-format on
 
-static int map_fd_stats;
 
 #endif /* __XDP_STATS_KERN_USER_H */
