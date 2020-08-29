@@ -4,6 +4,10 @@
 #include <vector>
 #include <wrappers/BPFMap.hpp>
 
+/**
+ * @brief It is used to retrieve all the BPF maps which are stores in skeletons.
+ *
+ */
 class BPFMaps
 {
 public:
@@ -21,7 +25,7 @@ public:
   /**
    * @brief Get the BPFMap object.
    *
-   * @param pName The name of the bpf map.
+   * @param pName The name of the BPF map.
    * @return BPFMap& The abstraction of the map.
    */
   BPFMap &getMap(const char *pName);

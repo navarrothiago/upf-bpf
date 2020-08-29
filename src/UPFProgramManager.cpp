@@ -1,29 +1,27 @@
 #include "UPFProgramManager.h"
-#include <bpf/bpf.h>             // bpf calls
-#include <bpf/libbpf.h>          // bpf wrappers
-#include <iostream>              // cout
-#include <linux/if_link.h>       // XDP flags
-#include <net/if.h>              // if_nametoindex
-#include <signal.h>              // signals
-#include <sstream>               //stringstream
-#include <stdexcept>             // exception
-#include <sys/resource.h>        // rlimit
+#include <bpf/bpf.h>       // bpf calls
+#include <bpf/libbpf.h>    // bpf wrappers
+#include <iostream>        // cout
+#include <linux/if_link.h> // XDP flags
+#include <net/if.h>        // if_nametoindex
+#include <sstream>         //stringstream
+#include <stdexcept>       // exception
+#include <sys/resource.h>  // rlimit
 #include <wrappers/BPFMaps.h>
 
-int UPFProgramManager::mIfindexIn;
-int UPFProgramManager::mIfindexOut;
-unsigned int UPFProgramManager::mProgramId;
-unsigned int UPFProgramManager::mProgramRedirectId;
-unsigned int UPFProgramManager::mXdpFlags = XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE;
-bool UPFProgramManager::mIfindexOutXdpRedirectAttached = true;
-int UPFProgramManager::mProgramFd;
-int UPFProgramManager::mProgramRedirectFd;
+UPFProgramManager::XDPProgramInfo sXDPProgramInfo[2];
 std::mutex UPFProgramManager::sTearDownMutex;
+upf_xdp_bpf_c *UPFProgramManager::spSkeleton;
 std::atomic<UPFProgramManager::ProgramState> UPFProgramManager::sState;
 
 UPFProgramManager::UPFProgramManager()
 {
   LOG_FUNC();
+  // TODO navarrothiago - refactors.
+  sXDPProgramInfo[0].xdpFlag = XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE;
+  sXDPProgramInfo[1].xdpFlag = XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE;
+  sXDPProgramInfo[0].state = IDLE;
+  sXDPProgramInfo[1].state = IDLE;
   sState = IDLE;
 }
 UPFProgramManager::~UPFProgramManager()
@@ -44,58 +42,48 @@ void UPFProgramManager::setup()
   load();
   attach();
 
+  sXDPProgramInfo[0].ifIndex = if_nametoindex("wlp0s20f3");
+  sXDPProgramInfo[1].ifIndex = if_nametoindex("veth0");
+
   // TODO navarrothiago - remove hardcoded.
-  mIfindexIn = if_nametoindex("wlp0s20f3");
-  mIfindexOut = if_nametoindex("veth0");
-  if(!mIfindexIn || !mIfindexOut) {
+  if(!sXDPProgramInfo[0].ifIndex || !sXDPProgramInfo[1].ifIndex) {
     perror("if_nametoindex");
     throw std::runtime_error("Interface not found!");
   }
 
   // Get programs FD from skeleton object.
-  mProgramFd = bpf_program__fd(mpSkeleton->progs.upf_chain);
-  mProgramRedirectFd = bpf_program__fd(mpSkeleton->progs.xdp_redirect_gtpu);
+  sXDPProgramInfo[0].programFd = bpf_program__fd(spSkeleton->progs.upf_chain);
+  sXDPProgramInfo[1].programFd = bpf_program__fd(spSkeleton->progs.xdp_redirect_gtpu);
 
   signal(SIGINT, UPFProgramManager::tearDown);
   signal(SIGTERM, UPFProgramManager::tearDown);
   signal(SIGSEGV, UPFProgramManager::tearDown);
 
-  if(bpf_set_link_xdp_fd(mIfindexIn, mProgramFd, mXdpFlags) < 0) {
-    tearDown(SIGTERM);
-    LOG_ERROR("Link set xdp fd IN failed");
-    throw std::runtime_error("Link set xdp fd IN failed");
+  for(uint i = 0; i < spSkeleton->skeleton->prog_cnt; i++) {
+
+    // Clean memory. Without this, the error "can't get prog info OUT - Bad address" on bpf_obj_get_info_by_fd is shown.
+    memset(&sXDPProgramInfo[i].info, 0, sizeof(sXDPProgramInfo[i].info));
+
+    if(bpf_set_link_xdp_fd(sXDPProgramInfo[i].ifIndex, sXDPProgramInfo[i].programFd, sXDPProgramInfo[i].xdpFlag) < 0) {
+      LOG_ERROR("BPF program link set XDP index {} failed", i);
+      tearDown(SIGTERM);
+      throw std::runtime_error("BPF program link set XDP IN failed");
+    }
+
+    sXDPProgramInfo[i].state = LINKED;
+    LOG_INFO("BPF program index {} linked in XDP", i);
+
+    // Get info from XDP program.
+    err = bpf_obj_get_info_by_fd(sXDPProgramInfo[i].programFd, &sXDPProgramInfo[i].info, &sXDPProgramInfo[i].info_len);
+    if(err) {
+      LOG_ERROR("Can't get prog info index {} - {}", i, strerror(errno));
+      tearDown(SIGTERM);
+      throw std::runtime_error("Can't get prog info IN");
+    }
+    sXDPProgramInfo[i].programId = sXDPProgramInfo[i].info.id;
   }
 
-  sState = LINKED;
-
-  // Get info from XDP program.
-  err = bpf_obj_get_info_by_fd(mProgramFd, &info, &info_len);
-  if(err) {
-    tearDown(SIGTERM);
-    LOG_ERROR("Can't get prog info IN - {0}", strerror(errno));
-    throw std::runtime_error("Can't get prog info IN");
-  }
-  mProgramId = info.id;
-
-  if(bpf_set_link_xdp_fd(mIfindexOut, mProgramRedirectFd, mXdpFlags | XDP_FLAGS_UPDATE_IF_NOEXIST) < 0) {
-    tearDown(SIGTERM);
-    LOG_ERROR("Link set xdp fd OUT failed");
-    throw std::runtime_error("Link set xdp fd OUT failed");
-  }
-
-  // Clean memory. Without this, the error "can't get prog info OUT - Bad address" on bpf_obj_get_info_by_fd is shown.
-  memset(&info, 0, sizeof(info));
-
-  // Get info from Reditect XDP program.
-  err = bpf_obj_get_info_by_fd(mProgramRedirectFd, &info, &info_len);
-  if(err) {
-    tearDown(SIGTERM);
-    LOG_ERROR("Can't get prog info OUT - {0}", strerror(errno));
-    throw std::runtime_error("Can't get prog info OUT");
-  }
-
-  mProgramRedirectId = info.id;
-  mpMaps->getMap("m_id_txcnt").update(key_ifmap, mIfindexOut, 0);
+  mpMaps->getMap("m_id_txcnt").update(key_ifmap, sXDPProgramInfo[1].ifIndex, 0);
 }
 
 UPFProgramManager &UPFProgramManager::getInstance()
@@ -116,41 +104,24 @@ void UPFProgramManager::tearDown(int signal)
   LOG_FUNC();
   std::lock_guard<std::mutex> lock(sTearDownMutex);
 
-  if(sState != LINKED) {
-    LOG_DEBUG("Not in a LINKED state");
-    return;
-  }
-  LOG_DEBUG("Program is in a LINKED state");
-
-  __u32 curr_prog_id = 0;
-  if(bpf_get_link_xdp_id(mIfindexIn, &curr_prog_id, mXdpFlags)) {
-    printf("bpf_get_link_xdp_id failed\n");
-    exit(1);
-  } else {
-    LOG_DEBUG("Get XDP In link successful");
-    if(mProgramId == curr_prog_id)
-      bpf_set_link_xdp_fd(mIfindexIn, -1, mXdpFlags);
-    else if(!curr_prog_id)
-      printf("couldn't find a prog id on iface IN\n");
-    else
-      printf("program on iface IN changed, not removing\n");
-  }
-  if(mIfindexOutXdpRedirectAttached) {
-    curr_prog_id = 0;
-    if(bpf_get_link_xdp_id(mIfindexOut, &curr_prog_id, mXdpFlags)) {
-      printf("bpf_get_link_xdp_id failed\n");
-      exit(1);
-    } else {
-      LOG_DEBUG("Get XDP Out link successful");
-      if(mProgramRedirectId == curr_prog_id)
-        bpf_set_link_xdp_fd(mIfindexOut, -1, mXdpFlags);
-      else if(!curr_prog_id)
-        printf("couldn't find a prog id on iface OUT\n");
-      else
-        printf("program on iface OUT changed, not removing\n");
+  for(uint8_t i = 0; i < spSkeleton->skeleton->prog_cnt; i++) {
+    if(sXDPProgramInfo[i].state != LINKED) {
+      LOG_DEBUG("Not in a LINKED state");
+      continue;
     }
+
+    LOG_DEBUG("Program {} is in a LINKED state", i);
+
+    if(bpf_get_link_xdp_id(sXDPProgramInfo[i].ifIndex, &sXDPProgramInfo[i].programId, sXDPProgramInfo[i].xdpFlag)) {
+      LOG_INFO("bpf_get_link_xdp_id failed");
+      continue;
+    }
+    LOG_DEBUG("Get XDP In link successful");
+    bpf_set_link_xdp_fd(sXDPProgramInfo[i].ifIndex, -1, sXDPProgramInfo[i].xdpFlag);
+    LOG_INFO("BPF program unlinked from XDP (in)");
   }
-  exit(0);
+
+  destroy();
 }
 
 void UPFProgramManager::open()
@@ -162,19 +133,21 @@ void UPFProgramManager::open()
     throw std::runtime_error("Cannot change bpf limit program");
   }
 
-  mpSkeleton = upf_xdp_bpf_c__open();
-  if(!mpSkeleton)
+  spSkeleton = upf_xdp_bpf_c__open();
+  if(!spSkeleton)
     destroy();
 
-  mpMaps = std::make_unique<BPFMaps>(mpSkeleton->skeleton);
+  mpMaps = std::make_unique<BPFMaps>(spSkeleton->skeleton);
   sState = OPENED;
 }
 
 void UPFProgramManager::load()
 {
   LOG_FUNC();
-  // Load BPF programs idetified in skeleton.
-  if(int err = upf_xdp_bpf_c__load(mpSkeleton)) {
+  // Load BPF programs identified in skeleton.
+  // We do not need to pass the path of the .o (object), due to encapsulation
+  // made by bpftool in skeleton object.
+  if(int err = upf_xdp_bpf_c__load(spSkeleton)) {
     destroy();
     std::stringstream errMsg;
     errMsg << "Cannot load program - error" << err;
@@ -187,8 +160,8 @@ void UPFProgramManager::attach()
 {
   LOG_FUNC();
   // Attach is not support by XDP programs.
-  // This call doesnt do anything.
-  if(int err = upf_xdp_bpf_c__attach(mpSkeleton)) {
+  // This call does not do anything.
+  if(int err = upf_xdp_bpf_c__attach(spSkeleton)) {
     destroy();
     std::stringstream errMsg;
     errMsg << "Cannot attach program - error" << err;
@@ -201,6 +174,8 @@ void UPFProgramManager::destroy()
 {
   LOG_FUNC();
   // Destroy program.
-  upf_xdp_bpf_c__destroy(mpSkeleton);
-  sState = DESTROYED;
+  if(sState != IDLE) {
+    upf_xdp_bpf_c__destroy(spSkeleton);
+  }
+  sState = IDLE;
 }

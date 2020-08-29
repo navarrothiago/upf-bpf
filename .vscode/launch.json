@@ -8,7 +8,7 @@
       "name": "Run",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/src/upf_xdp_user",
+      "program": "${workspaceFolder}/build/tests/UPFProgramTests",
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build/src",
       "environment": [],

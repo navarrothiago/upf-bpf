@@ -82,6 +82,9 @@
     "stack": "cpp",
     "cstdbool": "cpp",
     "core": "cpp",
-    "*.rh": "cpp"
+    "*.rh": "cpp",
+    "any": "cpp",
+    "forward_list": "cpp",
+    "cfenv": "cpp"
   },
 }

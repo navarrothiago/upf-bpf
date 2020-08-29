@@ -6,7 +6,7 @@
 #include <utils/LogDefines.h>
 
 /**
- * @brief Abstraction of the bpf map.
+ * @brief This class abstract the communication with a specific BPF map.
  */
 class BPFMap
 {
@@ -42,6 +42,15 @@ public:
    */
   template <class KeyType, class ValueType>
   int update(KeyType &key, ValueType &value, int flags);
+  /**
+   * @brief Remove a element in a specific position.
+   * Wrappers the bpf_map_delete function.
+   *
+   * @param key The key to be deleted.
+   * @return 0 if it is success, cc. != 0.
+   */
+  template <class KeyType>
+  int remove(KeyType &key);
 
 private:
   // TODO navarrothiago - Change to unique.
@@ -56,7 +65,7 @@ int BPFMap::lookup(KeyType &key, void *pValue)
   int mapFd = bpf_map__fd(mpBPFMap);
   int lookupReturn;
 
-  if(lookupReturn = bpf_map_lookup_elem(mapFd, &key, pValue) != 0){
+  if(lookupReturn = bpf_map_lookup_elem(mapFd, &key, pValue) != 0) {
     perror("Lookup error");
   }
 
@@ -74,6 +83,19 @@ int BPFMap::update(KeyType &key, ValueType &value, int flags)
     perror("Update error");
   }
   return updateReturn;
+}
+
+template <class KeyType>
+int BPFMap::remove(KeyType &key)
+{
+  int mapFd = bpf_map__fd(mpBPFMap);
+  int deleteReturn;
+
+  if(deleteReturn = bpf_map_delete_elem(mapFd, &key) != 0) {
+    perror("Delete error");
+  }
+
+  return deleteReturn;
 }
 
 #endif // __BPFMAP_H__

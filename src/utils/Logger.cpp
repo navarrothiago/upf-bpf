@@ -1,6 +1,7 @@
 #include "Logger.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
-
+#include <stdarg.h>
+#include <unistd.h>
 
 Logger &Logger::getInstance()
 {
@@ -10,13 +11,55 @@ Logger &Logger::getInstance()
 
 Logger::~Logger() {}
 
+void Logger::print(const char *pMessage, LOG_TYPE_T type, const char *pFile, int line)
+{
+  unsigned int threadId = (unsigned int)pthread_self();
+  unsigned int processId = (unsigned int)getpid();
+  std::string out;
+
+  if(pFile != NULL) {
+    if(pMessage != NULL) {
+      out = fmt::format("[{}.{}] ({}, {}) {}", processId, threadId, pFile, line, pMessage);
+      // Free the pointer used to store the list.
+    } else {
+      out = fmt::format("[{}.{}] ({}, {}))", processId, threadId, pFile, line);
+    }
+  } else {
+    if(pMessage != NULL) {
+      out = fmt::format("[{}.{}] {}", processId, threadId, pMessage);
+    } else {
+      out = fmt::format("[{}.{}] {}", processId, threadId);
+    }
+  }
+
+  doPrint(type, out);
+}
+
+void Logger::doPrint(LOG_TYPE_T type, const std::string &out)
+{
+  switch(type) {
+  case LOG_ERROR:
+    error(out);
+    break;
+  case LOG_INFO:
+    info(out);
+    break;
+  case LOG_DEBUG:
+    debug(out);
+    break;
+
+  default:
+    break;
+  }
+}
+
 Logger::Logger()
     : spdlog::logger(*spdlog::stdout_color_mt("upf_logger"))
 {
   set_level(spdlog::level::debug);
 }
 
-Logger::FuncLogger::FuncLogger(const std::string& funcName)
+Logger::FuncLogger::FuncLogger(const std::string &funcName)
 {
   // Func name has type and return. Format to: classname::methodname().
   size_t begin = 0;
@@ -39,12 +82,14 @@ Logger::FuncLogger::FuncLogger(const std::string& funcName)
   memcpy(mFunctionName, funcName.data() + begin, length);
   mFunctionName[length] = '\0';
 
-  // BEGIN
-  Logger::getInstance().debug("[bgn] {0}", mFunctionName);
+  // Begin function.
+  std::string pMessageString = fmt::format("[bgn] {}", mFunctionName);
+  Logger::getInstance().print(pMessageString.c_str(), LOG_DEBUG, NULL);
 }
 
 Logger::FuncLogger::~FuncLogger()
 {
-  // END
-  Logger::getInstance().debug("[end] {0}", mFunctionName);
+  // End function.
+  std::string pMessageString = fmt::format("[end] {}", mFunctionName);
+  Logger::getInstance().print(pMessageString.c_str(), LOG_DEBUG, NULL);
 }

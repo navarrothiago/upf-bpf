@@ -2,11 +2,11 @@
 PROJECT_DIR=$(CURDIR)
 
 BPF_SAMPLES_DIR=build/samples
-BPF_BINARY_DIR=build/src
+BPF_BINARY_DIR=build/tests
 NUM_THREADS=4
 
 # Get all PIDs from *xdp* that is running.
-PIDS := $(shell ps -aux | grep xdp | awk '{print $$2}')
+PIDS := $(shell ps -aux | grep -e UPFProgramTests -e xdp | awk '{print $$2}')
 
 # TODO navarrothiago - Remove hardcoded.
 DEVICE_IN=wlp0s20f3
@@ -21,19 +21,12 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "- \033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 # TODO navarrothiago - if you put the in the make, a race condition occur.
-	# pushd ../extern/spdlog && \
-  # mkdir -p build && cd build && \
-  # cmake .. && make -j \
-	# popd && \
-
 all: ## Build all
 	mkdir -p build && \
 	pushd build && \
 	cmake .. && \
-	pushd ../extern/libbpf/src && \
-	make -j && \
-	popd && \
 	make && \
+  make copy_bpf_program && \
 	make copy_samples_objs && \
 	make copy_objs
 
@@ -41,6 +34,10 @@ install: ## Install dependencies
 	pushd extern/spdlog && \
   mkdir -p build && cd build && \
   cmake .. && make -j && sudo make install \
+  popd && \
+	pushd extern/libbpf/src && \
+	make -j && \
+	popd && \
 
 rebuild: clean deload all ## Clean, deload and build all
 
@@ -69,9 +66,9 @@ run-redirect-map-sample: all ## Build all and run BPF XDP redirect sample
 	pushd $(BPF_SAMPLES_DIR) && \
 	sudo ./xdp_redirect_map -S $(DEVICE_IN) $(DEVICE_OUT)
 
-run: all ## Build all and run BPF XDP UPF
+run: ## Run BPF XDP UPF
 	pushd $(BPF_BINARY_DIR) && \
-	sudo ./upf_xdp_user
+	sudo ./UPFProgramTests
 
 rerun: force-xdp-deload run ## Build all and run BPF XDP UPF
 
