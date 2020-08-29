@@ -1,6 +1,3 @@
-# diretório do projeto específico que contém o CMakeLists.txt
-PROJECT_DIR=$(CURDIR)
-
 BPF_SAMPLES_DIR=build/samples
 BPF_BINARY_DIR=build/tests
 NUM_THREADS=4
@@ -56,7 +53,7 @@ all-verbose: ## Build all in verbose mode
 	make copy_objs V=1
 
 config-veth-pair: ## Config veth pair. It must be run before <run-*> targets
-	sudo ./tests/config_veth_pair.sh $(DEVICE_IN)
+	sudo ./tests/scripts/config_veth_pair.sh $(DEVICE_IN)
 
 run-hello-world-samples: all ## Build all and run BPF XDP hello world sample
 	pushd $(BPF_SAMPLES_DIR) && \

@@ -75,7 +75,7 @@ std::shared_ptr<pfcp_pdr_t> SessionManager::lookupPDR(seid_t seid, pdr_id_t pdrI
   auto pPdrFound = std::find_if(session.pdrs, session.pdrs + session.pdrs_counter, [&pdrId](pfcp_pdr_t &pdr) { return pdr.pdr_id.rule_id == pdrId.rule_id; });
 
   // Check if the PDR was found.
-  if(pPdrFound == session.pdrs + session.pdrs_counter){
+  if(pPdrFound == session.pdrs + session.pdrs_counter) {
     LOG_WARN("PDR {} not found", pdrId.rule_id);
     return pPdr;
   }
@@ -145,7 +145,6 @@ void SessionManager::updateFAR(seid_t seid, std::shared_ptr<pfcp_far_t> pFar)
 void SessionManager::updatePDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr)
 {
   LOG_FUNC();
-
   pfcp_session_t session;
   // Lookup session based on seid.
   // TODO navarrothiago - check if session not exists.
@@ -158,19 +157,20 @@ void SessionManager::updatePDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr)
   }
 
   // Look for the PDR in the array.
-  uint32_t i;
-  for(uint32_t i = 0; i < session.pdrs_counter; i++) {
-    if(session.pdrs[i].pdr_id.rule_id == pPdr->pdr_id.rule_id) {
+  auto pPdrFound = std::find_if(session.pdrs, session.pdrs + session.pdrs_counter, [&pPdr](pfcp_pdr_t &pdr) { return pdr.pdr_id.rule_id == pPdr->pdr_id.rule_id; });
 
-      // Update all fields.
-      session.pdrs[i] = *pPdr;
-
-      // Update session in BPF map.
-      mpSessionsMap->update(seid, session, BPF_EXIST);
-      LOG_DEBUG("PDR {} was update at index {} in session {}!", pPdr->pdr_id.rule_id, i, seid);
-      return;
-    }
+  // Check if the PDR was found.
+  if(pPdrFound == session.pdrs + session.pdrs_counter) {
+    LOG_WARN("PDR {} not found", pPdr->pdr_id.rule_id);
+    throw std::runtime_error("PDR not found");
   }
+
+  // Update all fields.
+  *pPdrFound = std::move(*pPdr);
+
+  // Update session in BPF map.
+  mpSessionsMap->update(seid, session, BPF_EXIST);
+  LOG_DEBUG("PDR {} was update  in session {}!", pPdr->pdr_id.rule_id, seid);
 }
 
 void SessionManager::removeFAR(seid_t seid, std::shared_ptr<pfcp_far_t> pFar)

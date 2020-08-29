@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# Based on - Veth XDP: XDP for Containers (see slides)
+
 NR_CPU=$(nproc)
 NAMESPACE=ns0
+NAMESPACE2=ns2
 PHY_NIC=$1
 
 if [ "$#" -ne 1 ]; then
