@@ -47,7 +47,9 @@ void Logger::doPrint(LOG_TYPE_T type, const std::string &out)
   case LOG_DEBUG:
     debug(out);
     break;
-
+  case LOG_WARNING:
+    warn(out);
+    break;
   default:
     break;
   }

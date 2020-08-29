@@ -12,5 +12,7 @@
   Logger::getInstance().print(std::string(fmt::format(message, ##__VA_ARGS__)).c_str(), LOG_DEBUG, __FILE__, __LINE__);
 #define LOG_INFO(message, ...) \
   Logger::getInstance().print(std::string(fmt::format(message, ##__VA_ARGS__)).c_str(), LOG_INFO, __FILE__, __LINE__);
+#define LOG_WARN(message, ...) \
+  Logger::getInstance().print(std::string(fmt::format(message, ##__VA_ARGS__)).c_str(), LOG_WARNING, __FILE__, __LINE__);
 
 #endif // __LOGDEFINES_H__

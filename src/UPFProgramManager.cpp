@@ -8,6 +8,7 @@
 #include <stdexcept>       // exception
 #include <sys/resource.h>  // rlimit
 #include <wrappers/BPFMaps.h>
+#include <SessionManager.h>
 
 UPFProgramManager::XDPProgramInfo sXDPProgramInfo[2];
 std::mutex UPFProgramManager::sTearDownMutex;
@@ -124,6 +125,12 @@ void UPFProgramManager::tearDown(int signal)
   destroy();
 }
 
+std::shared_ptr<SessionManager> UPFProgramManager::getSessionManager()
+{
+  LOG_FUNC();
+  return mpSessionManager;
+}
+
 void UPFProgramManager::open()
 {
   LOG_FUNC();
@@ -153,6 +160,11 @@ void UPFProgramManager::load()
     errMsg << "Cannot load program - error" << err;
     throw std::runtime_error(errMsg.str());
   }
+
+  // Warning - The name of the map must be the same of the BPF program.
+  std::shared_ptr<BPFMap> pSessionMap = std::make_shared<BPFMap>(UPFProgramManager::getInstance().getMaps()->getMap("m_seid_session"));
+  mpSessionManager = std::make_shared<SessionManager>(pSessionMap);
+
   sState = LOADED;
 }
 
@@ -177,5 +189,6 @@ void UPFProgramManager::destroy()
   if(sState != IDLE) {
     upf_xdp_bpf_c__destroy(spSkeleton);
   }
+  // TODO navarrothiago - check if it is necessary delete sessionManager here.
   sState = IDLE;
 }

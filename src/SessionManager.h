@@ -1,13 +1,17 @@
 #ifndef __SESSIONMANAGER_H__
 #define __SESSIONMANAGER_H__
 
-#include <memory>
-#include <pfcp/pfcp_pdr.h>
-#include <pfcp/pfcp_far.h>
-#include <pfcp/pfcp_session.h>
 #include <ie/fseid.h>
+#include <ie/pdr_id.h>
+#include <memory>
+#include <pfcp/pfcp_far.h>
+#include <pfcp/pfcp_pdr.h>
+#include <pfcp/pfcp_session.h>
 
 class BPFMap;
+
+// FIXME navarrothiago - This class compose the UPFProgram. When the program is deleted,
+// this class must be updated.
 
 /**
  * @brief This class abstracts the communication to manager the session BPF maps.
@@ -18,13 +22,13 @@ class SessionManager
 {
 public:
   /**
-   * @brief Get the Instance object.
+   * @brief Construct a new Session Manager object.
    *
-   * @return SessionManager& The singleton reference.
+   * @param pSessionsMap The sessions BPF map abstraction.
    */
-  static SessionManager &getInstance();
+  SessionManager(std::shared_ptr<BPFMap> pSessionsMap);
   /**
-   * @brief Destroy the Session Manager object
+   * @brief Destroy the Session Manager object.
    *
    */
   virtual ~SessionManager();
@@ -47,6 +51,7 @@ public:
    * @param pFar The FAR to be added.
    */
   void addFAR(seid_t seid, std::shared_ptr<pfcp_far_t> pFar);
+
   /**
    * @brief Add the PDR in the BPF map.
    *
@@ -54,6 +59,7 @@ public:
    * @param pPdr The PDR to be added.
    */
   void addPDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr);
+  std::shared_ptr<pfcp_pdr_t> lookupPDR(seid_t seid, pdr_id_t pdrId);
   /**
    * @brief Update the FAR in the BPF map.
    *
@@ -82,13 +88,8 @@ public:
    * @param pPdr The PDR to be removed.
    */
   void removePDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr);
-private:
-  /**
-   * @brief Construct a new Session Manager object.
-   *
-   */
-  SessionManager();
 
+private:
   // Store the abstraction of the BPF map.
   std::shared_ptr<BPFMap> mpSessionsMap;
 };

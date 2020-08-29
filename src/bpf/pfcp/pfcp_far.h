@@ -6,6 +6,7 @@
 #include <ie/group_ie/forwarding_parameters.h>
 #include <ie/group_ie/duplicating_parameters.h>
 #include <ie/bar_id.h>
+#include <ie/far_id.h>
 
 typedef struct pfcp_far_s
 {
