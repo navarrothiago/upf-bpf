@@ -59,6 +59,21 @@ public:
    * @param pPdr The PDR to be added.
    */
   void addPDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr);
+  /**
+   * @brief Lookup FAR in the BPF map.
+   *
+   * @param seid The session identifier where will be lookup.
+   * @param farId The FAR in the session to be lookup.
+   * @return std::shared_ptr<pfcp_far_t> The FAR found or NULL with not found.
+   */
+  std::shared_ptr<pfcp_far_t> lookupFAR(seid_t seid, far_id_t farId);
+  /**
+   * @brief Lookup PDR in the BPF map.
+   *
+   * @param seid The session identifier where will be lookup.
+   * @param pdrId The PDR in the session to be lookup.
+   * @return std::shared_ptr<pfcp_far_t> The PDR found or NULL with not found.
+   */
   std::shared_ptr<pfcp_pdr_t> lookupPDR(seid_t seid, pdr_id_t pdrId);
   /**
    * @brief Update the FAR in the BPF map.

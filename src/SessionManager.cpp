@@ -85,6 +85,34 @@ std::shared_ptr<pfcp_pdr_t> SessionManager::lookupPDR(seid_t seid, pdr_id_t pdrI
   return pPdr;
 }
 
+std::shared_ptr<pfcp_far_t> SessionManager::lookupFAR(seid_t seid, far_id_t farId)
+{
+  LOG_FUNC();
+  std::shared_ptr<pfcp_far_t> pFar;
+  pfcp_session_t session;
+
+  // Lookup session based on seid.
+  mpSessionsMap->lookup(seid, &session);
+
+  if(session.fars_counter == 0) {
+    // Empty PDR.
+    LOG_WARN("There is no FARs");
+    return pFar;
+  }
+
+  auto pFarFound = std::find_if(session.fars, session.fars + session.fars_counter, [&farId](pfcp_far_t &far) { return far.far_id.far_id == farId.far_id; });
+
+  // Check if the PDR was found.
+  if(pFarFound == session.fars + session.fars_counter) {
+    LOG_WARN("FAR {} not found", farId.far_id);
+    return pFar;
+  }
+
+  pFar = std::make_shared<pfcp_far_t>(*pFarFound);
+
+  return pFar;
+}
+
 void SessionManager::addPDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr)
 {
   LOG_FUNC();
@@ -122,24 +150,25 @@ void SessionManager::updateFAR(seid_t seid, std::shared_ptr<pfcp_far_t> pFar)
 
   // Check if the FAR's counter is equal to zero.
   if(session.fars_counter == 0) {
-    LOG_ERROR("There is not any element in PDRs array. The FAR {0} cannot be updated in the session {1}", pFar->far_id.far_id, seid);
+    LOG_ERROR("There is not any element in FARs array. The FAR {0} cannot be updated in the session {1}", pFar->far_id.far_id, seid);
     throw std::runtime_error("There is not any element in FARs array. The FAR cannot be updated in the session");
   }
 
-  // Look for the FAR in the array.
-  uint32_t i;
-  for(uint32_t i = 0; i < session.fars_counter; i++) {
-    if(session.fars[i].far_id.far_id == pFar->far_id.far_id) {
+  // Look for the PDR in the array.
+  auto pFarFound = std::find_if(session.fars, session.fars + session.fars_counter, [&pFar](pfcp_far_t &far) { return far.far_id.far_id == pFar->far_id.far_id; });
 
-      // Update all fields.
-      session.fars[i] = *pFar;
-
-      // Update session in BPF map.
-      mpSessionsMap->update(seid, session, BPF_EXIST);
-      LOG_DEBUG("FAR {} was updated at index {} in session {}!", pFar->far_id.far_id, i, seid);
-      return;
-    }
+  // Check if the PDR was found.
+  if(pFarFound == session.fars + session.fars_counter) {
+    LOG_WARN("FAR {} not found", pFar->far_id.far_id);
+    throw std::runtime_error("FAR not found");
   }
+
+  // Update all fields.
+  *pFarFound = std::move(*pFar);
+
+  // Update session in BPF map.
+  mpSessionsMap->update(seid, session, BPF_EXIST);
+  LOG_DEBUG("FAR {} was update  in session {}!", pFar->far_id.far_id, seid);
 }
 
 void SessionManager::updatePDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr)
@@ -200,7 +229,7 @@ void SessionManager::removeFAR(seid_t seid, std::shared_ptr<pfcp_far_t> pFar)
   std::move(session.fars, pFarEnd, session.fars);
 
   // Update the counter.
-  session.pdrs_counter--;
+  session.fars_counter--;
 
   // Update session map.
   mpSessionsMap->update(session.seid, session, BPF_EXIST);

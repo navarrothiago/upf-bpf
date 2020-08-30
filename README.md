@@ -16,6 +16,7 @@ User plane function using BPF and XDP for mobile core network (4G/5G).
 
 ### Make Commands
 
+```
 - all                            Build all
 - clean                          Clean all build files
 - all-verbose                    Build all in verbose mode
@@ -25,6 +26,7 @@ User plane function using BPF and XDP for mobile core network (4G/5G).
 - run                            Build all and run BPF XDP UPF
 - run-scapy                      Run scapy for packet manipulation
 - force-xdp-deload               Force deload XDP programs
+```
 
 ## Dependencies
 
