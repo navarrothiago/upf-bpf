@@ -5,6 +5,7 @@
 #include <wrappers/BPFMap.hpp>
 #include <wrappers/BPFMaps.h>
 #include <interfaces/ForwardingActionRules.h>
+#include <interfaces/PacketDetectionRules.h>
 #include <interfaces/RulesUtilities.h>
 
 SessionManager::SessionManager(std::shared_ptr<BPFMap> pSessionsMap)
@@ -59,10 +60,36 @@ void SessionManager::addFAR(seid_t seid, std::shared_ptr<ForwardingActionRules> 
   LOG_DEBUG("FAR {} was inserted at index {} in session {}!", pFar->getFARId().far_id, index, seid);
 }
 
-std::shared_ptr<pfcp_pdr_t> SessionManager::lookupPDR(seid_t seid, pdr_id_t pdrId)
+void SessionManager::addPDR(seid_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
 {
   LOG_FUNC();
-  std::shared_ptr<pfcp_pdr_t> pPdr;
+  pfcp_session_t session;
+
+  // Lookup session based on seid.
+  // TODO navarrothiago - check if session not exists.
+  mpSessionsMap->lookup(seid, &session);
+
+  // Check the far counter.
+  if(session.pdrs_counter >= SESSION_PDRS_MAX_SIZE) {
+    LOG_ERROR("Array is full!! The PDR {} cannot be added in the session {}", pPdr->getPdrId().rule_id, seid);
+    throw std::runtime_error("The PDR cannot be added in the session");
+  }
+
+  // Insert the element in the end of the pdrs array.
+  // The next position is represented by the counter var.
+  // Update the counter.
+  uint32_t index = session.pdrs_counter++;
+  session.pdrs[index] = pPdr->getData();
+
+  // Update session.
+  mpSessionsMap->update(seid, session, BPF_EXIST);
+  LOG_DEBUG("PDR {} was inserted at index {} in session {}!", pPdr->getPdrId().rule_id, index, seid);
+}
+
+std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(seid_t seid, pdr_id_t pdrId)
+{
+  LOG_FUNC();
+  std::shared_ptr<PacketDetectionRules> pPdr;
   pfcp_session_t session;
 
   // Lookup session based on seid.
@@ -82,7 +109,8 @@ std::shared_ptr<pfcp_pdr_t> SessionManager::lookupPDR(seid_t seid, pdr_id_t pdrI
     return pPdr;
   }
 
-  pPdr = std::make_shared<pfcp_pdr_t>(*pPdrFound);
+  auto pUtils = UPFProgramManager::getInstance().getRulesUtilities();
+  pPdr = pUtils->createPDR(pPdrFound);
 
   return pPdr;
 }
@@ -116,31 +144,6 @@ std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(seid_t seid, fa
   return pFar;
 }
 
-void SessionManager::addPDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr)
-{
-  LOG_FUNC();
-  pfcp_session_t session;
-
-  // Lookup session based on seid.
-  // TODO navarrothiago - check if session not exists.
-  mpSessionsMap->lookup(seid, &session);
-
-  // Check the far counter.
-  if(session.pdrs_counter >= SESSION_PDRS_MAX_SIZE) {
-    LOG_ERROR("Array is full!! The PDR {} cannot be added in the session {}", pPdr->pdr_id.rule_id, seid);
-    throw std::runtime_error("The PDR cannot be added in the session");
-  }
-
-  // Insert the element in the end of the pdrs array.
-  // The next position is represented by the counter var.
-  // Update the counter.
-  uint32_t index = session.pdrs_counter++;
-  session.pdrs[index] = *pPdr;
-
-  // Update session.
-  mpSessionsMap->update(seid, session, BPF_EXIST);
-  LOG_DEBUG("PDR {} was inserted at index {} in session {}!", pPdr->pdr_id.rule_id, index, seid);
-}
 
 void SessionManager::updateFAR(seid_t seid, std::shared_ptr<ForwardingActionRules> pFar)
 {
@@ -176,7 +179,7 @@ void SessionManager::updateFAR(seid_t seid, std::shared_ptr<ForwardingActionRule
   LOG_DEBUG("FAR {} was update  in session {}!", pFar->getFARId().far_id, seid);
 }
 
-void SessionManager::updatePDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr)
+void SessionManager::updatePDR(seid_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
 {
   LOG_FUNC();
   pfcp_session_t session;
@@ -186,25 +189,27 @@ void SessionManager::updatePDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr)
 
   // Check if the PDR's counter is equal to zero.
   if(session.pdrs_counter == 0) {
-    LOG_ERROR("There is not any element in PDRs array. The PDR {0} cannot be updated in the session {1}", pPdr->pdr_id.rule_id, seid);
+    LOG_ERROR("There is not any element in PDRs array. The PDR {0} cannot be updated in the session {1}", pPdr->getPdrId().rule_id, seid);
     throw std::runtime_error("There is not any element in PDRs array. The PDR cannot be updated in the session");
   }
 
   // Look for the PDR in the array.
-  auto pPdrFound = std::find_if(session.pdrs, session.pdrs + session.pdrs_counter, [&pPdr](pfcp_pdr_t &pdr) { return pdr.pdr_id.rule_id == pPdr->pdr_id.rule_id; });
+  auto pPdrFound = std::find_if(session.pdrs, session.pdrs + session.pdrs_counter, [&pPdr](pfcp_pdr_t &pdr) { return pdr.pdr_id.rule_id == pPdr->getPdrId().rule_id; });
 
   // Check if the PDR was found.
   if(pPdrFound == session.pdrs + session.pdrs_counter) {
-    LOG_WARN("PDR {} not found", pPdr->pdr_id.rule_id);
+    LOG_WARN("PDR {} not found", pPdr->getPdrId().rule_id);
     throw std::runtime_error("PDR not found");
   }
 
   // Update all fields.
-  *pPdrFound = std::move(*pPdr);
+  // *pPdrFound = std::move(*pPdr);
+  auto pUtil = UPFProgramManager::getInstance().getRulesUtilities();
+  pUtil->copyPDR(pPdrFound, pPdr.get());
 
   // Update session in BPF map.
   mpSessionsMap->update(seid, session, BPF_EXIST);
-  LOG_DEBUG("PDR {} was update  in session {}!", pPdr->pdr_id.rule_id, seid);
+  LOG_DEBUG("PDR {} was update  in session {}!", pPdr->getPdrId().rule_id, seid);
 }
 
 void SessionManager::removeFAR(seid_t seid, std::shared_ptr<ForwardingActionRules> pFar)
@@ -242,7 +247,7 @@ void SessionManager::removeFAR(seid_t seid, std::shared_ptr<ForwardingActionRule
   LOG_DEBUG("FAR {} was remove at in session {}!", pFar->getFARId().far_id, seid);
 }
 
-void SessionManager::removePDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr)
+void SessionManager::removePDR(seid_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
 {
   LOG_FUNC();
   pfcp_session_t session;
@@ -253,15 +258,15 @@ void SessionManager::removePDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr)
 
   // Check if the PDR's counter is equal to zero.
   if(session.pdrs_counter == 0) {
-    LOG_ERROR("There is not any element in PDRs array. The PDR {0} cannot be deleted in the session {1}", pPdr->pdr_id.rule_id, seid);
+    LOG_ERROR("There is not any element in PDRs array. The PDR {0} cannot be deleted in the session {1}", pPdr->getPdrId().rule_id, seid);
     throw std::runtime_error("There is not any element in PDRs array. The PDR cannot be deleted in the session");
   }
 
-  auto pPdrEnd = std::remove_if(session.pdrs, session.pdrs + session.pdrs_counter, [&](pfcp_pdr_t &pdr) { return pdr.pdr_id.rule_id == pPdr->pdr_id.rule_id; });
+  auto pPdrEnd = std::remove_if(session.pdrs, session.pdrs + session.pdrs_counter, [&](pfcp_pdr_t &pdr) { return pdr.pdr_id.rule_id == pPdr->getPdrId().rule_id; });
 
   // Check if PDR was found.
   if(session.pdrs + session.pdrs_counter == pPdrEnd) {
-    LOG_ERROR("PDR {} not found", pPdr->pdr_id.rule_id);
+    LOG_ERROR("PDR {} not found", pPdr->getPdrId().rule_id);
     throw std::runtime_error("PDR not found");
   }
 
@@ -274,5 +279,5 @@ void SessionManager::removePDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr)
   // Update session map.
   mpSessionsMap->update(session.seid, session, BPF_EXIST);
 
-  LOG_DEBUG("PDR {} was remove at in session {}!", pPdr->pdr_id.rule_id, seid);
+  LOG_DEBUG("PDR {} was remove at in session {}!", pPdr->getPdrId().rule_id, seid);
 }

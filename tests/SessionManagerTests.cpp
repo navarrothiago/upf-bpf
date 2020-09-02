@@ -5,6 +5,7 @@
 #include <utils/LogDefines.h>
 #include <pfcp/pfcp_session.h>
 #include "interfaces/ForwardingActionRulesImpl.h"
+#include "interfaces/PacketDetectionRulesImpl.h"
 #include "interfaces/RulesUtilitiesImpl.h"
 
 class SessionManagerTests : public ::testing::Test
@@ -48,30 +49,36 @@ TEST_F(SessionManagerTests, manageSession)
 TEST_F(SessionManagerTests, managePDR)
 {
   LOG_FUNC();
-  std::shared_ptr<pfcp_pdr_t> pPdr = std::make_shared<pfcp_pdr_t>();
-  std::shared_ptr<pfcp_pdr_t> pPdrUpdated = std::make_shared<pfcp_pdr_t>();
-  std::shared_ptr<pfcp_pdr_t> pPdr2 = std::make_shared<pfcp_pdr_t>();
+  // Proprietary structs.
+  std::shared_ptr<pfcp_pdr_t> pPdrProprietary = std::make_shared<pfcp_pdr_t>();
+  std::shared_ptr<pfcp_pdr_t> pPdrUpdatedProprietary = std::make_shared<pfcp_pdr_t>();
+  std::shared_ptr<pfcp_pdr_t> pPdr2Proprietary = std::make_shared<pfcp_pdr_t>();
   std::shared_ptr<pfcp_session_t> pSession = std::make_shared<pfcp_session_t>();
 
   // Session identifier.
   pSession->seid = 1;
 
   // PDR 1.
-  pPdr->pdr_id.rule_id = 100;
-  pPdr->far_id.far_id = 100;
+  pPdrProprietary->pdr_id.rule_id = 100;
+  pPdrProprietary->far_id.far_id = 100;
 
   // PDR 1 updated.
-  pPdrUpdated->pdr_id.rule_id = 100;
-  pPdrUpdated->far_id.far_id = 101;
+  pPdrUpdatedProprietary->pdr_id.rule_id = 100;
+  pPdrUpdatedProprietary->far_id.far_id = 101;
 
   // PDR 2.
-  pPdr2->pdr_id.rule_id = 101;
+  pPdr2Proprietary->pdr_id.rule_id = 101;
+
+  // Adapts proprietary struct to the interfaces.
+  std::shared_ptr<PacketDetectionRules> pPdr = std::make_shared<PacketDetectionRulesImpl>(*pPdrProprietary);
+  std::shared_ptr<PacketDetectionRules> pPdrUpdated = std::make_shared<PacketDetectionRulesImpl>(*pPdrUpdatedProprietary);
+  std::shared_ptr<PacketDetectionRules> pPdr2 = std::make_shared<PacketDetectionRulesImpl>(*pPdr2Proprietary);
 
   EXPECT_NO_THROW(mpSessionManager->createSession(pSession));
 
   LOG_INFO("Case: add, lookup and remove (happy path)");
   EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->seid, pPdr));
-  EXPECT_TRUE(mpSessionManager->lookupPDR(pSession->seid, pPdr->pdr_id)->pdr_id.rule_id == pPdr->pdr_id.rule_id);
+  EXPECT_TRUE(mpSessionManager->lookupPDR(pSession->seid, pPdr->getPdrId())->getPdrId().rule_id == pPdr->getPdrId().rule_id);
   EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->seid, pPdr));
 
   LOG_INFO("Case: remove without adding");
@@ -83,15 +90,15 @@ TEST_F(SessionManagerTests, managePDR)
   LOG_INFO("Case:  add, update, lookup and remove")
   EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->seid, pPdr));
   EXPECT_NO_THROW(mpSessionManager->updatePDR(pSession->seid, pPdrUpdated));
-  EXPECT_TRUE(mpSessionManager->lookupPDR(pSession->seid, pPdr->pdr_id)->far_id.far_id != pPdr->far_id.far_id);
+  EXPECT_TRUE(mpSessionManager->lookupPDR(pSession->seid, pPdr->getPdrId())->getFarId().far_id != pPdr->getFarId().far_id);
   EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->seid, pPdr));
 
   LOG_INFO("Case: lookup with an empty list");
-  EXPECT_FALSE(mpSessionManager->lookupPDR(pSession->seid, pPdr->pdr_id));
+  EXPECT_FALSE(mpSessionManager->lookupPDR(pSession->seid, pPdr->getPdrId()));
 
   LOG_INFO("Case: lookup an with a non-empty list");
   EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->seid, pPdr));
-  EXPECT_FALSE(mpSessionManager->lookupPDR(pSession->seid, pPdr2->pdr_id));
+  EXPECT_FALSE(mpSessionManager->lookupPDR(pSession->seid, pPdr2->getPdrId()));
   EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->seid, pPdr));
 
   LOG_INFO("Case: buffer overflow");

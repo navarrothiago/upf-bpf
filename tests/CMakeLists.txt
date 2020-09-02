@@ -18,14 +18,11 @@ include_directories(${CMAKE_SOURCE_DIR}/build/src/bpf/skel)
 add_executable(UPFProgramTests
   SessionManagerTests.cpp
   interfaces/ForwardingActionRulesImpl.cpp
+  interfaces/PacketDetectionRulesImpl.cpp
   interfaces/RulesUtilitiesImpl.cpp
 )
 add_test(UPFProgramTests UPFProgramTests)
 add_dependencies(UPFProgramTests upf_xdp)
-
-# add_custom_target(TARGET UPFProgramTests POST_BUILD
-#   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:upf_xdp_bpf> ${CMAKE_CURRENT_BINARY_DIR}/bpf
-# )
 
 add_custom_target(copy_bpf_program
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:upf_xdp_bpf> ${CMAKE_CURRENT_BINARY_DIR}/bpf

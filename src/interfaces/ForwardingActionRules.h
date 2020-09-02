@@ -3,6 +3,10 @@
 
 #include <pfcp/pfcp_far.h>
 
+/**
+ * @brief Interface to abstract the FAR.
+ *
+ */
 class ForwardingActionRules
 {
 public:

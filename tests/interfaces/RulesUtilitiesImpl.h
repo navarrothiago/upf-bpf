@@ -10,5 +10,7 @@ public:
   virtual ~RulesUtilitiesImpl();
   void copyFAR(pfcp_far_t *pFarDestination, ForwardingActionRules *pFarSource) override;
   std::shared_ptr<ForwardingActionRules> createFAR(pfcp_far_t *pFarSource) override;
+  void copyPDR(pfcp_pdr_t *pPdrDestination, PacketDetectionRules *pPdrSource) override;
+  std::shared_ptr<PacketDetectionRules> createPDR(pfcp_pdr_t *pPdrSource) override;
 };
 #endif // __RULESFACTORYIMPL_H__

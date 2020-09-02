@@ -104,7 +104,7 @@ static u32 pfcp_pdr_match_attribute(pfcp_pdr_t *p_pdr, struct iphdr *p_iph, teid
   // clang-format off
   if(p_pdr->outer_header_removal.outer_header_removal_description != OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4
       || p_pdr->pdi.source_interface.interface_value != INTERFACE_VALUE_ACCESS
-      || p_pdr->pdi.fteit.teid != teid
+      || p_pdr->pdi.fteid.teid != teid
       || p_pdr->pdi.ue_ip_address.ipv4_address != p_iph->saddr
     ){
         bpf_debug("Not match:\n");
@@ -113,7 +113,7 @@ static u32 pfcp_pdr_match_attribute(pfcp_pdr_t *p_pdr, struct iphdr *p_iph, teid
         bpf_debug("Interface: %d\n", INTERFACE_VALUE_ACCESS);
         bpf_debug("Interface: %d\n", p_pdr->pdi.source_interface.interface_value);
         bpf_debug("TEID: %d\n", teid);
-        bpf_debug("TEID: %d\n", p_pdr->pdi.fteit.teid);
+        bpf_debug("TEID: %d\n", p_pdr->pdi.fteid.teid);
         bpf_debug("IPv4: %d\n", p_iph->saddr);
         bpf_debug("IPv4: %d\n", p_pdr->pdi.ue_ip_address.ipv4_address);
         return 1;

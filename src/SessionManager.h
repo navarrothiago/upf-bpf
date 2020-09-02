@@ -10,6 +10,7 @@
 
 class BPFMap;
 class ForwardingActionRules;
+class PacketDetectionRules;
 
 // FIXME navarrothiago - This class compose the UPFProgram. When the program is deleted,
 // this class must be updated.
@@ -59,7 +60,7 @@ public:
    * @param seid The session identifier.
    * @param pPdr The PDR to be added.
    */
-  void addPDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr);
+  void addPDR(seid_t seid, std::shared_ptr<PacketDetectionRules> pPdr);
   /**
    * @brief Lookup FAR in the BPF map.
    *
@@ -75,7 +76,7 @@ public:
    * @param pdrId The PDR in the session to be lookup.
    * @return std::shared_ptr<pfcp_far_t> The PDR found or NULL with not found.
    */
-  std::shared_ptr<pfcp_pdr_t> lookupPDR(seid_t seid, pdr_id_t pdrId);
+  std::shared_ptr<PacketDetectionRules> lookupPDR(seid_t seid, pdr_id_t pdrId);
   /**
    * @brief Update the FAR in the BPF map.
    *
@@ -89,7 +90,7 @@ public:
    * @param seid The session identifier.
    * @param pPdr The PDR to be updated.
    */
-  void updatePDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr);
+  void updatePDR(seid_t seid, std::shared_ptr<PacketDetectionRules> pPdr);
   /**
    * @brief Remove the FAR in the BPF map.
    *
@@ -103,7 +104,7 @@ public:
    * @param seid The session identifier.
    * @param pPdr The PDR to be removed.
    */
-  void removePDR(seid_t seid, std::shared_ptr<pfcp_pdr_t> pPdr);
+  void removePDR(seid_t seid, std::shared_ptr<PacketDetectionRules> pPdr);
 
 private:
   // Store the abstraction of the BPF map.
