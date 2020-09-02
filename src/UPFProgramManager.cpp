@@ -1,4 +1,5 @@
 #include "UPFProgramManager.h"
+#include <SessionManager.h>
 #include <bpf/bpf.h>       // bpf calls
 #include <bpf/libbpf.h>    // bpf wrappers
 #include <iostream>        // cout
@@ -8,7 +9,6 @@
 #include <stdexcept>       // exception
 #include <sys/resource.h>  // rlimit
 #include <wrappers/BPFMaps.h>
-#include <SessionManager.h>
 
 UPFProgramManager::XDPProgramInfo sXDPProgramInfo[2];
 std::mutex UPFProgramManager::sTearDownMutex;
@@ -32,12 +32,15 @@ UPFProgramManager::~UPFProgramManager()
   destroy();
 }
 
-void UPFProgramManager::setup()
+void UPFProgramManager::setup(std::shared_ptr<RulesUtilities> pRulesUtilities)
 {
   LOG_FUNC();
 
   int err;
   unsigned int key_ifmap = 0;
+
+  // Save rules factory object.
+  mpRulesUtilities = pRulesUtilities;
 
   open();
   load();
@@ -100,35 +103,46 @@ std::shared_ptr<BPFMaps> UPFProgramManager::getMaps()
   return mpMaps;
 }
 
+// TODO navarrothiago - check when kill when running.
+// It was noted the infinity loop.
 void UPFProgramManager::tearDown(int signal)
 {
   LOG_FUNC();
   std::lock_guard<std::mutex> lock(sTearDownMutex);
 
-  for(uint8_t i = 0; i < spSkeleton->skeleton->prog_cnt; i++) {
-    if(sXDPProgramInfo[i].state != LINKED) {
-      LOG_DEBUG("Not in a LINKED state");
-      continue;
-    }
+  if(sState != IDLE) {
+    for(uint8_t i = 0; i < spSkeleton->skeleton->prog_cnt; i++) {
+      if(sXDPProgramInfo[i].state != LINKED) {
+        LOG_DEBUG("Not in a LINKED state");
+        continue;
+      }
 
-    LOG_DEBUG("Program {} is in a LINKED state", i);
+      LOG_DEBUG("Program {} is in a LINKED state", i);
 
-    if(bpf_get_link_xdp_id(sXDPProgramInfo[i].ifIndex, &sXDPProgramInfo[i].programId, sXDPProgramInfo[i].xdpFlag)) {
-      LOG_INFO("bpf_get_link_xdp_id failed");
-      continue;
+      if(bpf_get_link_xdp_id(sXDPProgramInfo[i].ifIndex, &sXDPProgramInfo[i].programId, sXDPProgramInfo[i].xdpFlag)) {
+        LOG_INFO("bpf_get_link_xdp_id failed");
+        continue;
+      }
+      LOG_DEBUG("Get XDP In link successful");
+      bpf_set_link_xdp_fd(sXDPProgramInfo[i].ifIndex, -1, sXDPProgramInfo[i].xdpFlag);
+      LOG_INFO("BPF program unlinked from XDP (in)");
     }
-    LOG_DEBUG("Get XDP In link successful");
-    bpf_set_link_xdp_fd(sXDPProgramInfo[i].ifIndex, -1, sXDPProgramInfo[i].xdpFlag);
-    LOG_INFO("BPF program unlinked from XDP (in)");
+    destroy();
+  } else {
+    LOG_DEBUG("Program is in IDLE state. TearDown skipped");
   }
-
-  destroy();
 }
 
 std::shared_ptr<SessionManager> UPFProgramManager::getSessionManager()
 {
   LOG_FUNC();
   return mpSessionManager;
+}
+
+std::shared_ptr<RulesUtilities> UPFProgramManager::getRulesUtilities()
+{
+  LOG_FUNC();
+  return mpRulesUtilities;
 }
 
 void UPFProgramManager::open()

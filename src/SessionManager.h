@@ -9,6 +9,7 @@
 #include <pfcp/pfcp_session.h>
 
 class BPFMap;
+class ForwardingActionRules;
 
 // FIXME navarrothiago - This class compose the UPFProgram. When the program is deleted,
 // this class must be updated.
@@ -50,7 +51,7 @@ public:
    * @param seid The session identifier.
    * @param pFar The FAR to be added.
    */
-  void addFAR(seid_t seid, std::shared_ptr<pfcp_far_t> pFar);
+  void addFAR(seid_t seid, std::shared_ptr<ForwardingActionRules> pFar);
 
   /**
    * @brief Add the PDR in the BPF map.
@@ -64,9 +65,9 @@ public:
    *
    * @param seid The session identifier where will be lookup.
    * @param farId The FAR in the session to be lookup.
-   * @return std::shared_ptr<pfcp_far_t> The FAR found or NULL with not found.
+   * @return std::shared_ptr<ForwardingActionRules> The FAR found or NULL with not found.
    */
-  std::shared_ptr<pfcp_far_t> lookupFAR(seid_t seid, far_id_t farId);
+  std::shared_ptr<ForwardingActionRules> lookupFAR(seid_t seid, far_id_t farId);
   /**
    * @brief Lookup PDR in the BPF map.
    *
@@ -81,7 +82,7 @@ public:
    * @param seid The session identifier.
    * @param pFar The FAR to be updated.
    */
-  void updateFAR(seid_t seid, std::shared_ptr<pfcp_far_t> pFar);
+  void updateFAR(seid_t seid, std::shared_ptr<ForwardingActionRules> pFar);
   /**
    * @brief Update the PDR in the BPF map.
    *
@@ -95,7 +96,7 @@ public:
    * @param seid The session identifier.
    * @param pFar The FAR to be removed.
    */
-  void removeFAR(seid_t seid, std::shared_ptr<pfcp_far_t> pFar);
+  void removeFAR(seid_t seid, std::shared_ptr<ForwardingActionRules> pFar);
   /**
    * @brief Remove the PDR in the BPF map.
    *

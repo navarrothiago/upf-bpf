@@ -4,14 +4,21 @@
 #include <pfcp/pfcp_pdr.h>
 #include <utils/LogDefines.h>
 #include <pfcp/pfcp_session.h>
+#include "interfaces/ForwardingActionRulesImpl.h"
+#include "interfaces/RulesUtilitiesImpl.h"
 
 class SessionManagerTests : public ::testing::Test
 {
 public:
+  SessionManagerTests()
+  {
+    LOG_FUNC();
+    mpRulesFactory = std::make_shared<RulesUtilitiesImpl>();
+  }
   void SetUp() override
   {
     LOG_FUNC();
-    UPFProgramManager::getInstance().setup();
+    UPFProgramManager::getInstance().setup(mpRulesFactory);
     mpSessionManager = UPFProgramManager::getInstance().getSessionManager();
   }
   void TearDown() override
@@ -22,6 +29,7 @@ public:
   }
   virtual ~SessionManagerTests() {}
   std::shared_ptr<SessionManager> mpSessionManager;
+  std::shared_ptr<RulesUtilities> mpRulesFactory;
 };
 
 TEST_F(SessionManagerTests, manageSession)
@@ -98,30 +106,38 @@ TEST_F(SessionManagerTests, managePDR)
 TEST_F(SessionManagerTests, manageFAR)
 {
   LOG_FUNC();
-  std::shared_ptr<pfcp_far_t> pFar = std::make_shared<pfcp_far_t>();
-  std::shared_ptr<pfcp_far_t> pFarUpdated = std::make_shared<pfcp_far_t>();
-  std::shared_ptr<pfcp_far_t> pFar2 = std::make_shared<pfcp_far_t>();
+
+  // Proprietary structs.
+  std::shared_ptr<pfcp_far_t> pFarProprietary = std::make_shared<pfcp_far_t>();
+  std::shared_ptr<pfcp_far_t> pFarUpdatedProprietary = std::make_shared<pfcp_far_t>();
+  std::shared_ptr<pfcp_far_t> pFar2Proprietary = std::make_shared<pfcp_far_t>();
   std::shared_ptr<pfcp_session_t> pSession = std::make_shared<pfcp_session_t>();
 
   // Session identifier.
   pSession->seid = 1;
 
   // FAR 1.
-  pFar->far_id.far_id = 100;
-  pFar->apply_action.drop = 1;
+  pFarProprietary->far_id.far_id = 100;
+  pFarProprietary->apply_action.drop = 1;
 
   // FAR 1 updated.
-  pFarUpdated->far_id.far_id = 100;
-  pFarUpdated->apply_action.drop = 0;
+  pFarUpdatedProprietary->far_id.far_id = 100;
+  pFarUpdatedProprietary->apply_action.drop = 0;
 
   // PDR 2.
-  pFar2->far_id.far_id = 101;
+  pFar2Proprietary->far_id.far_id = 101;
 
+  // Adapts proprietary struct to the interfaces.
+  std::shared_ptr<ForwardingActionRules> pFar = std::make_shared<ForwardingActionRulesImpl>(*pFarProprietary);
+  std::shared_ptr<ForwardingActionRules> pFarUpdated = std::make_shared<ForwardingActionRulesImpl>(*pFarUpdatedProprietary);
+  std::shared_ptr<ForwardingActionRules> pFar2 = std::make_shared<ForwardingActionRulesImpl>(*pFar2Proprietary);
+
+  // Create the session that will be used in the tests.
   EXPECT_NO_THROW(mpSessionManager->createSession(pSession));
 
   LOG_INFO("Case: add, lookup and remove (happy path)");
   EXPECT_NO_THROW(mpSessionManager->addFAR(pSession->seid, pFar));
-  EXPECT_TRUE(mpSessionManager->lookupFAR(pSession->seid, pFar->far_id)->far_id.far_id == pFar->far_id.far_id);
+  EXPECT_TRUE(mpSessionManager->lookupFAR(pSession->seid, pFar->getFARId())->getFARId().far_id == pFar->getFARId().far_id);
   EXPECT_NO_THROW(mpSessionManager->removeFAR(pSession->seid, pFar));
 
   LOG_INFO("Case: remove without adding");
@@ -133,15 +149,15 @@ TEST_F(SessionManagerTests, manageFAR)
   LOG_INFO("Case:  add, update, lookup and remove")
   EXPECT_NO_THROW(mpSessionManager->addFAR(pSession->seid, pFar));
   EXPECT_NO_THROW(mpSessionManager->updateFAR(pSession->seid, pFarUpdated));
-  EXPECT_TRUE(mpSessionManager->lookupFAR(pSession->seid, pFar->far_id)->apply_action.drop != pFar->apply_action.drop);
+  EXPECT_TRUE(mpSessionManager->lookupFAR(pSession->seid, pFar->getFARId())->getApplyRules().drop != pFar->getApplyRules().drop);
   EXPECT_NO_THROW(mpSessionManager->removeFAR(pSession->seid, pFar));
 
   LOG_INFO("Case: lookup with an empty list");
-  EXPECT_FALSE(mpSessionManager->lookupFAR(pSession->seid, pFar->far_id));
+  EXPECT_FALSE(mpSessionManager->lookupFAR(pSession->seid, pFar->getFARId()));
 
   LOG_INFO("Case: lookup an with a non-empty list");
   EXPECT_NO_THROW(mpSessionManager->addFAR(pSession->seid, pFar));
-  EXPECT_FALSE(mpSessionManager->lookupFAR(pSession->seid, pFar2->far_id));
+  EXPECT_FALSE(mpSessionManager->lookupFAR(pSession->seid, pFar2->getFARId()));
   EXPECT_NO_THROW(mpSessionManager->removeFAR(pSession->seid, pFar));
 
   LOG_INFO("Case: buffer overflow");
@@ -149,4 +165,7 @@ TEST_F(SessionManagerTests, manageFAR)
     EXPECT_NO_THROW(mpSessionManager->addFAR(pSession->seid, pFar));
   }
   EXPECT_ANY_THROW(mpSessionManager->addFAR(pSession->seid, pFar));
+  for(uint8_t i = 0; i < SESSION_FARS_MAX_SIZE; i++) {
+    EXPECT_NO_THROW(mpSessionManager->removeFAR(pSession->seid, pFar));
+  }
 }

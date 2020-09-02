@@ -1,3 +1,6 @@
+include_directories(interfaces)
+add_subdirectory(interfaces)
+
 # The extra path here is needed to correct the build path because we are calling it from a subdirectory.
 add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" "extern/googletest")
 
@@ -14,6 +17,8 @@ include_directories(${CMAKE_SOURCE_DIR}/build/src/bpf/skel)
 
 add_executable(UPFProgramTests
   SessionManagerTests.cpp
+  interfaces/ForwardingActionRulesImpl.cpp
+  interfaces/RulesUtilitiesImpl.cpp
 )
 add_test(UPFProgramTests UPFProgramTests)
 add_dependencies(UPFProgramTests upf_xdp)

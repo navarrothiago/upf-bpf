@@ -11,6 +11,7 @@
 
 class BPFMaps;
 class SessionManager;
+class RulesUtilities;
 
 /**
  * @brief Singleton class to abrastract the UPF bpf program.
@@ -37,8 +38,9 @@ public:
   /**
    * @brief Setup the BPF program.
    *
+   * @param pRulesFactory The factory to create the rules (FAR, PDR, etc...).
    */
-  void setup();
+  void setup(std::shared_ptr<RulesUtilities> pRulesUtilities);
   /**
    * @brief Get the Skeleton object.
    *
@@ -74,13 +76,18 @@ public:
     __u32 info_len = sizeof(info);   //!< The size of the information struct.
     int ifIndex;                     //!< The interface index.
   } XDPProgramInfo;
-
   /**
    * @brief Get the Session Manager object.
    *
    * @return std::shared_ptr<SessionManager> The session manager reference.
    */
   std::shared_ptr<SessionManager> getSessionManager();
+  /**
+   * @brief Get the Rules Factory object.
+   *
+   * @return std::shared_ptr<RulesFactory> The rules factory reference.
+   */
+  std::shared_ptr<RulesUtilities> getRulesUtilities();
 
 private:
   /**
@@ -126,6 +133,9 @@ private:
 
   // The session manager reference.
   std::shared_ptr<SessionManager> mpSessionManager;
+
+  // The rules factory reference.
+  std::shared_ptr<RulesUtilities> mpRulesUtilities;
 };
 
 #endif // __BPFPROGRAMMANAGER_H__
