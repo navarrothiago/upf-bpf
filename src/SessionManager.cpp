@@ -57,7 +57,7 @@ void SessionManager::addFAR(seid_t seid, std::shared_ptr<ForwardingActionRules> 
 
   // Update session.
   mpSessionsMap->update(seid, session, BPF_EXIST);
-  LOG_DEBUG("FAR {} was inserted at index {} in session {}!", pFar->getFARId().far_id, index, seid);
+  LOG_DBG("FAR {} was inserted at index {} in session {}!", pFar->getFARId().far_id, index, seid);
 }
 
 void SessionManager::addPDR(seid_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
@@ -83,7 +83,7 @@ void SessionManager::addPDR(seid_t seid, std::shared_ptr<PacketDetectionRules> p
 
   // Update session.
   mpSessionsMap->update(seid, session, BPF_EXIST);
-  LOG_DEBUG("PDR {} was inserted at index {} in session {}!", pPdr->getPdrId().rule_id, index, seid);
+  LOG_DBG("PDR {} was inserted at index {} in session {}!", pPdr->getPdrId().rule_id, index, seid);
 }
 
 std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(seid_t seid, pdr_id_t pdrId)
@@ -176,7 +176,7 @@ void SessionManager::updateFAR(seid_t seid, std::shared_ptr<ForwardingActionRule
 
   // Update session in BPF map.
   mpSessionsMap->update(seid, session, BPF_EXIST);
-  LOG_DEBUG("FAR {} was update  in session {}!", pFar->getFARId().far_id, seid);
+  LOG_DBG("FAR {} was update  in session {}!", pFar->getFARId().far_id, seid);
 }
 
 void SessionManager::updatePDR(seid_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
@@ -209,7 +209,7 @@ void SessionManager::updatePDR(seid_t seid, std::shared_ptr<PacketDetectionRules
 
   // Update session in BPF map.
   mpSessionsMap->update(seid, session, BPF_EXIST);
-  LOG_DEBUG("PDR {} was update  in session {}!", pPdr->getPdrId().rule_id, seid);
+  LOG_DBG("PDR {} was update  in session {}!", pPdr->getPdrId().rule_id, seid);
 }
 
 void SessionManager::removeFAR(seid_t seid, std::shared_ptr<ForwardingActionRules> pFar)
@@ -244,7 +244,7 @@ void SessionManager::removeFAR(seid_t seid, std::shared_ptr<ForwardingActionRule
   // Update session map.
   mpSessionsMap->update(session.seid, session, BPF_EXIST);
 
-  LOG_DEBUG("FAR {} was remove at in session {}!", pFar->getFARId().far_id, seid);
+  LOG_DBG("FAR {} was remove at in session {}!", pFar->getFARId().far_id, seid);
 }
 
 void SessionManager::removePDR(seid_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
@@ -279,5 +279,5 @@ void SessionManager::removePDR(seid_t seid, std::shared_ptr<PacketDetectionRules
   // Update session map.
   mpSessionsMap->update(session.seid, session, BPF_EXIST);
 
-  LOG_DEBUG("PDR {} was remove at in session {}!", pPdr->getPdrId().rule_id, seid);
+  LOG_DBG("PDR {} was remove at in session {}!", pPdr->getPdrId().rule_id, seid);
 }

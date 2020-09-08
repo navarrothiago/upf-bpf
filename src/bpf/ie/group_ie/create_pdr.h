@@ -14,7 +14,7 @@
 
 //------------------------------------------------------------------------------
 // Table 7.5.2.2-1: Create PDR IE within PFCP Session Establishment Request
-typedef struct create_pdr
+typedef struct create_pdr_s
 {
   ie_base_t base;
   pdr_id_t pdr_id;

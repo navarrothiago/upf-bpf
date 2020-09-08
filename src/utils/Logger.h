@@ -13,13 +13,13 @@ enum LOG_TYPE_T {
   LOG_FUNCTION = 0,    //!< Log function.
   LOG_BEGIN,           //!< Log function enter.
   LOG_END,             //!< Log function exit.
-  LOG_INFO,            //!< Log info messages.
-  LOG_WARNING,         //!< Log warning messages.
+  LOG_INF,            //!< Log info messages.
+  LOG_WRN,         //!< Log warning messages.
   LOG_ERROR,           //!< Log error messages.
   LOG_NEW,             //!< Log object new.
   LOG_DELETE,          //!< Log object delete.
   LOG_LOCK,            //!< Log mutex messages.
-  LOG_DEBUG,           //!< Log debug messages.
+  LOG_DBG,           //!< Log debug messages.
   LOG_MAX              //!< Max log types.
 };
 

@@ -18,6 +18,6 @@ typedef struct fteid
   u32 ipv4_address;
   u8 ipv6_address[16];
   u8 choose_id;
-}fteid_t;
+}_fteid_t;
 
 #endif // IE_FTEID_H

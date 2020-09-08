@@ -22,7 +22,7 @@ typedef struct pdi
 {
   ie_base_t base;
   source_interface_t source_interface;
-  fteid_t fteid;
+  _fteid_t fteid;
   network_instance_t network_instance;
   ue_ip_address_t ue_ip_address;
   traffic_endpoint_id_t traffic_endpoint_id;

@@ -5,10 +5,11 @@ set(SKELETON_FILES
 set(OBJ_ROOT_DIR $<TARGET_PROPERTY:upf_xdp_bpf,BINARY_DIR>) 
 
 include(${CMAKE_SOURCE_DIR}/cmake/toolchain.cmake)
-
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_definitions(-DKERNEL_SPACE)
 
 add_library(upf_xdp_bpf OBJECT upf_xdp_bpf.c)
 

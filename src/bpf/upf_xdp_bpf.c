@@ -7,7 +7,6 @@
 #include <endian.h>
 #include <linux/if_ether.h>
 #include <linux/if_vlan.h>
-#include <linux/in.h>
 #include <maps.h>
 #include <pfcp/pfcp_far.h>
 #include <pfcp/pfcp_pdr.h>
@@ -17,6 +16,12 @@
 #include <protocols/udp.h>
 #include <utils/logger.h>
 #include <utils/utils.h>
+
+#ifdef KERNEL_SPACE
+#include <linux/in.h>
+#else
+#include <netinet/in.h>
+#endif
 
 /* Defines xdp_stats_map */
 #include "xdp_stats_kern_user.h"

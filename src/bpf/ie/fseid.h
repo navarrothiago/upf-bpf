@@ -3,8 +3,13 @@
 
 #include <ie/ie_base.h>
 #include <types.h>
+
+#ifdef KERNEL_SPACE
 #include <linux/in.h>
 #include <linux/in6.h>
+#else
+#include <netinet/in.h>
+#endif
 
 #ifdef __cplusplus
 #include <cstdint> // include this header for uint64_t

@@ -41,13 +41,13 @@ void Logger::doPrint(LOG_TYPE_T type, const std::string &out)
   case LOG_ERROR:
     error(out);
     break;
-  case LOG_INFO:
+  case LOG_INF:
     info(out);
     break;
-  case LOG_DEBUG:
+  case LOG_DBG:
     debug(out);
     break;
-  case LOG_WARNING:
+  case LOG_WRN:
     warn(out);
     break;
   default:
@@ -86,12 +86,12 @@ Logger::FuncLogger::FuncLogger(const std::string &funcName)
 
   // Begin function.
   std::string pMessageString = fmt::format("[bgn] {}", mFunctionName);
-  Logger::getInstance().print(pMessageString.c_str(), LOG_DEBUG, NULL);
+  Logger::getInstance().print(pMessageString.c_str(), LOG_DBG, NULL);
 }
 
 Logger::FuncLogger::~FuncLogger()
 {
   // End function.
   std::string pMessageString = fmt::format("[end] {}", mFunctionName);
-  Logger::getInstance().print(pMessageString.c_str(), LOG_DEBUG, NULL);
+  Logger::getInstance().print(pMessageString.c_str(), LOG_DBG, NULL);
 }
