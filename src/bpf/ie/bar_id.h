@@ -9,6 +9,6 @@
 typedef struct bar_id_s
 {
   u8 bar_id;
-} bar_id_t;
+} bar_id_t_;
 
 #endif // __BAR_ID_H__

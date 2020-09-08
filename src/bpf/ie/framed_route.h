@@ -8,8 +8,8 @@
 // 8.2.109 Framed-Route
 typedef struct framed_route
 {
-  ie_base_t base;
+  ie_base_t_ base;
   u8 framed_route[4];
-}framed_route_t;
+}framed_route_t_;
 
 #endif // IE_FRAMED_ROUTING_H

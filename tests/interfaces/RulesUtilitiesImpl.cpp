@@ -13,7 +13,7 @@ RulesUtilitiesImpl::~RulesUtilitiesImpl()
   LOG_FUNC();
 }
 
-void RulesUtilitiesImpl::copyFAR(pfcp_far_t *pFarDestination, ForwardingActionRules *pFarSource)
+void RulesUtilitiesImpl::copyFAR(pfcp_far_t_ *pFarDestination, ForwardingActionRules *pFarSource)
 {
   LOG_FUNC();
   // Copy the contents. In this case, the Impl receives the same struct.
@@ -21,7 +21,7 @@ void RulesUtilitiesImpl::copyFAR(pfcp_far_t *pFarDestination, ForwardingActionRu
   *pFarDestination = pFarSource->getData();
 }
 
-std::shared_ptr<ForwardingActionRules> RulesUtilitiesImpl::createFAR(pfcp_far_t *pFarSource)
+std::shared_ptr<ForwardingActionRules> RulesUtilitiesImpl::createFAR(pfcp_far_t_ *pFarSource)
 {
   LOG_FUNC();
   // Copy the contents. In this case, the Impl receives the same struct.
@@ -29,7 +29,7 @@ std::shared_ptr<ForwardingActionRules> RulesUtilitiesImpl::createFAR(pfcp_far_t 
   return std::make_shared<ForwardingActionRulesImpl>(*pFarSource);
 }
 
-void RulesUtilitiesImpl::copyPDR(pfcp_pdr_t *pPdrDestination, PacketDetectionRules *pPdrSource)
+void RulesUtilitiesImpl::copyPDR(pfcp_pdr_t_ *pPdrDestination, PacketDetectionRules *pPdrSource)
 {
   LOG_FUNC();
   // Copy the contents. In this case, the Impl receives the same struct.
@@ -37,7 +37,7 @@ void RulesUtilitiesImpl::copyPDR(pfcp_pdr_t *pPdrDestination, PacketDetectionRul
   *pPdrDestination = pPdrSource->getData();
 }
 
-std::shared_ptr<PacketDetectionRules> RulesUtilitiesImpl::createPDR(pfcp_pdr_t *pPdrSource)
+std::shared_ptr<PacketDetectionRules> RulesUtilitiesImpl::createPDR(pfcp_pdr_t_ *pPdrSource)
 {
   LOG_FUNC();
   // Copy the contents. In this case, the Impl receives the same struct.

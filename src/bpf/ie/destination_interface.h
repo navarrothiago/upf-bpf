@@ -18,12 +18,12 @@ enum destination_interface_value_e
 
 typedef struct destination_interface_s
 {
-  ie_base_t base;
+  ie_base_t_ base;
   u8 interface_value;
   // bool operator==(const struct destination_interface_s &i) const
   // {
   //   return (i.interface_value == interface_value);
   // };
-} destination_interface_t;
+} destination_interface_t_;
 
 #endif // __DESTINATION_INTERFACE_H__

@@ -8,7 +8,7 @@
 // 8.2.5 SDF Filter
 typedef struct sdf_filter
 {
-  ie_base_t base;
+  ie_base_t_ base;
   u8 spare : 3;
   u8 bid : 1;
   u8 fl : 1;
@@ -22,6 +22,6 @@ typedef struct sdf_filter
   u8 security_parameter_index[4]; // 4 octets
   u8 flow_label[3];               // 3 octets
   u32 sdf_filter_id;
-}sdf_filter_t;
+}sdf_filter_t_;
 
 #endif // IE_SDF_FILTER_H

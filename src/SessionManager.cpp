@@ -16,7 +16,7 @@ SessionManager::SessionManager(std::shared_ptr<BPFMap> pSessionsMap)
 
 SessionManager::~SessionManager() { LOG_FUNC(); }
 
-void SessionManager::createSession(std::shared_ptr<pfcp_session_t> pSession)
+void SessionManager::createSession(std::shared_ptr<pfcp_session_t_> pSession)
 {
   LOG_FUNC();
   if(mpSessionsMap->update(pSession->seid, *pSession, BPF_NOEXIST) != 0) {
@@ -25,7 +25,7 @@ void SessionManager::createSession(std::shared_ptr<pfcp_session_t> pSession)
   }
 }
 
-void SessionManager::removeSession(seid_t seid)
+void SessionManager::removeSession(seid_t_ seid)
 {
   LOG_FUNC();
   if(mpSessionsMap->remove(seid) != 0) {
@@ -35,10 +35,10 @@ void SessionManager::removeSession(seid_t seid)
 }
 
 // TODO navarrothiago - how can we do atomically?
-void SessionManager::addFAR(seid_t seid, std::shared_ptr<ForwardingActionRules> pFar)
+void SessionManager::addFAR(seid_t_ seid, std::shared_ptr<ForwardingActionRules> pFar)
 {
   LOG_FUNC();
-  pfcp_session_t session;
+  pfcp_session_t_ session;
 
   // Lookup session based on seid.
   mpSessionsMap->lookup(seid, &session);
@@ -60,10 +60,10 @@ void SessionManager::addFAR(seid_t seid, std::shared_ptr<ForwardingActionRules> 
   LOG_DBG("FAR {} was inserted at index {} in session {}!", pFar->getFARId().far_id, index, seid);
 }
 
-void SessionManager::addPDR(seid_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
+void SessionManager::addPDR(seid_t_ seid, std::shared_ptr<PacketDetectionRules> pPdr)
 {
   LOG_FUNC();
-  pfcp_session_t session;
+  pfcp_session_t_ session;
 
   // Lookup session based on seid.
   // TODO navarrothiago - check if session not exists.
@@ -86,11 +86,11 @@ void SessionManager::addPDR(seid_t seid, std::shared_ptr<PacketDetectionRules> p
   LOG_DBG("PDR {} was inserted at index {} in session {}!", pPdr->getPdrId().rule_id, index, seid);
 }
 
-std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(seid_t seid, pdr_id_t pdrId)
+std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(seid_t_ seid, pdr_id_t_ pdrId)
 {
   LOG_FUNC();
   std::shared_ptr<PacketDetectionRules> pPdr;
-  pfcp_session_t session;
+  pfcp_session_t_ session;
 
   // Lookup session based on seid.
   mpSessionsMap->lookup(seid, &session);
@@ -101,7 +101,7 @@ std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(seid_t seid, pdr
     return pPdr;
   }
 
-  auto pPdrFound = std::find_if(session.pdrs, session.pdrs + session.pdrs_counter, [&pdrId](pfcp_pdr_t &pdr) { return pdr.pdr_id.rule_id == pdrId.rule_id; });
+  auto pPdrFound = std::find_if(session.pdrs, session.pdrs + session.pdrs_counter, [&pdrId](pfcp_pdr_t_ &pdr) { return pdr.pdr_id.rule_id == pdrId.rule_id; });
 
   // Check if the PDR was found.
   if(pPdrFound == session.pdrs + session.pdrs_counter) {
@@ -115,11 +115,11 @@ std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(seid_t seid, pdr
   return pPdr;
 }
 
-std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(seid_t seid, far_id_t farId)
+std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(seid_t_ seid, far_id_t_ farId)
 {
   LOG_FUNC();
   std::shared_ptr<ForwardingActionRules> pFar;
-  pfcp_session_t session;
+  pfcp_session_t_ session;
 
   // Lookup session based on seid.
   mpSessionsMap->lookup(seid, &session);
@@ -130,7 +130,7 @@ std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(seid_t seid, fa
     return pFar;
   }
 
-  auto pFarFound = std::find_if(session.fars, session.fars + session.fars_counter, [&farId](pfcp_far_t &far) { return far.far_id.far_id == farId.far_id; });
+  auto pFarFound = std::find_if(session.fars, session.fars + session.fars_counter, [&farId](pfcp_far_t_ &far) { return far.far_id.far_id == farId.far_id; });
 
   // Check if the PDR was found.
   if(pFarFound == session.fars + session.fars_counter) {
@@ -145,11 +145,11 @@ std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(seid_t seid, fa
 }
 
 
-void SessionManager::updateFAR(seid_t seid, std::shared_ptr<ForwardingActionRules> pFar)
+void SessionManager::updateFAR(seid_t_ seid, std::shared_ptr<ForwardingActionRules> pFar)
 {
   LOG_FUNC();
 
-  pfcp_session_t session;
+  pfcp_session_t_ session;
   // Lookup session based on seid.
   // TODO navarrothiago - check if session not exists.
   mpSessionsMap->lookup(seid, &session);
@@ -161,7 +161,7 @@ void SessionManager::updateFAR(seid_t seid, std::shared_ptr<ForwardingActionRule
   }
 
   // Look for the PDR in the array.
-  auto pFarFound = std::find_if(session.fars, session.fars + session.fars_counter, [&pFar](pfcp_far_t &far) { return far.far_id.far_id == pFar->getFARId().far_id; });
+  auto pFarFound = std::find_if(session.fars, session.fars + session.fars_counter, [&pFar](pfcp_far_t_ &far) { return far.far_id.far_id == pFar->getFARId().far_id; });
 
   // Check if the PDR was found.
   if(pFarFound == session.fars + session.fars_counter) {
@@ -179,10 +179,10 @@ void SessionManager::updateFAR(seid_t seid, std::shared_ptr<ForwardingActionRule
   LOG_DBG("FAR {} was update  in session {}!", pFar->getFARId().far_id, seid);
 }
 
-void SessionManager::updatePDR(seid_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
+void SessionManager::updatePDR(seid_t_ seid, std::shared_ptr<PacketDetectionRules> pPdr)
 {
   LOG_FUNC();
-  pfcp_session_t session;
+  pfcp_session_t_ session;
   // Lookup session based on seid.
   // TODO navarrothiago - check if session not exists.
   mpSessionsMap->lookup(seid, &session);
@@ -194,7 +194,7 @@ void SessionManager::updatePDR(seid_t seid, std::shared_ptr<PacketDetectionRules
   }
 
   // Look for the PDR in the array.
-  auto pPdrFound = std::find_if(session.pdrs, session.pdrs + session.pdrs_counter, [&pPdr](pfcp_pdr_t &pdr) { return pdr.pdr_id.rule_id == pPdr->getPdrId().rule_id; });
+  auto pPdrFound = std::find_if(session.pdrs, session.pdrs + session.pdrs_counter, [&pPdr](pfcp_pdr_t_ &pdr) { return pdr.pdr_id.rule_id == pPdr->getPdrId().rule_id; });
 
   // Check if the PDR was found.
   if(pPdrFound == session.pdrs + session.pdrs_counter) {
@@ -212,11 +212,11 @@ void SessionManager::updatePDR(seid_t seid, std::shared_ptr<PacketDetectionRules
   LOG_DBG("PDR {} was update  in session {}!", pPdr->getPdrId().rule_id, seid);
 }
 
-void SessionManager::removeFAR(seid_t seid, std::shared_ptr<ForwardingActionRules> pFar)
+void SessionManager::removeFAR(seid_t_ seid, std::shared_ptr<ForwardingActionRules> pFar)
 {
   LOG_FUNC();
 
-  pfcp_session_t session;
+  pfcp_session_t_ session;
   // Lookup session based on seid.
   // TODO navarrothiago - check if session not exists.
   mpSessionsMap->lookup(seid, &session);
@@ -227,7 +227,7 @@ void SessionManager::removeFAR(seid_t seid, std::shared_ptr<ForwardingActionRule
     throw std::runtime_error("There is not any element in FARs array. The FAR cannot be deleted in the session");
   }
 
-  auto pFarEnd = std::remove_if(session.fars, session.fars + session.fars_counter, [&](pfcp_far_t &far) { return far.far_id.far_id == pFar->getFARId().far_id; });
+  auto pFarEnd = std::remove_if(session.fars, session.fars + session.fars_counter, [&](pfcp_far_t_ &far) { return far.far_id.far_id == pFar->getFARId().far_id; });
 
   // Check if PDR was found.
   if(session.fars + session.fars_counter == pFarEnd) {
@@ -247,10 +247,10 @@ void SessionManager::removeFAR(seid_t seid, std::shared_ptr<ForwardingActionRule
   LOG_DBG("FAR {} was remove at in session {}!", pFar->getFARId().far_id, seid);
 }
 
-void SessionManager::removePDR(seid_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
+void SessionManager::removePDR(seid_t_ seid, std::shared_ptr<PacketDetectionRules> pPdr)
 {
   LOG_FUNC();
-  pfcp_session_t session;
+  pfcp_session_t_ session;
 
   // Lookup session based on seid.
   // TODO navarrothiago - check if session not exists.
@@ -262,7 +262,7 @@ void SessionManager::removePDR(seid_t seid, std::shared_ptr<PacketDetectionRules
     throw std::runtime_error("There is not any element in PDRs array. The PDR cannot be deleted in the session");
   }
 
-  auto pPdrEnd = std::remove_if(session.pdrs, session.pdrs + session.pdrs_counter, [&](pfcp_pdr_t &pdr) { return pdr.pdr_id.rule_id == pPdr->getPdrId().rule_id; });
+  auto pPdrEnd = std::remove_if(session.pdrs, session.pdrs + session.pdrs_counter, [&](pfcp_pdr_t_ &pdr) { return pdr.pdr_id.rule_id == pPdr->getPdrId().rule_id; });
 
   // Check if PDR was found.
   if(session.pdrs + session.pdrs_counter == pPdrEnd) {

@@ -11,6 +11,6 @@ typedef struct proxying_s
   u8 spare : 6;
   u8 ins : 1;
   u8 arp : 1;
-} proxying_t;
+} proxying_t_;
 
 #endif // __PROXING_H__

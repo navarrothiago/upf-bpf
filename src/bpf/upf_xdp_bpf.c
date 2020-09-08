@@ -50,10 +50,10 @@ int xdp_redirect_gtpu(struct xdp_md *p_ctx)
  * @param p_session The session of this context.
  * @return u32 XDP action.
  */
-static u32 pfcp_far_apply(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, pfcp_session_t *p_session)
+static u32 pfcp_far_apply(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, pfcp_session_t_ *p_session)
 {
   u32 index = p_session->fars_counter - 1;
-  pfcp_far_t *p_far;
+  pfcp_far_t_ *p_far;
   void *p_data_end = (void *)(long)p_ctx->data_end;
   void *p_data = (void *)(long)p_ctx->data;
   struct ethhdr *eth = p_ctx->data;
@@ -104,7 +104,7 @@ static u32 pfcp_far_apply(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, pfcp_se
  * @param p_iph The IP header.
  * @return u8 True if match. False cc.
  */
-static u32 pfcp_pdr_match_attribute(pfcp_pdr_t *p_pdr, struct iphdr *p_iph, teid_t teid)
+static u32 pfcp_pdr_match_attribute(pfcp_pdr_t_ *p_pdr, struct iphdr *p_iph, teid_t_ teid)
 {
   // clang-format off
   if(p_pdr->outer_header_removal.outer_header_removal_description != OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4
@@ -144,12 +144,12 @@ static u32 pfcp_pdr_match_attribute(pfcp_pdr_t *p_pdr, struct iphdr *p_iph, teid
  */
 static u32 pfcp_session_lookup(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
 {
-  pfcp_pdr_t *p_pdr_list;
-  pfcp_session_t *p_session;
+  pfcp_pdr_t_ *p_pdr_list;
+  pfcp_session_t_ *p_session;
   u32 *p_pdr_counter;
   u32 pdrs_counter;
-  teid_t teid;
-  seid_t seid;
+  teid_t_ teid;
+  seid_t_ seid;
   u32 index = 0;
   u32 i;
 

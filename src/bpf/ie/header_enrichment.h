@@ -17,6 +17,6 @@ typedef struct header_enrichment_s
   s8 header_field_name[HEADER_ENRICHMENT_FIELD_NAME_MAX_SIZE];
   u8 lenght_of_header_field_value;
   s8 header_field_value[HEADER_ENRICHMENT_FIELD_VALUE_MAX_SIZE];
-} header_enrichment_t;
+} header_enrichment_t_;
 
 #endif // __HEADER_ENRICHMENT_H__

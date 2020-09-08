@@ -15,7 +15,7 @@
 #include <cstdint> // include this header for uint64_t
 #endif
 
-typedef u64 seid_t;
+typedef u64 seid_t_;
 
 //-------------------------------------
 // 8.2.37 F-SEID
@@ -85,6 +85,6 @@ typedef struct fseid_s
     return false;
   };
   #endif
-} fseid_t;
+} fseid_t_;
 
 #endif // __FSEID_H__

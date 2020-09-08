@@ -11,12 +11,12 @@
 // Table 7.5.2.3-1: Create FAR IE within PFCP Session Establishment Request
 typedef struct create_far_s
 {
-  far_id_t far_id;
-  apply_action_t apply_action;
-  forwarding_parameters_t forwarding_parameters;
-  duplicating_parameters_t duplicating_parameters;
-  bar_id_t bar_id;
-} create_far_t;
+  far_id_t_ far_id;
+  apply_action_t_ apply_action;
+  forwarding_parameters_t_ forwarding_parameters;
+  duplicating_parameters_t_ duplicating_parameters;
+  bar_id_t_ bar_id;
+} create_far_t_;
 
 
 #endif // __CREATE_FAR_H__

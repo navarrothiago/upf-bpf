@@ -7,23 +7,23 @@
 class PacketDetectionRulesImpl : public PacketDetectionRules
 {
 public:
-  PacketDetectionRulesImpl(pfcp_pdr_t &myPdr);
+  PacketDetectionRulesImpl(pfcp_pdr_t_ &myPdr);
   virtual ~PacketDetectionRulesImpl();
   uint64_t getLocalSeid() override;
-  teid_t getTeid() override;
-  pdr_id_t getPdrId() override;
-  precedence_t getPrecedence() override;
-  pdi_t getPdi() override;
-  outer_header_removal_t getOuterHeaderRemoval() override;
-  far_id_t getFarId() override;
-  urr_id_t gerUrrId() override;
-  qer_id_t getQerId() override;
-  activate_predefined_rules_t getActivatePredefinedRules() override;
-  pfcp_pdr_t getData() override;
+  teid_t_ getTeid() override;
+  pdr_id_t_ getPdrId() override;
+  precedence_t_ getPrecedence() override;
+  pdi_t_ getPdi() override;
+  outer_header_removal_t_ getOuterHeaderRemoval() override;
+  far_id_t_ getFarId() override;
+  urr_id_t_ gerUrrId() override;
+  qer_id_t_ getQerId() override;
+  activate_predefined_rules_t_ getActivatePredefinedRules() override;
+  pfcp_pdr_t_ getData() override;
 
 
 private:
-  pfcp_pdr_t mPdr;
+  pfcp_pdr_t_ mPdr;
 };
 
 #endif // __PACKETDETECTIONRULESIMPL_H__

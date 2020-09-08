@@ -20,20 +20,20 @@
 // Table 7.5.2.2-2: PDI IE within PFCP Session Establishment Request
 typedef struct pdi
 {
-  ie_base_t base;
-  source_interface_t source_interface;
-  _fteid_t fteid;
-  network_instance_t network_instance;
-  ue_ip_address_t ue_ip_address;
-  traffic_endpoint_id_t traffic_endpoint_id;
-  sdf_filter_t sdf_filter;
-  application_id_t application_id;
-  ethernet_pdu_session_information_t ethernet_pdu_session_information;
-  qfi_t qfi;
-  framed_route_t framed_route;
-  framed_routing_t framed_routing;
-  framed_ipv6_route_t framed_ipv6_route;
+  ie_base_t_ base;
+  source_interface_t_ source_interface;
+  _fteid_t_ fteid;
+  network_instance_t_ network_instance;
+  ue_ip_address_t_ ue_ip_address;
+  traffic_endpoint_id_t_ traffic_endpoint_id;
+  sdf_filter_t_ sdf_filter;
+  application_id_t_ application_id;
+  ethernet_pdu_session_information_t_ ethernet_pdu_session_information;
+  qfi_t_ qfi;
+  framed_route_t_ framed_route;
+  framed_routing_t_ framed_routing;
+  framed_ipv6_route_t_ framed_ipv6_route;
 
-}pdi_t;
+}pdi_t_;
 
 #endif // IE_PDI_H

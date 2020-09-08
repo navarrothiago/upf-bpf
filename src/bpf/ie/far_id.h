@@ -8,8 +8,8 @@
 // 8.2.74 FAR ID
 typedef struct far_id_s
 {
-  ie_base_t base;
+  ie_base_t_ base;
   u32 far_id;
-} far_id_t;
+} far_id_t_;
 
 #endif // __FAR_ID_H__

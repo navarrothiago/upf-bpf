@@ -12,8 +12,8 @@
 #define OUTER_HEADER_REMOVAL_UDP_IPV6 3
 typedef struct outer_header_removal_s
 {
-  ie_base_t ie_base;
+  ie_base_t_ ie_base;
   u8 outer_header_removal_description;
-} outer_header_removal_t;
+} outer_header_removal_t_;
 
 #endif // IE_OUTER_HEADER_REMOVAL

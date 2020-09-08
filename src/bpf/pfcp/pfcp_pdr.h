@@ -7,15 +7,15 @@
 typedef struct pfcp_pdr_s
 {
   u64 local_seid;
-  teid_t teid;
-  pdr_id_t pdr_id;
-  precedence_t precedence;
-  pdi_t pdi;
-  outer_header_removal_t outer_header_removal;
-  far_id_t far_id;
-  urr_id_t urr_id;
-  qer_id_t qer_id;
-  activate_predefined_rules_t activate_predefined_rules;
-} pfcp_pdr_t;
+  teid_t_ teid;
+  pdr_id_t_ pdr_id;
+  precedence_t_ precedence;
+  pdi_t_ pdi;
+  outer_header_removal_t_ outer_header_removal;
+  far_id_t_ far_id;
+  urr_id_t_ urr_id;
+  qer_id_t_ qer_id;
+  activate_predefined_rules_t_ activate_predefined_rules;
+} pfcp_pdr_t_;
 
 #endif // __PFCP_PDR_H__

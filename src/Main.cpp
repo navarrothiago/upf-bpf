@@ -12,12 +12,12 @@
 #include <wrappers/BPFMaps.h>
 
 // simple per-protocol drop counter
-static void poll_stats(int interval, teid_t key_teid)
+static void poll_stats(int interval, teid_t_ key_teid)
 {
   auto pMaps = UPFProgramManager::getInstance().getMaps();
-  pfcp_pdr_t pdr;
-  const size_t nr_cpus = libbpf_num_possible_cpus();
-  const size_t row = XDP_ACTION_MAX;
+  pfcp_pdr_t_ pdr;
+  const size_t_ nr_cpus = libbpf_num_possible_cpus();
+  const size_t_ row = XDP_ACTION_MAX;
   struct datarec values[XDP_ACTION_MAX][nr_cpus], prev[XDP_ACTION_MAX][nr_cpus];
   __u64 sum[nr_cpus];
 
@@ -28,7 +28,7 @@ static void poll_stats(int interval, teid_t key_teid)
 
   printf("pool stats\n");
   while(1) {
-    // teid_t key_teid = UINT32_MAX;
+    // teid_t_ key_teid = UINT32_MAX;
     memset(sum, 0, sizeof(sum));
     sleep(interval);
 
@@ -59,9 +59,9 @@ static void poll_stats(int interval, teid_t key_teid)
 
 int insert_elements(u32 key_teid)
 {
-  pfcp_pdr_t pdr;
-  pfcp_far_t far;
-  pfcp_session_t session;
+  pfcp_pdr_t_ pdr;
+  pfcp_far_t_ far;
+  pfcp_session_t_ session;
   u32 counter = 0;
   u32 pdrs_fars_counter = 0;
   u32 seid = 1;

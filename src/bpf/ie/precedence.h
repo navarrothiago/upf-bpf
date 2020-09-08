@@ -9,6 +9,6 @@
 typedef struct precedence_s
 {
   u32 precedence;
-} precedence_t;
+} precedence_t_;
 
 #endif // __PRECEDENCE_H__

@@ -16,7 +16,7 @@ namespace pfcp
     u8 version : 3 u16 message_length;
     u32 sequence_number : 24;
     u32 spare : 8;
-  } header_node_t;
+  } header_node_t_;
 
   //--------------------------------------------------------
   // 7.2.2.3-1: PFCP message Header for session related messages
@@ -27,6 +27,6 @@ namespace pfcp
     u8 mp : 1;
     u8 spare : 3;
     u8 version : 3
-  } header_session_t;
+  } header_session_t_;
 } // namespace pfcp
 #endif // __PFCP_HEADER_H__

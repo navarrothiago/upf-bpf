@@ -21,12 +21,12 @@ enum outer_header_creation_description_value_e {
 //-------------------------------------
 // 8.2.56 Outer Header Creation
 typedef struct outer_header_creation_s {
-  ie_base_t base;
+  ie_base_t_ base;
   u16 outer_header_creation_description;
   u32 teid;
   struct in_addr ipv4_address;
   struct in6_addr ipv6_address;
   u16 port_number;
-} outer_header_creation_t;
+} outer_header_creation_t_;
 
 #endif // __OUTER_HEADER_CREATION_H__
