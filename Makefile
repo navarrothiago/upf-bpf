@@ -20,21 +20,22 @@ help:
 # TODO navarrothiago - if you put the in the make, a race condition occur.
 all: ## Build all
 	mkdir -p build && \
-	pushd build && \
+	cd build && \
 	cmake .. && \
 	make && \
-  make copy_bpf_program && \
+	make copy_bpf_program && \
 	make copy_samples_objs && \
 	make copy_objs
 
 install: ## Install dependencies
-	pushd extern/spdlog && \
-  mkdir -p build && cd build && \
-  cmake .. && make -j && sudo make install \
-  popd && \
-	pushd extern/libbpf/src && \
+	git submodule update --init --recursive && \
+	cd extern/spdlog && \
+	mkdir -p build && cd build && \
+	cmake .. && make -j && sudo make install && \
+	cd ../../../ && \
+	cd extern/libbpf/src && \
 	make -j && \
-	popd && \
+	cd ../../../ 
 
 rebuild: clean deload all ## Clean, deload and build all
 
