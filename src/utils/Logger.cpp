@@ -1,8 +1,9 @@
 #include "Logger.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <stdarg.h>
 #include <unistd.h>
 
+namespace Utils{
 Logger &Logger::getInstance()
 {
   static Logger sInstance;
@@ -94,4 +95,5 @@ Logger::FuncLogger::~FuncLogger()
   // End function.
   std::string pMessageString = fmt::format("[end] {}", mFunctionName);
   Logger::getInstance().print(pMessageString.c_str(), LOG_DBG, NULL);
+}
 }

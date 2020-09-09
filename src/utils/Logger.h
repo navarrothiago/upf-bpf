@@ -30,6 +30,8 @@ enum LOG_TYPE_T {
 
 class FuncLogger;
 
+namespace Utils{
+
 class Logger : public spdlog::logger
 {
 public:
@@ -68,4 +70,6 @@ public:
 private:
   Logger();
 };
+}
 #endif // __LOGGER_H__
+

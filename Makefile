@@ -21,7 +21,7 @@ help:
 all: ## Build all
 	mkdir -p build && \
 	cd build && \
-	cmake .. && \
+	cmake ../ && \
 	make && \
 	make copy_bpf_program && \
 	make copy_samples_objs && \
@@ -35,7 +35,7 @@ install: ## Install dependencies
 	cd ../../../ && \
 	cd extern/libbpf/src && \
 	make -j && \
-	cd ../../../ 
+	cd ../../../
 
 rebuild: clean deload all ## Clean, deload and build all
 
@@ -44,13 +44,11 @@ clean: ## Clean all build files
 
 all-verbose: ## Build all in verbose mode
 	mkdir -p build && \
-	pushd build && \
-	cmake .. -DCMAKE_VERBOSE_MAKEFILE=ON && \
-	pushd ../extern/libbpf/src && \
+	cd build && \
+	cmake ../ && \
 	make V=1 && \
-	popd && \
-	make V=1 && \
-	make copy_samples_objs V=1 && \
+	make copy_bpf_program && \
+	make copy_samples_objs && \
 	make copy_objs V=1
 
 config-veth-pair: ## Config veth pair. It must be run before <run-*> targets

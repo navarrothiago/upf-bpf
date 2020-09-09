@@ -1,5 +1,7 @@
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
+include_directories(/usr/include/x86_64-linux-gnu)
+
 add_executable(xdp_hello_world xdp_hello_world_user.c)
 add_executable(xdp_redirect_map xdp_redirect_map_user.c)
 

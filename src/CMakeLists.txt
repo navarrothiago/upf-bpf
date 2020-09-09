@@ -3,6 +3,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/src/bpf)
 include_directories(${CMAKE_SOURCE_DIR}/build/src/bpf/skel)
 include_directories(interfaces)
+include_directories(/usr/include/x86_64-linux-gnu)
 
 
 add_subdirectory(bpf)

@@ -27,7 +27,7 @@ add_custom_target(copy_objs
 # https://gist.github.com/socantre/7ee63133a0a3a08f3990
 add_custom_target(gen_skeleton
   COMMAND ${CMAKE_COMMAND} -E make_directory skel
-  COMMAND bpftool gen skeleton $<TARGET_OBJECTS:upf_xdp_bpf> > ${SKEL_DIRECTORY}/upf_xdp_bpf_skel.h
+  COMMAND ${CMAKE_SOURCE_DIR}/bin/bpftool gen skeleton $<TARGET_OBJECTS:upf_xdp_bpf> > ${SKEL_DIRECTORY}/upf_xdp_bpf_skel.h
   DEPENDS copy_objs
 )
 
