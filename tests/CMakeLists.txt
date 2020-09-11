@@ -13,7 +13,7 @@ set_target_properties(gmock_main PROPERTIES FOLDER extern)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/src/bpf)
-include_directories(${CMAKE_SOURCE_DIR}/build/src/bpf/skel)
+include_directories(${CMAKE_SOURCE_DIR}/build/src/skel)
 
 add_executable(UPFProgramTests
   SessionManagerTests.cpp
