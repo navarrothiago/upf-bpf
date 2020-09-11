@@ -30,6 +30,7 @@ add_custom_target(copy_bpf_program
 
 link_directories(${CMAKE_SOURCE_DIR}/extern/libbpf/src)
 target_link_libraries(UPFProgramTests
+  asan
   ${CMAKE_SOURCE_DIR}/extern/libbpf/src/libbpf.a
   spdlog::spdlog
   elf

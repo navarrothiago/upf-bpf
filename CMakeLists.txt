@@ -21,6 +21,7 @@ endif()
 # Set global property (all targets are impacted)
 set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
 
+
 add_subdirectory(samples)
 add_subdirectory(src)
 

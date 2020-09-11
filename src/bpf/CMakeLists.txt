@@ -1,5 +1,3 @@
-
-include(${CMAKE_SOURCE_DIR}/cmake/toolchain.cmake)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -17,4 +15,4 @@ message(STATUS "${CMAKE_CURRENT_BINARY_DIR}")
 
 
 
-# TODO Rename .c.o 
+# TODO Rename .c.o
