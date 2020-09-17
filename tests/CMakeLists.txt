@@ -2,7 +2,8 @@ include_directories(interfaces)
 add_subdirectory(interfaces)
 
 # The extra path here is needed to correct the build path because we are calling it from a subdirectory.
-add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" "extern/googletest")
+add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" "extern/googletest" EXCLUDE_FROM_ALL)
+message(STATUS "Using googletest via add_subdirectory.")
 
 # Keeping IDEs that support folders clean
 set_target_properties(gtest PROPERTIES FOLDER extern)
@@ -31,11 +32,8 @@ add_custom_target(copy_bpf_program
 link_directories(${CMAKE_SOURCE_DIR}/extern/libbpf/src)
 target_link_libraries(UPFProgramTests
   asan
-  ${CMAKE_SOURCE_DIR}/extern/libbpf/src/libbpf.a
-  spdlog::spdlog
-  elf
-  z
   gtest
   gtest_main
   upf_xdp
+  spdlog::spdlog
 )

@@ -46,7 +46,8 @@ void UPFProgramManager::setup(std::shared_ptr<RulesUtilities> pRulesUtilities)
   load();
   attach();
 
-  sXDPProgramInfo[0].ifIndex = if_nametoindex("wlp0s20f3");
+  sXDPProgramInfo[0].ifIndex = if_nametoindex("eth0");
+  // sXDPProgramInfo[0].ifIndex = if_nametoindex("wlp0s20f3");
   sXDPProgramInfo[1].ifIndex = if_nametoindex("veth0");
 
   // TODO navarrothiago - remove hardcoded.

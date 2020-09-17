@@ -1,0 +1,6 @@
+set(UPF_BPF_VERSION 1.0.0)
+
+@PACKAGE_INIT@
+include( "${CMAKE_CURRENT_LIST_DIR}/@TARGETS_EXPORT_NAME@.cmake" )
+
+check_required_components(upf-bpf)

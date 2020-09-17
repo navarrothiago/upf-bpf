@@ -85,6 +85,7 @@
     "*.rh": "cpp",
     "any": "cpp",
     "forward_list": "cpp",
-    "cfenv": "cpp"
+    "cfenv": "cpp",
+    "codecvt": "cpp"
   },
 }

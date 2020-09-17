@@ -1,7 +1,9 @@
 #include "Logger.h"
-#include <spdlog/sinks/stdout_color_sinks.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <spdlog/sinks/sink.h>
+#include <spdlog/logger.h>
+#include <spdlog/spdlog.h>
 
 namespace Utils{
 Logger &Logger::getInstance()
@@ -40,16 +42,16 @@ void Logger::doPrint(LOG_TYPE_T type, const std::string &out)
 {
   switch(type) {
   case LOG_ERROR:
-    error(out);
+    mpLogger->error(out);
     break;
   case LOG_INF:
-    info(out);
+    mpLogger->info(out);
     break;
   case LOG_DBG:
-    debug(out);
+    mpLogger->debug(out);
     break;
   case LOG_WRN:
-    warn(out);
+    mpLogger->warn(out);
     break;
   default:
     break;
@@ -57,9 +59,12 @@ void Logger::doPrint(LOG_TYPE_T type, const std::string &out)
 }
 
 Logger::Logger()
-    : spdlog::logger(*spdlog::stdout_color_mt("upf_logger"))
-{
-  set_level(spdlog::level::debug);
+{ 
+  // TODO navarrothiago - put definition depending on the spdlog version.
+  std::shared_ptr<spdlog::sinks::sink> pColorSink;
+  pColorSink = std::make_shared<spdlog::sinks::stdout_sink_mt>();
+  pColorSink->set_level(spdlog::level::debug);
+  mpLogger = std::make_shared<spdlog::logger>("upf_logger", pColorSink);
 }
 
 Logger::FuncLogger::FuncLogger(const std::string &funcName)

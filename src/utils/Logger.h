@@ -2,9 +2,15 @@
 #define __LOGGER_H__
 
 #include <memory>
-// #include <spdlog/fwd.h>
 #include <spdlog/spdlog.h>
 #include <string>
+
+class FuncLogger;
+// class spdlog::sinks::stdout_color_sink_mt;
+
+namespace spdlog{
+class logger;
+}
 
 /**
  * Defines the log types.
@@ -28,11 +34,10 @@ enum LOG_TYPE_T {
  */
 #define MAX_METHOD_LENGTH 100
 
-class FuncLogger;
 
 namespace Utils{
 
-class Logger : public spdlog::logger
+class Logger 
 {
 public:
   static Logger &getInstance();
@@ -69,6 +74,7 @@ public:
 
 private:
   Logger();
+  std::shared_ptr<spdlog::logger> mpLogger;
 };
 }
 #endif // __LOGGER_H__

@@ -6,7 +6,8 @@ NUM_THREADS=4
 PIDS := $(shell ps -aux | grep -e UPFProgramTests -e xdp | awk '{print $$2}')
 
 # TODO navarrothiago - Remove hardcoded.
-DEVICE_IN=wlp0s20f3
+# DEVICE_IN=wlp0s20f3
+DEVICE_IN=eth0
 DEVICE_OUT=veth0
 
 .PHONY: help
@@ -22,25 +23,33 @@ all: ## Build all
 	mkdir -p build && \
 	cd build && \
 	cmake ../ && \
-	make && \
+	make all && \
 	make copy_bpf_program && \
 	make copy_samples_objs && \
 	make copy_objs
 
-install: ## Install dependencies
+install: ## Install package
+	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
+  cmake --build build --target install
+
+setup: ## setup dependencies
 	git submodule update --init --recursive && \
 	cd extern/spdlog && \
 	mkdir -p build && cd build && \
 	cmake .. && make -j && sudo make install && \
 	cd ../../../ && \
 	cd extern/libbpf/src && \
-	make -j && \
-	cd ../../../
+	make -j
+
 
 rebuild: clean deload all ## Clean, deload and build all
 
 clean: ## Clean all build files
 	rm -R build
+
+clean-all: ## Clean all build and dependencies
+	rm -R build
+	rm -R extern/spdlog/build
 
 all-verbose: ## Build all in verbose mode
 	mkdir -p build && \
@@ -55,7 +64,7 @@ config-veth-pair: ## Config veth pair. It must be run before <run-*> targets
 	sudo ./tests/scripts/config_veth_pair.sh $(DEVICE_IN)
 
 run-hello-world-samples: all ## Build all and run BPF XDP hello world sample
-	pushd $(BPF_SAMPLES_DIR) && \
+	cd $(BPF_SAMPLES_DIR) && \
 	sudo ./xdp_hello_world | sudo cat /sys/kernel/debug/tracing/trace
 
 run-redirect-map-sample: all ## Build all and run BPF XDP redirect sample
@@ -63,7 +72,7 @@ run-redirect-map-sample: all ## Build all and run BPF XDP redirect sample
 	sudo ./xdp_redirect_map -S $(DEVICE_IN) $(DEVICE_OUT)
 
 run: ## Run BPF XDP UPF
-	pushd $(BPF_BINARY_DIR) && \
+	cd $(BPF_BINARY_DIR) && \
 	sudo ./UPFProgramTests
 
 rerun: force-xdp-deload run ## Build all and run BPF XDP UPF

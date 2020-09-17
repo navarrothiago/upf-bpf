@@ -169,6 +169,7 @@ static u32 pfcp_session_lookup(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
   }
 
   // For each PDR, check the its attributes.
+  #pragma unroll
   for(i = 0; i < MAX_LENGTH; i++) {
 
     // Unbounded condition in for control is not supported.
