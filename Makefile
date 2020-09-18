@@ -41,7 +41,6 @@ setup: ## setup dependencies
 	cd extern/libbpf/src && \
 	make -j
 
-
 rebuild: clean deload all ## Clean, deload and build all
 
 clean: ## Clean all build files

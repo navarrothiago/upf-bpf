@@ -11,6 +11,7 @@
 class BPFMap;
 class ForwardingActionRules;
 class PacketDetectionRules;
+class SessionBpf;
 
 // FIXME navarrothiago - This class compose the UPFProgram. When the program is deleted,
 // this class must be updated.
@@ -39,20 +40,20 @@ public:
    *
    * @param pSession The session object to be created.
    */
-  void createSession(std::shared_ptr<pfcp_session_t_> pSession);
+  void createSession(std::shared_ptr<SessionBpf> pSession);
   /**
    * @brief Remove a session object from BPF map.
    *
    * @param seid The session identifier representing the session to be removed.
    */
-  void removeSession(seid_t_ seid);
+  void removeSession(uint64_t seid);
   /**
    * @brief Add the FAR in the BPF map.
    *
    * @param seid The session identifier.
    * @param pFar The FAR to be added.
    */
-  void addFAR(seid_t_ seid, std::shared_ptr<ForwardingActionRules> pFar);
+  void addFAR(uint64_t seid, std::shared_ptr<ForwardingActionRules> pFar);
 
   /**
    * @brief Add the PDR in the BPF map.
@@ -60,7 +61,7 @@ public:
    * @param seid The session identifier.
    * @param pPdr The PDR to be added.
    */
-  void addPDR(seid_t_ seid, std::shared_ptr<PacketDetectionRules> pPdr);
+  void addPDR(uint64_t seid, std::shared_ptr<PacketDetectionRules> pPdr);
   /**
    * @brief Lookup FAR in the BPF map.
    *
@@ -68,43 +69,43 @@ public:
    * @param farId The FAR in the session to be lookup.
    * @return std::shared_ptr<ForwardingActionRules> The FAR found or NULL with not found.
    */
-  std::shared_ptr<ForwardingActionRules> lookupFAR(seid_t_ seid, far_id_t_ farId);
+  std::shared_ptr<ForwardingActionRules> lookupFAR(uint64_t seid, uint32_t farId);
   /**
    * @brief Lookup PDR in the BPF map.
    *
    * @param seid The session identifier where will be lookup.
-   * @param pdrId The PDR in the session to be lookup.
+   * @param ruleId The rule identifier in the session to be lookup.
    * @return std::shared_ptr<pfcp_far_t> The PDR found or NULL with not found.
    */
-  std::shared_ptr<PacketDetectionRules> lookupPDR(seid_t_ seid, pdr_id_t_ pdrId);
+  std::shared_ptr<PacketDetectionRules> lookupPDR(uint64_t seid, uint16_t ruleId);
   /**
    * @brief Update the FAR in the BPF map.
    *
    * @param seid The session identifier.
    * @param pFar The FAR to be updated.
    */
-  void updateFAR(seid_t_ seid, std::shared_ptr<ForwardingActionRules> pFar);
+  void updateFAR(uint64_t seid, std::shared_ptr<ForwardingActionRules> pFar);
   /**
    * @brief Update the PDR in the BPF map.
    *
    * @param seid The session identifier.
    * @param pPdr The PDR to be updated.
    */
-  void updatePDR(seid_t_ seid, std::shared_ptr<PacketDetectionRules> pPdr);
+  void updatePDR(uint64_t seid, std::shared_ptr<PacketDetectionRules> pPdr);
   /**
    * @brief Remove the FAR in the BPF map.
    *
    * @param seid The session identifier.
    * @param pFar The FAR to be removed.
    */
-  void removeFAR(seid_t_ seid, std::shared_ptr<ForwardingActionRules> pFar);
+  void removeFAR(uint64_t seid, std::shared_ptr<ForwardingActionRules> pFar);
   /**
    * @brief Remove the PDR in the BPF map.
    *
    * @param seid The session identifier.
    * @param pPdr The PDR to be removed.
    */
-  void removePDR(seid_t_ seid, std::shared_ptr<PacketDetectionRules> pPdr);
+  void removePDR(uint64_t seid, std::shared_ptr<PacketDetectionRules> pPdr);
 
 private:
   // Store the abstraction of the BPF map.

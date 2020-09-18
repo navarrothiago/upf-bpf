@@ -7,6 +7,7 @@
 #include "interfaces/ForwardingActionRulesImpl.h"
 #include "interfaces/PacketDetectionRulesImpl.h"
 #include "interfaces/RulesUtilitiesImpl.h"
+#include "interfaces/SessionBpfImpl.h"
 
 class SessionManagerTests : public ::testing::Test
 {
@@ -36,14 +37,15 @@ public:
 TEST_F(SessionManagerTests, manageSession)
 {
   LOG_FUNC();
-  std::shared_ptr<pfcp_session_t_> pSession = std::make_shared<pfcp_session_t_>();
+  std::shared_ptr<pfcp_session_t_> pSessionRaw = std::make_shared<pfcp_session_t_>();
+  std::shared_ptr<SessionBpf> pSession = std::make_shared<SessionBpfImpl>(*pSessionRaw);
 
   // Case: create and remove session (happy path).
   EXPECT_NO_THROW(mpSessionManager->createSession(pSession));
-  EXPECT_NO_THROW(mpSessionManager->removeSession(pSession->seid));
+  EXPECT_NO_THROW(mpSessionManager->removeSession(pSession->getSeid()));
 
   // Case: remove with an empty list.
-  EXPECT_ANY_THROW(mpSessionManager->removeSession(pSession->seid));
+  EXPECT_ANY_THROW(mpSessionManager->removeSession(pSession->getSeid()));
 }
 
 TEST_F(SessionManagerTests, managePDR)
@@ -53,10 +55,11 @@ TEST_F(SessionManagerTests, managePDR)
   std::shared_ptr<pfcp_pdr_t_> pPdrProprietary = std::make_shared<pfcp_pdr_t_>();
   std::shared_ptr<pfcp_pdr_t_> pPdrUpdatedProprietary = std::make_shared<pfcp_pdr_t_>();
   std::shared_ptr<pfcp_pdr_t_> pPdr2Proprietary = std::make_shared<pfcp_pdr_t_>();
-  std::shared_ptr<pfcp_session_t_> pSession = std::make_shared<pfcp_session_t_>();
+  std::shared_ptr<pfcp_session_t_> pSessionRaw = std::make_shared<pfcp_session_t_>();
 
   // Session identifier.
-  pSession->seid = 1;
+  pSessionRaw->seid = 1;
+  std::shared_ptr<SessionBpf> pSession = std::make_shared<SessionBpfImpl>(*pSessionRaw);
 
   // PDR 1.
   pPdrProprietary->pdr_id.rule_id = 100;
@@ -77,37 +80,37 @@ TEST_F(SessionManagerTests, managePDR)
   EXPECT_NO_THROW(mpSessionManager->createSession(pSession));
 
   LOG_INF("Case: add, lookup and remove (happy path)");
-  EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->seid, pPdr));
-  EXPECT_TRUE(mpSessionManager->lookupPDR(pSession->seid, pPdr->getPdrId())->getPdrId().rule_id == pPdr->getPdrId().rule_id);
-  EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->seid, pPdr));
+  EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->getSeid(), pPdr));
+  EXPECT_TRUE(mpSessionManager->lookupPDR(pSession->getSeid(), pPdr->getPdrId().rule_id)->getPdrId().rule_id == pPdr->getPdrId().rule_id);
+  EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->getSeid(), pPdr));
 
   LOG_INF("Case: remove without adding");
-  EXPECT_ANY_THROW(mpSessionManager->removePDR(pSession->seid, pPdr));
+  EXPECT_ANY_THROW(mpSessionManager->removePDR(pSession->getSeid(), pPdr));
 
   LOG_INF("Case: update without adding");
-  EXPECT_ANY_THROW(mpSessionManager->updatePDR(pSession->seid, pPdr));
+  EXPECT_ANY_THROW(mpSessionManager->updatePDR(pSession->getSeid(), pPdr));
 
   LOG_INF("Case:  add, update, lookup and remove")
-  EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->seid, pPdr));
-  EXPECT_NO_THROW(mpSessionManager->updatePDR(pSession->seid, pPdrUpdated));
-  EXPECT_TRUE(mpSessionManager->lookupPDR(pSession->seid, pPdr->getPdrId())->getFarId().far_id != pPdr->getFarId().far_id);
-  EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->seid, pPdr));
+  EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->getSeid(), pPdr));
+  EXPECT_NO_THROW(mpSessionManager->updatePDR(pSession->getSeid(), pPdrUpdated));
+  EXPECT_TRUE(mpSessionManager->lookupPDR(pSession->getSeid(), pPdr->getPdrId().rule_id)->getFarId().far_id != pPdr->getFarId().far_id);
+  EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->getSeid(), pPdr));
 
   LOG_INF("Case: lookup with an empty list");
-  EXPECT_FALSE(mpSessionManager->lookupPDR(pSession->seid, pPdr->getPdrId()));
+  EXPECT_FALSE(mpSessionManager->lookupPDR(pSession->getSeid(), pPdr->getPdrId().rule_id));
 
   LOG_INF("Case: lookup an with a non-empty list");
-  EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->seid, pPdr));
-  EXPECT_FALSE(mpSessionManager->lookupPDR(pSession->seid, pPdr2->getPdrId()));
-  EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->seid, pPdr));
+  EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->getSeid(), pPdr));
+  EXPECT_FALSE(mpSessionManager->lookupPDR(pSession->getSeid(), pPdr2->getPdrId().rule_id));
+  EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->getSeid(), pPdr));
 
   LOG_INF("Case: buffer overflow");
   for(uint8_t i = 0; i < SESSION_PDRS_MAX_SIZE; i++) {
-    EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->seid, pPdr));
+    EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->getSeid(), pPdr));
   }
-  EXPECT_ANY_THROW(mpSessionManager->addPDR(pSession->seid, pPdr));
+  EXPECT_ANY_THROW(mpSessionManager->addPDR(pSession->getSeid(), pPdr));
 
-  EXPECT_NO_THROW(mpSessionManager->removeSession(pSession->seid));
+  EXPECT_NO_THROW(mpSessionManager->removeSession(pSession->getSeid()));
 }
 
 TEST_F(SessionManagerTests, manageFAR)
@@ -118,10 +121,11 @@ TEST_F(SessionManagerTests, manageFAR)
   std::shared_ptr<pfcp_far_t_> pFarProprietary = std::make_shared<pfcp_far_t_>();
   std::shared_ptr<pfcp_far_t_> pFarUpdatedProprietary = std::make_shared<pfcp_far_t_>();
   std::shared_ptr<pfcp_far_t_> pFar2Proprietary = std::make_shared<pfcp_far_t_>();
-  std::shared_ptr<pfcp_session_t_> pSession = std::make_shared<pfcp_session_t_>();
+  std::shared_ptr<pfcp_session_t_> pSessionRaw = std::make_shared<pfcp_session_t_>();
 
   // Session identifier.
-  pSession->seid = 1;
+  pSessionRaw->seid = 1;
+  std::shared_ptr<SessionBpf> pSession = std::make_shared<SessionBpfImpl>(*pSessionRaw);
 
   // FAR 1.
   pFarProprietary->far_id.far_id = 100;
@@ -143,35 +147,35 @@ TEST_F(SessionManagerTests, manageFAR)
   EXPECT_NO_THROW(mpSessionManager->createSession(pSession));
 
   LOG_INF("Case: add, lookup and remove (happy path)");
-  EXPECT_NO_THROW(mpSessionManager->addFAR(pSession->seid, pFar));
-  EXPECT_TRUE(mpSessionManager->lookupFAR(pSession->seid, pFar->getFARId())->getFARId().far_id == pFar->getFARId().far_id);
-  EXPECT_NO_THROW(mpSessionManager->removeFAR(pSession->seid, pFar));
+  EXPECT_NO_THROW(mpSessionManager->addFAR(pSession->getSeid(), pFar));
+  EXPECT_TRUE(mpSessionManager->lookupFAR(pSession->getSeid(), pFar->getFARId().far_id)->getFARId().far_id == pFar->getFARId().far_id);
+  EXPECT_NO_THROW(mpSessionManager->removeFAR(pSession->getSeid(), pFar));
   LOG_INF("Case: remove without adding");
-  EXPECT_ANY_THROW(mpSessionManager->removeFAR(pSession->seid, pFar));
+  EXPECT_ANY_THROW(mpSessionManager->removeFAR(pSession->getSeid(), pFar));
 
   LOG_INF("Case: update without adding");
-  EXPECT_ANY_THROW(mpSessionManager->updateFAR(pSession->seid, pFar));
+  EXPECT_ANY_THROW(mpSessionManager->updateFAR(pSession->getSeid(), pFar));
 
   LOG_INF("Case:  add, update, lookup and remove")
-  EXPECT_NO_THROW(mpSessionManager->addFAR(pSession->seid, pFar));
-  EXPECT_NO_THROW(mpSessionManager->updateFAR(pSession->seid, pFarUpdated));
-  EXPECT_TRUE(mpSessionManager->lookupFAR(pSession->seid, pFar->getFARId())->getApplyRules().drop != pFar->getApplyRules().drop);
-  EXPECT_NO_THROW(mpSessionManager->removeFAR(pSession->seid, pFar));
+  EXPECT_NO_THROW(mpSessionManager->addFAR(pSession->getSeid(), pFar));
+  EXPECT_NO_THROW(mpSessionManager->updateFAR(pSession->getSeid(), pFarUpdated));
+  EXPECT_TRUE(mpSessionManager->lookupFAR(pSession->getSeid(), pFar->getFARId().far_id)->getApplyRules().drop != pFar->getApplyRules().drop);
+  EXPECT_NO_THROW(mpSessionManager->removeFAR(pSession->getSeid(), pFar));
 
   LOG_INF("Case: lookup with an empty list");
-  EXPECT_FALSE(mpSessionManager->lookupFAR(pSession->seid, pFar->getFARId()));
+  EXPECT_FALSE(mpSessionManager->lookupFAR(pSession->getSeid(), pFar->getFARId().far_id));
 
   LOG_INF("Case: lookup an with a non-empty list");
-  EXPECT_NO_THROW(mpSessionManager->addFAR(pSession->seid, pFar));
-  EXPECT_FALSE(mpSessionManager->lookupFAR(pSession->seid, pFar2->getFARId()));
-  EXPECT_NO_THROW(mpSessionManager->removeFAR(pSession->seid, pFar));
+  EXPECT_NO_THROW(mpSessionManager->addFAR(pSession->getSeid(), pFar));
+  EXPECT_FALSE(mpSessionManager->lookupFAR(pSession->getSeid(), pFar2->getFARId().far_id));
+  EXPECT_NO_THROW(mpSessionManager->removeFAR(pSession->getSeid(), pFar));
 
   LOG_INF("Case: buffer overflow");
   for(uint8_t i = 0; i < SESSION_FARS_MAX_SIZE; i++) {
-    EXPECT_NO_THROW(mpSessionManager->addFAR(pSession->seid, pFar));
+    EXPECT_NO_THROW(mpSessionManager->addFAR(pSession->getSeid(), pFar));
   }
-  EXPECT_ANY_THROW(mpSessionManager->addFAR(pSession->seid, pFar));
+  EXPECT_ANY_THROW(mpSessionManager->addFAR(pSession->getSeid(), pFar));
   for(uint8_t i = 0; i < SESSION_FARS_MAX_SIZE; i++) {
-    EXPECT_NO_THROW(mpSessionManager->removeFAR(pSession->seid, pFar));
+    EXPECT_NO_THROW(mpSessionManager->removeFAR(pSession->getSeid(), pFar));
   }
 }

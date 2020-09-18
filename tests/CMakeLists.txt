@@ -21,6 +21,7 @@ add_executable(UPFProgramTests
   interfaces/ForwardingActionRulesImpl.cpp
   interfaces/PacketDetectionRulesImpl.cpp
   interfaces/RulesUtilitiesImpl.cpp
+  interfaces/SessionBpfImpl.cpp
 )
 add_test(UPFProgramTests UPFProgramTests)
 add_dependencies(UPFProgramTests upf_xdp)

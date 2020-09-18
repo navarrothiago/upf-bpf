@@ -63,12 +63,11 @@ int BPFMap::lookup(KeyType &key, void *pValue)
 {
   LOG_FUNC();
   int mapFd = bpf_map__fd(mpBPFMap);
-  int lookupReturn;
+  int lookupReturn = bpf_map_lookup_elem(mapFd, &key, pValue);
 
-  if(lookupReturn = bpf_map_lookup_elem(mapFd, &key, pValue) != 0) {
+  if(lookupReturn != 0) {
     perror("Lookup error");
   }
-
   return lookupReturn;
 }
 
@@ -77,9 +76,9 @@ int BPFMap::update(KeyType &key, ValueType &value, int flags)
 {
   LOG_FUNC();
   int mapFd = bpf_map__fd(mpBPFMap);
-  int updateReturn;
+  int updateReturn = bpf_map_update_elem(mapFd, &key, &value, flags);
 
-  if(updateReturn = bpf_map_update_elem(mapFd, &key, &value, flags) != 0) {
+  if(updateReturn != 0) {
     perror("Update error");
   }
   return updateReturn;
@@ -89,9 +88,9 @@ template <class KeyType>
 int BPFMap::remove(KeyType &key)
 {
   int mapFd = bpf_map__fd(mpBPFMap);
-  int deleteReturn;
+  int deleteReturn = bpf_map_delete_elem(mapFd, &key);
 
-  if(deleteReturn = bpf_map_delete_elem(mapFd, &key) != 0) {
+  if(deleteReturn != 0) {
     perror("Delete error");
   }
 

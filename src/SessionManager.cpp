@@ -7,6 +7,7 @@
 #include <interfaces/ForwardingActionRules.h>
 #include <interfaces/PacketDetectionRules.h>
 #include <interfaces/RulesUtilities.h>
+#include <interfaces/SessionBpf.h>
 
 SessionManager::SessionManager(std::shared_ptr<BPFMap> pSessionsMap)
     : mpSessionsMap(pSessionsMap)
@@ -16,16 +17,17 @@ SessionManager::SessionManager(std::shared_ptr<BPFMap> pSessionsMap)
 
 SessionManager::~SessionManager() { LOG_FUNC(); }
 
-void SessionManager::createSession(std::shared_ptr<pfcp_session_t_> pSession)
+void SessionManager::createSession(std::shared_ptr<SessionBpf> pSession)
 {
   LOG_FUNC();
-  if(mpSessionsMap->update(pSession->seid, *pSession, BPF_NOEXIST) != 0) {
-    LOG_ERROR("Cannot create session {}", pSession->seid);
+  auto session = pSession->getData();
+  if(mpSessionsMap->update(session.seid, session, BPF_NOEXIST) != 0) {
+    LOG_ERROR("Cannot create session {}", pSession->getSeid());
     throw std::runtime_error("Cannot create session");
   }
 }
 
-void SessionManager::removeSession(seid_t_ seid)
+void SessionManager::removeSession(uint64_t seid)
 {
   LOG_FUNC();
   if(mpSessionsMap->remove(seid) != 0) {
@@ -35,7 +37,7 @@ void SessionManager::removeSession(seid_t_ seid)
 }
 
 // TODO navarrothiago - how can we do atomically?
-void SessionManager::addFAR(seid_t_ seid, std::shared_ptr<ForwardingActionRules> pFar)
+void SessionManager::addFAR(uint64_t seid, std::shared_ptr<ForwardingActionRules> pFar)
 {
   LOG_FUNC();
   pfcp_session_t_ session;
@@ -60,7 +62,7 @@ void SessionManager::addFAR(seid_t_ seid, std::shared_ptr<ForwardingActionRules>
   LOG_DBG("FAR {} was inserted at index {} in session {}!", pFar->getFARId().far_id, index, seid);
 }
 
-void SessionManager::addPDR(seid_t_ seid, std::shared_ptr<PacketDetectionRules> pPdr)
+void SessionManager::addPDR(uint64_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
 {
   LOG_FUNC();
   pfcp_session_t_ session;
@@ -86,7 +88,7 @@ void SessionManager::addPDR(seid_t_ seid, std::shared_ptr<PacketDetectionRules> 
   LOG_DBG("PDR {} was inserted at index {} in session {}!", pPdr->getPdrId().rule_id, index, seid);
 }
 
-std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(seid_t_ seid, pdr_id_t_ pdrId)
+std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(uint64_t seid, uint16_t ruleId)
 {
   LOG_FUNC();
   std::shared_ptr<PacketDetectionRules> pPdr;
@@ -101,11 +103,11 @@ std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(seid_t_ seid, pd
     return pPdr;
   }
 
-  auto pPdrFound = std::find_if(session.pdrs, session.pdrs + session.pdrs_counter, [&pdrId](pfcp_pdr_t_ &pdr) { return pdr.pdr_id.rule_id == pdrId.rule_id; });
+  auto pPdrFound = std::find_if(session.pdrs, session.pdrs + session.pdrs_counter, [&ruleId](pfcp_pdr_t_ &pdr) { return pdr.pdr_id.rule_id == ruleId; });
 
   // Check if the PDR was found.
   if(pPdrFound == session.pdrs + session.pdrs_counter) {
-    LOG_WARN("PDR {} not found", pdrId.rule_id);
+    LOG_WARN("PDR {} not found", ruleId);
     return pPdr;
   }
 
@@ -115,7 +117,7 @@ std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(seid_t_ seid, pd
   return pPdr;
 }
 
-std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(seid_t_ seid, far_id_t_ farId)
+std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(uint64_t seid, uint32_t farId)
 {
   LOG_FUNC();
   std::shared_ptr<ForwardingActionRules> pFar;
@@ -130,11 +132,11 @@ std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(seid_t_ seid, f
     return pFar;
   }
 
-  auto pFarFound = std::find_if(session.fars, session.fars + session.fars_counter, [&farId](pfcp_far_t_ &far) { return far.far_id.far_id == farId.far_id; });
+  auto pFarFound = std::find_if(session.fars, session.fars + session.fars_counter, [&farId](pfcp_far_t_ &far) { return far.far_id.far_id == farId; });
 
   // Check if the PDR was found.
   if(pFarFound == session.fars + session.fars_counter) {
-    LOG_WARN("FAR {} not found", farId.far_id);
+  LOG_WARN("FAR {} not found", farId);
     return pFar;
   }
 
@@ -145,7 +147,7 @@ std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(seid_t_ seid, f
 }
 
 
-void SessionManager::updateFAR(seid_t_ seid, std::shared_ptr<ForwardingActionRules> pFar)
+void SessionManager::updateFAR(uint64_t seid, std::shared_ptr<ForwardingActionRules> pFar)
 {
   LOG_FUNC();
 
@@ -179,7 +181,7 @@ void SessionManager::updateFAR(seid_t_ seid, std::shared_ptr<ForwardingActionRul
   LOG_DBG("FAR {} was update  in session {}!", pFar->getFARId().far_id, seid);
 }
 
-void SessionManager::updatePDR(seid_t_ seid, std::shared_ptr<PacketDetectionRules> pPdr)
+void SessionManager::updatePDR(uint64_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
 {
   LOG_FUNC();
   pfcp_session_t_ session;
@@ -212,7 +214,7 @@ void SessionManager::updatePDR(seid_t_ seid, std::shared_ptr<PacketDetectionRule
   LOG_DBG("PDR {} was update  in session {}!", pPdr->getPdrId().rule_id, seid);
 }
 
-void SessionManager::removeFAR(seid_t_ seid, std::shared_ptr<ForwardingActionRules> pFar)
+void SessionManager::removeFAR(uint64_t seid, std::shared_ptr<ForwardingActionRules> pFar)
 {
   LOG_FUNC();
 
@@ -247,7 +249,7 @@ void SessionManager::removeFAR(seid_t_ seid, std::shared_ptr<ForwardingActionRul
   LOG_DBG("FAR {} was remove at in session {}!", pFar->getFARId().far_id, seid);
 }
 
-void SessionManager::removePDR(seid_t_ seid, std::shared_ptr<PacketDetectionRules> pPdr)
+void SessionManager::removePDR(uint64_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
 {
   LOG_FUNC();
   pfcp_session_t_ session;

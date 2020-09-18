@@ -11,6 +11,9 @@ if [ "$#" -ne 1 ]; then
   echo "Illegal number of parameters"
 fi
 
+echo "Remove namespace ns0"
+sudo ip netns del ns0
+
 echo "Create a namespace"
 sudo ip netns add ns0
 
