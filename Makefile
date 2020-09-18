@@ -48,8 +48,8 @@ clean: ## Clean all build files
 	rm -R build
 
 clean-all: ## Clean all build and dependencies
-	rm -R build
 	rm -R extern/spdlog/build
+	rm -R build
 
 all-verbose: ## Build all in verbose mode
 	mkdir -p build && \

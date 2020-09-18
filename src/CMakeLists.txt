@@ -13,9 +13,13 @@ add_custom_target(copy_objs
 )
 
 # https://gist.github.com/socantre/7ee63133a0a3a08f3990
+# Create skel folder
+# Use bpftool to generate the skeleton code
+# Define typeof(x) to have compatibility (TODO navarrothiago - check deeper)
 add_custom_target(gen_skeleton
   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/skel
   COMMAND ${CMAKE_SOURCE_DIR}/bin/bpftool gen skeleton $<TARGET_OBJECTS:upf_xdp_bpf> > ${CMAKE_CURRENT_SOURCE_DIR}/skel/upf_xdp_bpf_skel.h
+  COMMAND sed -i '9i\#define typeof\(x\) __typeof__\(x\)' ${CMAKE_CURRENT_SOURCE_DIR}/skel/upf_xdp_bpf_skel.h
   DEPENDS copy_objs
 )
 
