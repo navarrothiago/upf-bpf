@@ -5,9 +5,12 @@ NUM_THREADS=4
 # Get all PIDs from *xdp* that is running.
 PIDS := $(shell ps -aux | grep -e UPFProgramTests -e xdp | awk '{print $$2}')
 
-# TODO navarrothiago - Remove hardcoded.
+# TODO navarrothiago - Remove hardcoded https://github.com/navarrothiago/upf-bpf/issues/24
 # DEVICE_IN=wlp0s20f3
-DEVICE_IN=eth0
+# Uncomment fo Docker standalone
+# DEVICE_IN=eth0
+# Uncomment for OAI
+DEVICE_IN=enp0s20f0u4u2u4
 DEVICE_OUT=veth0
 
 .PHONY: help
@@ -32,7 +35,7 @@ install: ## Install package
 	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
   cmake --build build --target install
 
-setup: ## setup dependencies
+setup: config-veth-pair ## Setup dependencies: Execute config-veth-pair and install dependencies
 	git submodule update --init --recursive && \
 	cd extern/spdlog && \
 	mkdir -p build && cd build && \
@@ -47,7 +50,9 @@ clean: ## Clean all build files
 	rm -R build
 
 clean-all: ## Clean all build and dependencies
-	rm -R extern/spdlog/build
+	cd extern/libbpf/src || \
+	make clean || \
+	rm -R extern/spdlog/build || \
 	rm -R build
 
 all-verbose: ## Build all in verbose mode
@@ -62,6 +67,21 @@ all-verbose: ## Build all in verbose mode
 config-veth-pair: ## Config veth pair. It must be run before <run-*> targets
 	sudo ./tests/scripts/config_veth_pair.sh $(DEVICE_IN)
 
+build-samples: ## Build samples
+	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
+	cmake --build build --target xdp_hello_world &&  \
+	cmake --build build --target xdp_redirect_map &&  \
+	cmake --build build --target sockex3 && \
+	cmake --build build --target copy_samples_objs
+
+build-tests: ## Build tests
+	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
+	cmake --build build --target ControlPlaneTests -j &&  \
+	cmake --build build --target UPFProgramTests -j
+
+clean-samples: ## Clean samples artifacts
+	rm -R build/samples
+
 run-hello-world-samples: all ## Build all and run BPF XDP hello world sample
 	cd $(BPF_SAMPLES_DIR) && \
 	sudo ./xdp_hello_world | sudo cat /sys/kernel/debug/tracing/trace
@@ -70,7 +90,11 @@ run-redirect-map-sample: all ## Build all and run BPF XDP redirect sample
 	pushd $(BPF_SAMPLES_DIR) && \
 	sudo ./xdp_redirect_map -S $(DEVICE_IN) $(DEVICE_OUT)
 
-run: ## Run BPF XDP UPF
+run-control-plane-tests: ## Run ControlPlaneTests
+	cd $(BPF_BINARY_DIR) && \
+	sudo ./ControlPlaneTests
+
+run-session-manager-tests: ## Run SessionManagerTests
 	cd $(BPF_BINARY_DIR) && \
 	sudo ./UPFProgramTests
 

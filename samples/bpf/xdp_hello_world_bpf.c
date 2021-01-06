@@ -2,7 +2,7 @@
 #include <linux/bpf.h>
 #include <bpf_helpers.h>
 
-// Simple XDP BPF program. Everything packet will be dropped. 
+// Simple XDP BPF program. Everything packet will be dropped.
 SEC("test")
 int xdp_prog1(struct xdp_md *ctx){
   char drop_message[] = "XDP PACKET DROP\n";

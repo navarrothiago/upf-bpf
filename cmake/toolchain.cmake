@@ -1,15 +1,16 @@
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_BUILD_TYPE Release)
 
-# Clang target triple
+# Clang target triple.
 SET(triple bpf)
 
+# Set clang as a compiler.
 set(CMAKE_C_COMPILER clang)
 set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_CXX_COMPILER_TARGET ${triple})
 
-# TODO Remove -target bpf
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -target bpf")
+# Flags used in src folder. For samples folder, the flags are hardcoded.
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -g -target bpf")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ${CXX_ISYSTEM_DIRS} -fsanitize=address -g -fno-omit-frame-pointer -fPIC" )
 
 set(CMAKE_OBJCOPY llvm-objcopy CACHE INTERNAL "objcopy tool")

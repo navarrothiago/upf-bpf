@@ -24,7 +24,7 @@
 
 struct bpf_map_def SEC("maps") tx_port = {
 	.type        = BPF_MAP_TYPE_DEVMAP,
-	.key_size    = sizeof(u32), 
+	.key_size    = sizeof(u32),
 	.value_size  = sizeof(u32),
 	.max_entries = 100,
 };
