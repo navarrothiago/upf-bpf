@@ -54,10 +54,9 @@ void UPFProgramManager::setup(std::shared_ptr<RulesUtilities> pRulesUtilities)
   attach();
 
   // TODO navarrothiago - Remove hardcoded - https://github.com/navarrothiago/upf-bpf/issues/24
-  #warning "Check if the interface is correct!!"
-  sXDPProgramInfo[0].ifIndex = if_nametoindex("eth0") ;
+  // sXDPProgramInfo[0].ifIndex = if_nametoindex("eth0") ;
   // sXDPProgramInfo[0].ifIndex = if_nametoindex("wlp0s20f3");
-  // sXDPProgramInfo[0].ifIndex = if_nametoindex("enp0s20f0u4u2u4");
+  sXDPProgramInfo[0].ifIndex = if_nametoindex("enp0s20f0u4u2u4");
   sXDPProgramInfo[1].ifIndex = if_nametoindex("veth0");
 
   // TODO navarrothiago - remove hardcoded.

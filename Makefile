@@ -9,9 +9,9 @@ PIDS := $(shell ps -aux | grep -e UPFProgramTests -e xdp | awk '{print $$2}')
 # TODO navarrothiago - Remove hardcoded https://github.com/navarrothiago/upf-bpf/issues/24
 # DEVICE_IN=wlp0s20f3
 # Uncomment fo Docker standalone
-DEVICE_IN=eth0
+# DEVICE_IN=eth0
 # Uncomment for OAI
-# DEVICE_IN=enp0s20f0u4u2u4
+DEVICE_IN=enp0s20f0u4u2u4
 DEVICE_OUT=veth0
 
 .PHONY: help

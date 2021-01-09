@@ -36,6 +36,7 @@
     "--cap-add=NET_ADMIN",
     "--privileged",
     "--name=upf-bpf",
+    "--net=host",
     "-v",
     "${localEnv:HOME}/.bashrc:/root/.bashrc"
   ],
