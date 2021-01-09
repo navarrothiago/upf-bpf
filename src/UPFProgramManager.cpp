@@ -15,6 +15,10 @@ std::mutex UPFProgramManager::sTearDownMutex;
 upf_xdp_bpf_c *UPFProgramManager::spSkeleton;
 std::atomic<UPFProgramManager::ProgramState> UPFProgramManager::sState;
 
+int print_libbpf_log(enum libbpf_print_level lvl, const char *fmt, va_list args) {
+         return vfprintf(stderr, fmt, args);
+ }
+
 UPFProgramManager::UPFProgramManager()
 {
   LOG_FUNC();
@@ -24,6 +28,9 @@ UPFProgramManager::UPFProgramManager()
   sXDPProgramInfo[0].state = IDLE;
   sXDPProgramInfo[1].state = IDLE;
   sState = IDLE;
+
+  // Set new handlers for libbpf.
+  libbpf_set_print(print_libbpf_log);
 }
 UPFProgramManager::~UPFProgramManager()
 {
@@ -46,8 +53,11 @@ void UPFProgramManager::setup(std::shared_ptr<RulesUtilities> pRulesUtilities)
   load();
   attach();
 
-  sXDPProgramInfo[0].ifIndex = if_nametoindex("eth0");
+  // TODO navarrothiago - Remove hardcoded - https://github.com/navarrothiago/upf-bpf/issues/24
+  #warning "Check if the interface is correct!!"
+  sXDPProgramInfo[0].ifIndex = if_nametoindex("eth0") ;
   // sXDPProgramInfo[0].ifIndex = if_nametoindex("wlp0s20f3");
+  // sXDPProgramInfo[0].ifIndex = if_nametoindex("enp0s20f0u4u2u4");
   sXDPProgramInfo[1].ifIndex = if_nametoindex("veth0");
 
   // TODO navarrothiago - remove hardcoded.
@@ -176,9 +186,8 @@ void UPFProgramManager::load()
     throw std::runtime_error(errMsg.str());
   }
 
-  // Warning - The name of the map must be the same of the BPF program.
-  std::shared_ptr<BPFMap> pSessionMap = std::make_shared<BPFMap>(UPFProgramManager::getInstance().getMaps()->getMap("m_seid_session"));
-  mpSessionManager = std::make_shared<SessionManager>(pSessionMap);
+  initializeMaps();
+  mpSessionManager = std::make_shared<SessionManager>(mpSessionMap, mpUplinkPdrMap);
 
   sState = LOADED;
 }
@@ -195,6 +204,17 @@ void UPFProgramManager::attach()
     throw std::runtime_error(errMsg.str());
   }
   sState = ATTACHED;
+}
+
+void UPFProgramManager::initializeMaps() 
+{
+  LOG_FUNC();
+
+  // Warning - The name of the map must be the same of the BPF program.
+  auto sessionMap = UPFProgramManager::getInstance().getMaps()->getMap("m_seid_session");
+  auto uplinkPdrMap = UPFProgramManager::getInstance().getMaps()->getMap("m_teid_pdrs");
+  mpSessionMap = std::make_shared<BPFMap>(sessionMap);
+  mpUplinkPdrMap = std::make_shared<BPFMap>(uplinkPdrMap);
 }
 
 void UPFProgramManager::destroy()

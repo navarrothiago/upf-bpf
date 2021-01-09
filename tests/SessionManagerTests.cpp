@@ -8,6 +8,7 @@
 #include "interfaces/PacketDetectionRulesImpl.h"
 #include "interfaces/RulesUtilitiesImpl.h"
 #include "interfaces/SessionBpfImpl.h"
+#include <vector>
 
 class SessionManagerTests : public ::testing::Test
 {
@@ -61,13 +62,17 @@ TEST_F(SessionManagerTests, managePDR)
   pSessionRaw->seid = 1;
   std::shared_ptr<SessionBpf> pSession = std::make_shared<SessionBpfImpl>(*pSessionRaw);
 
-  // PDR 1.
+  // UL PDR 1.
   pPdrProprietary->pdr_id.rule_id = 100;
   pPdrProprietary->far_id.far_id = 100;
+  pPdrProprietary->pdi.fteid.teid = 10;
+  pPdrProprietary->pdi.source_interface.interface_value = INTERFACE_VALUE_ACCESS;
 
-  // PDR 1 updated.
+  // UL PDR 1 updated.
   pPdrUpdatedProprietary->pdr_id.rule_id = 100;
   pPdrUpdatedProprietary->far_id.far_id = 101;
+  pPdrUpdatedProprietary->pdi.fteid.teid = 11;
+  pPdrUpdatedProprietary->pdi.source_interface.interface_value = INTERFACE_VALUE_ACCESS;
 
   // PDR 2.
   pPdr2Proprietary->pdr_id.rule_id = 101;
@@ -82,6 +87,7 @@ TEST_F(SessionManagerTests, managePDR)
   LOG_INF("Case: add, lookup and remove (happy path)");
   EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->getSeid(), pPdr));
   EXPECT_TRUE(mpSessionManager->lookupPDR(pSession->getSeid(), pPdr->getPdrId().rule_id)->getPdrId().rule_id == pPdr->getPdrId().rule_id);
+  EXPECT_TRUE(mpSessionManager->lookupPDRsUplink(pPdr->getPdi().fteid.teid)[0]->getPdrId().rule_id == pPdr->getPdrId().rule_id);
   EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->getSeid(), pPdr));
 
   LOG_INF("Case: remove without adding");
@@ -90,18 +96,30 @@ TEST_F(SessionManagerTests, managePDR)
   LOG_INF("Case: update without adding");
   EXPECT_ANY_THROW(mpSessionManager->updatePDR(pSession->getSeid(), pPdr));
 
-  LOG_INF("Case:  add, update, lookup and remove")
+  LOG_INF("Case: add, update, lookup and remove")
+  // Add PDR in session and PDR maps.
   EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->getSeid(), pPdr));
+  // Update TEID and FAR_ID.
   EXPECT_NO_THROW(mpSessionManager->updatePDR(pSession->getSeid(), pPdrUpdated));
+  // Check if FAR_ID was updated.
   EXPECT_TRUE(mpSessionManager->lookupPDR(pSession->getSeid(), pPdr->getPdrId().rule_id)->getFarId().far_id != pPdr->getFarId().far_id);
-  EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->getSeid(), pPdr));
+  // Remove old PDR. Although the TEID is different, it will pass due to the pdr_id, which is the same.
+  EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->getSeid(), pPdr)); 
+  // Remove new PDR. Because the pdr_id was removed in the previous step, it will fail.
+  EXPECT_ANY_THROW(mpSessionManager->removePDR(pSession->getSeid(), pPdrUpdated));
 
   LOG_INF("Case: lookup with an empty list");
   EXPECT_FALSE(mpSessionManager->lookupPDR(pSession->getSeid(), pPdr->getPdrId().rule_id));
+  EXPECT_TRUE(mpSessionManager->lookupPDRsUplink(pPdr->getPdi().fteid.teid).empty());
 
-  LOG_INF("Case: lookup an with a non-empty list");
+  LOG_INF("Case: lookup with a non-empty list");
+  // Add PDR in session and PDR maps.
   EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->getSeid(), pPdr));
+  // Lookup PDR2, it will return false.
   EXPECT_FALSE(mpSessionManager->lookupPDR(pSession->getSeid(), pPdr2->getPdrId().rule_id));
+  // Lookup PDR2, it will return false.
+  EXPECT_TRUE(mpSessionManager->lookupPDRsUplink(pPdr2->getPdi().fteid.teid).empty());
+  // Remove PDR1 in the session and PDR maps.
   EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->getSeid(), pPdr));
 
   LOG_INF("Case: buffer overflow");
@@ -135,7 +153,7 @@ TEST_F(SessionManagerTests, manageFAR)
   pFarUpdatedProprietary->far_id.far_id = 100;
   pFarUpdatedProprietary->apply_action.drop = 0;
 
-  // PDR 2.
+  // FAR 2.
   pFar2Proprietary->far_id.far_id = 101;
 
   // Adapts proprietary struct to the interfaces.

@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 ARG GIT_TAG=2019.w47
 ARG UID=1000
@@ -9,6 +9,11 @@ WORKDIR /tmp/$UNAME
 
 RUN apt-get update && \
       apt-get -y install sudo git
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=America/Sao_Pauloa
+RUN apt-get update && \
+      apt-get install -y tzdata
 
 RUN apt-get update && \
       apt-get -y install cmake
@@ -86,6 +91,7 @@ RUN apt-get update && \
 RUN apt-get update && \
       apt-get -y install libelf-dev zlib1g clang llvm
 
+# TODO navarrothiago - CO-RE
 RUN apt-get update && \
       apt-get -y install linux-tools-common linux-headers-generic
 
@@ -97,6 +103,11 @@ RUN apt-get update && \
 
 RUN apt-get update && \
       apt-get -y install gdb
+
+# RUN apt-get update && \
+#       apt-get -y install libssl-dev && \
+#       wget -c  https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2.tar.gz -O - | tar -xz && \
+#       cd cmake-3.19.2 && ./bootstrap && make && make install
 
 USER root
 #USER $UNAME

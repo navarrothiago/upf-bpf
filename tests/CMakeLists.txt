@@ -23,6 +23,7 @@ add_executable(UPFProgramTests
   interfaces/RulesUtilitiesImpl.cpp
   interfaces/SessionBpfImpl.cpp
 )
+
 add_test(UPFProgramTests UPFProgramTests)
 add_dependencies(UPFProgramTests upf_xdp)
 
@@ -36,5 +37,19 @@ target_link_libraries(UPFProgramTests
   gtest
   gtest_main
   upf_xdp
+  spdlog::spdlog
+)
+
+add_executable(ControlPlaneTests
+  ControlPlaneTests.cpp
+  interfaces/ForwardingActionRulesImpl.cpp
+  interfaces/PacketDetectionRulesImpl.cpp
+  interfaces/RulesUtilitiesImpl.cpp
+  interfaces/SessionBpfImpl.cpp
+)
+
+target_link_libraries(ControlPlaneTests
+  PUBLIC upf_xdp
+  asan
   spdlog::spdlog
 )

@@ -21,7 +21,7 @@ uint64_t PacketDetectionRulesImpl::getLocalSeid()
 teid_t_ PacketDetectionRulesImpl::getTeid()
 {
   LOG_FUNC();
-  return mPdr.teid;
+  return mPdr.pdi.fteid.teid;
 }
 
 pdr_id_t_ PacketDetectionRulesImpl::getPdrId()

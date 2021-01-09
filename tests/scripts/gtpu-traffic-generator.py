@@ -4,7 +4,8 @@ from scapy.all import *
 from scapy.contrib.gtp import *
 
 # Create GTP packet
-packet = Ether(dst="00:e0:4c:53:44:58")/IP(src="172.20.16.99",dst="192.168.15.3")/UDP(dport=2152)/GTP_U_Header(teid=100)/IP(src="10.10.10.10",dst="172.20.16.55",version=4)/UDP()/Raw('x'*20)
+packet = Ether(dst="00:e0:4c:36:1c:d1")/IP(src="172.20.16.99",dst="192.168.15.12")/UDP(dport=2152)/GTP_U_Header(teid=100)/IP(src="10.10.10.10",dst="172.20.16.55",version=4)/UDP()/Raw('x'*20)
+# packet = Ether(dst="00:e0:4c:53:44:58")/IP(src="172.20.16.99",dst="192.168.15.3")/UDP(dport=2152)/GTP_U_Header(teid=100)/IP(src="10.10.10.10",dst="172.20.16.55",version=4)/UDP()/Raw('x'*20)
 
 
 # Send GTP packet at Layer2

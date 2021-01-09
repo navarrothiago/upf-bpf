@@ -86,6 +86,8 @@
     "any": "cpp",
     "forward_list": "cpp",
     "cfenv": "cpp",
-    "codecvt": "cpp"
+    "codecvt": "cpp",
+    "strstream": "cpp",
+    "typeindex": "cpp"
   },
 }

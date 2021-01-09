@@ -8,6 +8,7 @@
 #include <signal.h> // signals
 #include <upf_xdp_bpf_skel.h>
 #include <utils/LogDefines.h>
+#include <wrappers/BPFMap.hpp>
 
 class BPFMaps;
 class SessionManager;
@@ -110,6 +111,8 @@ private:
    *
    */
   void attach();
+  
+  void initializeMaps();
   /**
    * @brief Destroy the BPF program.
    *
@@ -136,6 +139,13 @@ private:
 
   // The rules factory reference.
   std::shared_ptr<RulesUtilities> mpRulesUtilities;
+
+  // The PFCP session eBPF map.
+  std::shared_ptr<BPFMap> mpSessionMap;
+
+  // The uplink PDR eBPF map.
+  std::shared_ptr<BPFMap> mpUplinkPdrMap;
+  
 };
 
 #endif // __BPFPROGRAMMANAGER_H__

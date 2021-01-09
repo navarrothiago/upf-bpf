@@ -13,6 +13,4 @@ add_library(upf_xdp_bpf OBJECT upf_xdp_bpf.c)
 
 message(STATUS "${CMAKE_CURRENT_BINARY_DIR}")
 
-
-
 # TODO Rename .c.o

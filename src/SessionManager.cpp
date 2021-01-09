@@ -1,16 +1,14 @@
 #include "SessionManager.h"
-#include <UPFProgramManager.h>
-#include <pfcp/pfcp_session.h>
-#include <utils/LogDefines.h>
-#include <wrappers/BPFMap.hpp>
-#include <wrappers/BPFMaps.h>
 #include <interfaces/ForwardingActionRules.h>
 #include <interfaces/PacketDetectionRules.h>
-#include <interfaces/RulesUtilities.h>
 #include <interfaces/SessionBpf.h>
+#include <pfcp/pfcp_session.h>
+#include <utils/LogDefines.h>
+#include <wrappers/BPFMaps.h>
 
-SessionManager::SessionManager(std::shared_ptr<BPFMap> pSessionsMap)
+SessionManager::SessionManager(std::shared_ptr<BPFMap> pSessionsMap, std::shared_ptr<BPFMap> pUplinkPdrMap)
     : mpSessionsMap(pSessionsMap)
+    , mpUplinkPDRsMap(pUplinkPdrMap)
 {
   LOG_FUNC();
 }
@@ -71,7 +69,7 @@ void SessionManager::addPDR(uint64_t seid, std::shared_ptr<PacketDetectionRules>
   // TODO navarrothiago - check if session not exists.
   mpSessionsMap->lookup(seid, &session);
 
-  // Check the far counter.
+  // Check the pdr counter.
   if(session.pdrs_counter >= SESSION_PDRS_MAX_SIZE) {
     LOG_ERROR("Array is full!! The PDR {} cannot be added in the session {}", pPdr->getPdrId().rule_id, seid);
     throw std::runtime_error("The PDR cannot be added in the session");
@@ -82,6 +80,21 @@ void SessionManager::addPDR(uint64_t seid, std::shared_ptr<PacketDetectionRules>
   // Update the counter.
   uint32_t index = session.pdrs_counter++;
   session.pdrs[index] = pPdr->getData();
+
+  // Suppose that the other parameters was already check.
+  // TODO (navarrothiago) check parameters.
+  auto source_interface = session.pdrs[index].pdi.source_interface.interface_value;
+  switch(source_interface) {
+  case INTERFACE_VALUE_ACCESS:
+    addPDR(session.pdrs[index].pdi.fteid.teid, session.pdrs[index], mpUplinkPDRsMap);
+    break;
+  case INTERFACE_VALUE_CORE:
+    addPDR(session.pdrs[index].pdi.ue_ip_address.ipv4_address, session.pdrs[index], mpDownlinkPDRsMap);
+    break;
+  default:
+    LOG_ERROR("Source interface %d not supported", source_interface);
+    throw std::runtime_error("Source interface not supported");
+  }
 
   // Update session.
   mpSessionsMap->update(seid, session, BPF_EXIST);
@@ -117,6 +130,18 @@ std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(uint64_t seid, u
   return pPdr;
 }
 
+SessionManager::pdrs_t SessionManager::lookupPDRsUplink(uint32_t teid)
+{
+  LOG_FUNC();
+  return lookupPDRs(teid, mpUplinkPDRsMap);
+}
+
+SessionManager::pdrs_t SessionManager::lookupPDRsDownlink(uint32_t ueIPAddress)
+{
+  LOG_FUNC();
+  return lookupPDRs(ueIPAddress, mpDownlinkPDRsMap);
+}
+
 std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(uint64_t seid, uint32_t farId)
 {
   LOG_FUNC();
@@ -136,7 +161,7 @@ std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(uint64_t seid, 
 
   // Check if the PDR was found.
   if(pFarFound == session.fars + session.fars_counter) {
-  LOG_WARN("FAR {} not found", farId);
+    LOG_WARN("FAR {} not found", farId);
     return pFar;
   }
 
@@ -145,7 +170,6 @@ std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(uint64_t seid, 
 
   return pFar;
 }
-
 
 void SessionManager::updateFAR(uint64_t seid, std::shared_ptr<ForwardingActionRules> pFar)
 {
@@ -204,14 +228,35 @@ void SessionManager::updatePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
     throw std::runtime_error("PDR not found");
   }
 
-  // Update all fields.
-  // *pPdrFound = std::move(*pPdr);
+  // Suppose that the other parameters was already check.
+  // TODO (navarrothiago) check parameters.
   auto pUtil = UPFProgramManager::getInstance().getRulesUtilities();
-  pUtil->copyPDR(pPdrFound, pPdr.get());
+  auto source_interface = pPdrFound->pdi.source_interface.interface_value;
+  switch(source_interface) {
+  case INTERFACE_VALUE_ACCESS:
+    // Remove the old entry PDR from TEID->PDR map.
+    removePDR(pPdrFound->pdi.fteid.teid, *pPdrFound, mpUplinkPDRsMap);
+    // Update all fields. Copy the new PDR to the BPF address.
+    pUtil->copyPDR(pPdrFound, pPdr.get());
+    // Add the new entry PDR from TEID->PDR map.
+    addPDR(pPdrFound->pdi.fteid.teid, *pPdrFound, mpUplinkPDRsMap);
+    break;
+  case INTERFACE_VALUE_CORE:
+    // Remove the old entry PDR from TEID->PDR map.
+    removePDR(pPdrFound->pdi.fteid.teid, *pPdrFound, mpDownlinkPDRsMap);
+    // Update all fields. Copy the new PDR to the BPF address.
+    pUtil->copyPDR(pPdrFound, pPdr.get());
+    // Add the new entry PDR from TEID->PDR map.
+    addPDR(pPdrFound->pdi.fteid.teid, *pPdrFound, mpDownlinkPDRsMap);
+    break;
+  default:
+    LOG_ERROR("Source interface %d not supported", source_interface);
+    throw std::runtime_error("Source interface not supported");
+  }
 
   // Update session in BPF map.
   mpSessionsMap->update(seid, session, BPF_EXIST);
-  LOG_DBG("PDR {} was update  in session {}!", pPdr->getPdrId().rule_id, seid);
+  LOG_DBG("PDR {} was update in session {}!", pPdr->getPdrId().rule_id, seid);
 }
 
 void SessionManager::removeFAR(uint64_t seid, std::shared_ptr<ForwardingActionRules> pFar)
@@ -272,8 +317,30 @@ void SessionManager::removePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
     throw std::runtime_error("PDR not found");
   }
 
+  // Remove PDR from PDR maps (TEID/UE IP -> PDR).
+  auto source_interface = pPdrEnd->pdi.source_interface.interface_value;
+  switch(source_interface) {
+  case INTERFACE_VALUE_ACCESS:
+    removePDR(pPdrEnd->pdi.fteid.teid, *pPdrEnd, mpUplinkPDRsMap);
+    break;
+  case INTERFACE_VALUE_CORE:
+    removePDR(pPdrEnd->pdi.ue_ip_address.ipv4_address, *pPdrEnd, mpDownlinkPDRsMap);
+    break;
+  default:
+    LOG_ERROR("Source interface %d not supported", source_interface);
+    throw std::runtime_error("Source interface not supported");
+  }
+
+  // Remove PDR from PDRs array in the session map.
   // Move the new values to session address.
-  std::move(session.pdrs, pPdrEnd, session.pdrs);
+  // TODO navarrothiago - move [begin to it) U [it + 1 to end).
+  // std::move(session.pdrs, pPdrEnd, session.pdrs);
+
+  // if(pPdrEnd != &session.pdrs[session.pdrs_counter]) {
+  //   LOG_DBG("Removed PDR is was not in the last position. So, move the [it + 1 to end) to the PDRs array.");
+  //   // shift one position to the left.
+  //   std::move(pPdrEnd + 1, &session.pdrs[session.pdrs_counter - 1], pPdrEnd);
+  // }
 
   // Update the counter.
   session.pdrs_counter--;
@@ -281,5 +348,5 @@ void SessionManager::removePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
   // Update session map.
   mpSessionsMap->update(session.seid, session, BPF_EXIST);
 
-  LOG_DBG("PDR {} was remove at in session {}!", pPdr->getPdrId().rule_id, seid);
+  LOG_DBG("PDR {} was removed at in session {}!", pPdr->getPdrId().rule_id, seid);
 }

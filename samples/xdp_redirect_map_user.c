@@ -64,7 +64,7 @@ static void poll_stats(int interval, int ifindex)
 	unsigned int nr_cpus = bpf_num_possible_cpus();
 	__u64 values[nr_cpus], prev[nr_cpus];
 
-	memset(prev, 0, sizeof(prev));
+	// memset(prev, 0, sizeof(prev));
 
 	while (1) {
 		__u64 sum = 0;

@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/tests/UPFProgramTests",
       "stopAtEntry": false,
-      "cwd": "${workspaceFolder}/build/src",
+      "cwd": "${workspaceFolder}/build/tests",
       "environment": [],
       "externalConsole": false,
       "miDebuggerPath": "${workspaceFolder}/.vscode/gdb",

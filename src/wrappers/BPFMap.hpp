@@ -61,12 +61,12 @@ private:
 template <class KeyType>
 int BPFMap::lookup(KeyType &key, void *pValue)
 {
-  LOG_FUNC();
+  // LOG_FUNC();
   int mapFd = bpf_map__fd(mpBPFMap);
   int lookupReturn = bpf_map_lookup_elem(mapFd, &key, pValue);
 
   if(lookupReturn != 0) {
-    perror("Lookup error");
+    LOG_INF("Lookup error: {}", strerror(lookupReturn));
   }
   return lookupReturn;
 }
@@ -74,12 +74,12 @@ int BPFMap::lookup(KeyType &key, void *pValue)
 template <class KeyType, class ValueType>
 int BPFMap::update(KeyType &key, ValueType &value, int flags)
 {
-  LOG_FUNC();
+  // LOG_FUNC();
   int mapFd = bpf_map__fd(mpBPFMap);
   int updateReturn = bpf_map_update_elem(mapFd, &key, &value, flags);
 
   if(updateReturn != 0) {
-    perror("Update error");
+    LOG_INF("Update error: {}", strerror(updateReturn));
   }
   return updateReturn;
 }
@@ -91,7 +91,7 @@ int BPFMap::remove(KeyType &key)
   int deleteReturn = bpf_map_delete_elem(mapFd, &key);
 
   if(deleteReturn != 0) {
-    perror("Delete error");
+    LOG_INF("Delete error: {}", strerror(deleteReturn));
   }
 
   return deleteReturn;

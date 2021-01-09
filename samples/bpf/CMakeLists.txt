@@ -1,6 +1,6 @@
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -target bpf")
 include_directories(${CMAKE_SOURCE_DIR}/include)
-add_definitions(-DKERNEL_SPACE)
+# add_definitions(-DKERNEL_SPACE)
 
 add_library(xdp_hello_world_bpf OBJECT xdp_hello_world_bpf.c)
 add_library(xdp_redirect_map_kern OBJECT xdp_redirect_map_kern.c)

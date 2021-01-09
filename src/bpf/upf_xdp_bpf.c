@@ -50,6 +50,8 @@ int xdp_redirect_gtpu(struct xdp_md *p_ctx)
  * @param p_session The session of this context.
  * @return u32 XDP action.
  */
+
+// FIXME (navarro) - Actualy, we have to receive the FAR of the PDR that was matched.
 static u32 pfcp_far_apply(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, pfcp_session_t_ *p_session)
 {
   u32 index = p_session->fars_counter - 1;
@@ -95,16 +97,16 @@ static u32 pfcp_far_apply(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, pfcp_se
 }
 
 /**
- * @brief Match the PDRs attribuites accoding to data flow (UP, DL).
+ * @brief Match the PDRs attribuites for UL data flow.
  * - The TEID from GTP GPDU with the TEID stored in PDR.
  * - Source IP from IP header with source address stored in PDI.
- * - Interface from PDI with ACCESS or CORE interface (it depends on if it is UL or DL).
+ * - Interface from PDI with ACCESS interface value.
  *
  * @param p_pdr The PDR to be match with the header.
  * @param p_iph The IP header.
  * @return u8 True if match. False cc.
  */
-static u32 pfcp_pdr_match_attribute(pfcp_pdr_t_ *p_pdr, struct iphdr *p_iph, teid_t_ teid)
+static u32 pfcp_pdr_match_pdi_access(pfcp_pdr_t_ *p_pdr, struct iphdr *p_iph, teid_t_ teid)
 {
   // clang-format off
   if(p_pdr->outer_header_removal.outer_header_removal_description != OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4
@@ -128,6 +130,11 @@ static u32 pfcp_pdr_match_attribute(pfcp_pdr_t_ *p_pdr, struct iphdr *p_iph, tei
   // All the attributes were matched.
   bpf_debug("All atrributes were matched!!\n");
   return 0;
+}
+
+static u32 pfcp_far_lookup(struct xdp_md *p_ctx, pfcp_far_t_ *p_far_list)
+{
+
 }
 
 /**
@@ -168,8 +175,8 @@ static u32 pfcp_session_lookup(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
     return XDP_DROP;
   }
 
-  // For each PDR, check the its attributes.
-  #pragma unroll
+// For each PDR, check the its attributes.
+#pragma unroll
   for(i = 0; i < MAX_LENGTH; i++) {
 
     // Unbounded condition in for control is not supported.
@@ -183,7 +190,7 @@ static u32 pfcp_session_lookup(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
       }
 
       // For each PDR, check parameters.
-      if(pfcp_pdr_match_attribute(&p_pdr_list[i], (struct iphdr *)p_iph, teid) == 0) {
+      if(pfcp_pdr_match_pdi_access(&p_pdr_list[i], (struct iphdr *)p_iph, teid) == 0) {
         seid = p_pdr_list[i].local_seid;
         bpf_debug("PDR associated with teid %d found! Rule id is %d and seid is %d\n", teid, p_pdr_list->pdr_id.rule_id, seid);
 
@@ -383,6 +390,7 @@ static u32 eth_handle(struct xdp_md *p_ctx, struct ethhdr *ethh)
     offset += sizeof(*vlan_hdr);
     if(!((void *)ethh + offset > p_data_end))
       eth_type = htons(vlan_hdr->h_vlan_encapsulated_proto);
+    // Enter in next case.
   case ETH_P_IP:
     return ipv4_handle(p_ctx, (struct iphdr *)((void *)ethh + offset));
   case ETH_P_IPV6:
@@ -401,8 +409,11 @@ int upf_chain(struct xdp_md *p_ctx)
 {
   void *p_data = (void *)(long)p_ctx->data;
   struct ethhdr *eth = p_data;
+
+  // Start to handle the ethernet header.
   u32 action = xdp_stats_record_action(p_ctx, eth_handle(p_ctx, eth));
   bpf_debug("Action %d\n", action);
+
   return action;
 }
 

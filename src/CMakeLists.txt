@@ -56,7 +56,6 @@ target_include_directories(upf_xdp PUBLIC
 add_dependencies(upf_xdp upf_xdp_bpf)
 add_dependencies(upf_xdp gen_skeleton)
 
-
 # Targets:
 #   * <prefix>/lib/upf_bpf.a
 #   * header location after install: <prefix>/include/*.h
@@ -77,4 +76,3 @@ install(
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     FILES_MATCHING PATTERN "*.h"
 )
-

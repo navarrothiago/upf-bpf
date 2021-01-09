@@ -7,7 +7,6 @@
 typedef struct pfcp_pdr_s
 {
   u64 local_seid;
-  teid_t_ teid;
   pdr_id_t_ pdr_id;
   precedence_t_ precedence;
   pdi_t_ pdi;

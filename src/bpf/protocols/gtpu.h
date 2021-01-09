@@ -5,6 +5,10 @@
 #include <linux/bpf.h>
 #include <stdint.h>
 
+#define GTP_ENCAPSULATED_SIZE (sizeof(struct iphdr) +      \
+                                sizeof(struct udphdr) +     \
+                                sizeof(struct gtpuhdr))
+
 // TS 29 281
 #define GTP_UDP_PORT 2152u
 
