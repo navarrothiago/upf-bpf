@@ -16,7 +16,7 @@
 #include <unistd.h> //sleep
 #include <wrappers/BPFMaps.h>
 
-static std::shared_ptr<SessionManager> spSessionManager = UPFProgramManager::getInstance().getSessionManager();
+static std::shared_ptr<SessionManager> spSessionManager;
 
 // simple per-protocol drop counter
 static void poll_stats(int interval, teid_t_ key_teid)
@@ -176,7 +176,7 @@ int main(int argc, char **argv)
   std::shared_ptr<RulesUtilities> mpRulesFactory;
   mpRulesFactory = std::make_shared<RulesUtilitiesImpl>();
   UPFProgramManager::getInstance().setup(mpRulesFactory);
-
+  spSessionManager = UPFProgramManager::getInstance().getSessionManager();
   // if(insert_elements(100)) {
   //   exit(1);
   // }
