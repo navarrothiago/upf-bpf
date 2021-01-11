@@ -25,21 +25,7 @@ target_include_directories(upf_xdp PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/interfaces>
 )
 
-add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/skel/upf_xdp_bpf_skel.h
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/skel
-  COMMAND ${CMAKE_SOURCE_DIR}/bin/bpftool gen skeleton $<TARGET_OBJECTS:upf_xdp_bpf> > ${CMAKE_CURRENT_SOURCE_DIR}/skel/upf_xdp_bpf_skel.h
-  COMMAND sed -i '9i\#define typeof\(x\) __typeof__\(x\)' ${CMAKE_CURRENT_SOURCE_DIR}/skel/upf_xdp_bpf_skel.h
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/bpf/upf_xdp_bpf.c
-)
-
-add_custom_target(gen_skeleton ALL
-   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/skel/upf_xdp_bpf_skel.h 
-)
-
-# Building a target (upf_target) that depends on a custom target (gen_skeleton)
-# that depends on a custom command output (see ./bpf/CMakeLists.txt).
-add_dependencies(upf_xdp gen_skeleton)
+add_dependencies(upf_xdp upf_xdp_bpf)
 
 # Targets:
 #   * <prefix>/lib/upf_bpf.a
