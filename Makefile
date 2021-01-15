@@ -68,7 +68,6 @@ all-verbose: ## Build all in verbose mode
 config-veth-pair: ## Config veth pair. It must be run before <run-*> targets
 	sudo ./tests/scripts/config_veth_pair.sh $(DEVICE_IN)
 
-
 bild-samples: ## Build samples
 	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
 	cmake --build build --target xdp_hello_world &&  \
@@ -78,7 +77,7 @@ bild-samples: ## Build samples
 
 build-tests: ## Build tests
 	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
-	# cmake --build build --target ControlPlaneTests -j &&  \
+	cmake --build build --target ControlPlaneTests -j &&  \
 	cmake --build build --target UPFProgramTests -j && \
 	cmake --build build --target copy_bpf_program
 
@@ -93,11 +92,11 @@ run-redirect-map-sample: all ## Build all and run BPF XDP redirect sample
 	pushd $(BPF_SAMPLES_DIR) && \
 	sudo ./xdp_redirect_map -S $(DEVICE_IN) $(DEVICE_OUT)
 
-run-control-plane-tests: ## Run ControlPlaneTests
+run-control-plane-tests: force-xdp-deload ## Run ControlPlaneTests
 	cd $(BPF_BINARY_DIR) && \
 	sudo ./ControlPlaneTests
 
-run-session-manager-tests: ## Run SessionManagerTests
+run-session-manager-tests: force-xdp-deload ## Run SessionManagerTests
 	cd $(BPF_BINARY_DIR) && \
 	sudo ./UPFProgramTests --gtest_filter=$(GTEST_FILTER_ARGS)
 
@@ -109,6 +108,5 @@ run-scapy: ## Run scapy for packet manipulation
 force-xdp-deload: ## Kill all and force deload XDP programs
 	sudo ip link set dev $(DEVICE_IN) xdpgeneric off
 	sudo ip link set dev $(DEVICE_OUT) xdpgeneric off
-	sudo kill -9 $(PIDS)
-
-
+	# the "true" is used to avoid stop when execute the command.
+	sudo kill -9 $(PIDS) | true 

@@ -1,7 +1,7 @@
 #ifndef __SESSIONMANAGER_H__
 #define __SESSIONMANAGER_H__
 
-#include <UPFProgramManager.h>
+#include <UserPlaneComponent.h>
 #include <ie/fseid.h>
 #include <ie/pdr_id.h>
 #include <interfaces/RulesUtilities.h>
@@ -18,7 +18,7 @@ class ForwardingActionRules;
 class PacketDetectionRules;
 class SessionBpf;
 
-// FIXME navarrothiago - This class compose the UPFProgram. When the program is deleted,
+// FIXME navarrothiago - This class compose the UserPlaneComponent. When the program is deleted,
 // this class must be updated.
 
 /**
@@ -135,6 +135,7 @@ public:
   void removePDR(uint64_t seid, std::shared_ptr<PacketDetectionRules> pPdr);
 
 private:
+  void createBPFContext(seid_t_ seid);
   /**
    * @brief Lookup PDRs by key (UE IP address or TEID) in the BPF map.
    *
@@ -178,6 +179,7 @@ private:
   std::shared_ptr<BPFMap> mpSessionsMap;
   std::shared_ptr<BPFMap> mpUplinkPDRsMap;
   std::shared_ptr<BPFMap> mpDownlinkPDRsMap;
+  std::shared_ptr<BPFMap> mpFARsMap;
 };
 
 // TODO navarrothiago - Return boolean?
@@ -199,7 +201,7 @@ SessionManager::pdrs_t SessionManager::lookupPDRs(KeyType key, std::shared_ptr<B
     return pdrs;
   }
 
-  auto pUtils = UPFProgramManager::getInstance().getRulesUtilities();
+  auto pUtils = UserPlaneComponent::getInstance().getRulesUtilities();
   for(uint32_t i = 0; i < pPdrs->pdrs_counter; i++) {
     pPdr = pUtils->createPDR(&pPdrs->pdrs[i]);
     pdrs.push_back(pPdr);

@@ -1,5 +1,5 @@
 #include <SessionManager.h>
-#include <UPFProgramManager.h>
+#include <UserPlaneComponent.h>
 #include <gtest/gtest.h>
 #include <pfcp/pfcp_pdr.h>
 #include <utils/LogDefines.h>
@@ -21,13 +21,13 @@ public:
   void SetUp() override
   {
     LOG_FUNC();
-    UPFProgramManager::getInstance().setup(mpRulesFactory);
-    mpSessionManager = UPFProgramManager::getInstance().getSessionManager();
+    UserPlaneComponent::getInstance().setup(mpRulesFactory);
+    mpSessionManager = UserPlaneComponent::getInstance().getSessionManager();
   }
   void TearDown() override
   {
     LOG_FUNC();
-    UPFProgramManager::getInstance().tearDown();
+    UserPlaneComponent::getInstance().tearDown();
     mpSessionManager.reset();
   }
   virtual ~SessionManagerTests() {}

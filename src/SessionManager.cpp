@@ -23,6 +23,7 @@ void SessionManager::createSession(std::shared_ptr<SessionBpf> pSession)
     LOG_ERROR("Cannot create session {}", pSession->getSeid());
     throw std::runtime_error("Cannot create session");
   }
+
 }
 
 void SessionManager::removeSession(uint64_t seid)
@@ -124,7 +125,7 @@ std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(uint64_t seid, u
     return pPdr;
   }
 
-  auto pUtils = UPFProgramManager::getInstance().getRulesUtilities();
+  auto pUtils = UserPlaneComponent::getInstance().getRulesUtilities();
   pPdr = pUtils->createPDR(pPdrFound);
 
   return pPdr;
@@ -165,7 +166,7 @@ std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(uint64_t seid, 
     return pFar;
   }
 
-  auto pUtils = UPFProgramManager::getInstance().getRulesUtilities();
+  auto pUtils = UserPlaneComponent::getInstance().getRulesUtilities();
   pFar = pUtils->createFAR(pFarFound);
 
   return pFar;
@@ -197,7 +198,7 @@ void SessionManager::updateFAR(uint64_t seid, std::shared_ptr<ForwardingActionRu
 
   // Update all fields.
   // *pFarFound = std::move(*pFar);
-  auto pUtil = UPFProgramManager::getInstance().getRulesUtilities();
+  auto pUtil = UserPlaneComponent::getInstance().getRulesUtilities();
   pUtil->copyFAR(pFarFound, pFar.get());
 
   // Update session in BPF map.
@@ -230,7 +231,7 @@ void SessionManager::updatePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
 
   // Suppose that the other parameters was already check.
   // TODO (navarrothiago) check parameters.
-  auto pUtil = UPFProgramManager::getInstance().getRulesUtilities();
+  auto pUtil = UserPlaneComponent::getInstance().getRulesUtilities();
   auto source_interface = pPdrFound->pdi.source_interface.interface_value;
   switch(source_interface) {
   case INTERFACE_VALUE_ACCESS:
@@ -349,4 +350,10 @@ void SessionManager::removePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
   mpSessionsMap->update(session.seid, session, BPF_EXIST);
 
   LOG_DBG("PDR {} was removed at in session {}!", pPdr->getPdrId().rule_id, seid);
+}
+
+void SessionManager::createBPFContext(seid_t_ seid)
+{
+  LOG_FUNC();
+  // UserPlaneComponent::getInstance().updateProgMap(seid);
 }

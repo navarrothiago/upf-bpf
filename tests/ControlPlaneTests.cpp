@@ -3,7 +3,8 @@
 #include "interfaces/RulesUtilitiesImpl.h"
 #include "interfaces/SessionBpfImpl.h"
 #include <SessionManager.h>
-#include <UPFProgramManager.h>
+#include <UserPlaneComponent.h>
+#include <UPFProgram.h>
 #include <arpa/inet.h> // inet_aton
 #include <assert.h>    // assert
 #include <bpf/libbpf.h>
@@ -21,7 +22,7 @@ static std::shared_ptr<SessionManager> spSessionManager;
 // simple per-protocol drop counter
 static void poll_stats(int interval, teid_t_ key_teid)
 {
-  auto pMaps = UPFProgramManager::getInstance().getMaps();
+  auto pMaps = UserPlaneComponent::getInstance().getUPFProgram()->getMaps();
   pfcp_pdr_t_ pdr;
   const int nr_cpus = libbpf_num_possible_cpus();
   const uint32_t row = XDP_ACTION_MAX;
@@ -73,7 +74,7 @@ int insert_elements(u32 key_teid)
   u32 seid = 1;
   struct in_addr src_addr;
 
-  auto pMaps = UPFProgramManager::getInstance().getMaps();
+  auto pMaps = UserPlaneComponent::getInstance().getUPFProgram()->getMaps();
 
   // Fill the source address;
   // TODO navarrothiago - Avoid hardcoded.
@@ -175,8 +176,11 @@ int main(int argc, char **argv)
 {
   std::shared_ptr<RulesUtilities> mpRulesFactory;
   mpRulesFactory = std::make_shared<RulesUtilitiesImpl>();
-  UPFProgramManager::getInstance().setup(mpRulesFactory);
-  spSessionManager = UPFProgramManager::getInstance().getSessionManager();
+  UserPlaneComponent::getInstance().setup(mpRulesFactory);
+  spSessionManager = UserPlaneComponent::getInstance().getSessionManager();
+  // SessionProgram rt;
+  // rt.setup(2);
+
   // if(insert_elements(100)) {
   //   exit(1);
   // }

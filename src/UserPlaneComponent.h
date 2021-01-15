@@ -1,0 +1,86 @@
+#ifndef __USERPLANECOMPONENT_H__
+#define __USERPLANECOMPONENT_H__
+
+#include <bpf/libbpf.h> // enum libbpf_print_level
+#include <memory>
+
+class SessionManager;
+class RulesUtilities;
+class UPFProgram;
+class SessionProgram;
+
+/**
+ * @brief User Plane component class to abstract the BPF Service Function Chain for mobile core network.
+ *
+ */
+class UserPlaneComponent
+{
+public:
+  /**
+   * @brief Destroy the User Plane Component object.
+   *
+   */
+  virtual ~UserPlaneComponent();
+  /**
+   * @brief Get the Instance object.
+   *
+   * @return The singleton instance.
+   */
+  static UserPlaneComponent &getInstance();
+  /**
+   * @brief Setup User Plane Component.
+   * Used to setup all the program.
+   *
+   * @param pRulesUtilities
+   */
+  void setup(std::shared_ptr<RulesUtilities> pRulesUtilities);
+  /**
+   * @brief Tear down User Plane Component.
+   * Tear down all programs that were setup.
+   * 
+   */
+  void tearDown();
+  /**
+   * @brief Get the Session Manager object.
+   *
+   * @return std::shared_ptr<SessionManager> The session manager reference.
+   */
+  std::shared_ptr<SessionManager> getSessionManager() const;
+  /**
+   * @brief Get the Rules Factory object.
+   *
+   * @return std::shared_ptr<RulesFactory> The rules factory reference.
+   */
+  std::shared_ptr<RulesUtilities> getRulesUtilities() const;
+  /**
+   * @brief Get UPFProgram object.
+   *
+   * @return std::shared_ptr<UPFProgram> The UPFProgram reference.
+   */
+  std::shared_ptr<UPFProgram> getUPFProgram() const;
+
+private:
+  /**
+   * @brief Construct a new User Plane Component object.
+   *
+   * @param pRulesUtilities the wrapper for rules (PDR, FAR).
+   */
+  UserPlaneComponent();
+
+  // Log function for libbpf. Do not used it!!
+  static int printLibbpfLog(enum libbpf_print_level lvl, const char *fmt, va_list args);
+
+  // The session manager reference.
+  std::shared_ptr<SessionManager> mpSessionManager;
+
+  // The rules factory reference.
+  std::shared_ptr<RulesUtilities> mpRulesUtilities;
+
+  // The UPFProgram (BPF program entry point) reference.
+  std::shared_ptr<UPFProgram> mpUPFProgram;
+
+  // The SessionProgram (BPF program for PFCP Session) reference.
+  std::shared_ptr<SessionProgram> mpSessionProgram;
+};
+
+#endif // __USERPLANECOMPONENT_H__
