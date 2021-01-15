@@ -7,7 +7,7 @@
 #include <endian.h>
 #include <linux/if_ether.h>
 #include <linux/if_vlan.h>
-#include <maps.h>
+#include <upf_xdp_bpf_maps.h>
 #include <pfcp/pfcp_far.h>
 #include <pfcp/pfcp_pdr.h>
 #include <protocols/eth.h>
@@ -407,8 +407,8 @@ static u32 eth_handle(struct xdp_md *p_ctx, struct ethhdr *ethh)
   }
 }
 
-SEC("xdp_redirect_map")
-int upf_chain(struct xdp_md *p_ctx)
+SEC("xdp_entry_point")
+int entry_point(struct xdp_md *p_ctx)
 {
   void *p_data = (void *)(long)p_ctx->data;
   struct ethhdr *eth = p_data;

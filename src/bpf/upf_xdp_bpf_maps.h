@@ -8,6 +8,13 @@
 
 #define MAX_LENGTH 10
 
+struct bpf_map_def SEC("maps") m_jmp_table = {
+	.type        = BPF_MAP_TYPE_PROG_ARRAY,
+	.key_size    = sizeof(u32), // program identifier. 
+	.value_size  = sizeof(u32), // program.
+	.max_entries = 8,
+};
+
 struct bpf_map_def SEC("maps") m_seid_session = {
 	.type        = BPF_MAP_TYPE_HASH,
 	.key_size    = sizeof(seid_t_), // seid

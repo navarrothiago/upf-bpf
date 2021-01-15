@@ -7,7 +7,6 @@
 #include <sys/resource.h> // rlimit
 #include <utils/LogDefines.h>
 
-
 /**
  * @brief Program states.
  */

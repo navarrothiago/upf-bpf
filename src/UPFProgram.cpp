@@ -58,7 +58,7 @@ void UPFProgram::setup()
   }
 
   // Get programs FD from skeleton object.
-  sXDPProgramInfo[0].programFd = bpf_program__fd(spSkeleton->progs.upf_chain);
+  sXDPProgramInfo[0].programFd = bpf_program__fd(spSkeleton->progs.entry_point);
   sXDPProgramInfo[1].programFd = bpf_program__fd(spSkeleton->progs.xdp_redirect_gtpu);
 
   for(uint i = 0; i < spSkeleton->skeleton->prog_cnt; i++) {

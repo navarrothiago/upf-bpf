@@ -1,11 +1,11 @@
 #include <linux/bpf.h>
 #include <bpf_helpers.h>
-#include <program_defines.h>
+#include <session_bpf_maps.h>
 #include <types.h>
 
 // Simple XDP BPF program. Everything packet will be dropped.
-SEC("xdp_session_context")
-int xdp_prog1(struct xdp_md *ctx){
+SEC("xdp_entry_point")
+int entry_point(struct xdp_md *ctx){
   char drop_message[] = "XDP SESSION CONTEXT %d\n";
   u32 *value;
   u32 key = 0;
