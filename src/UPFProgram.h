@@ -60,24 +60,36 @@ public:
   } XDPProgramInfo;
 
   /**
-   * @brief Update program map.
+   * @brief Update program int map.
    * 
    * @param key The key which will be inserted the program file descriptor.
    * @param fd The file descriptor.
    */
-  void updateProgMap(uint32_t key, uint32_t fd);
+  void updateProgramMap(uint32_t key, uint32_t fd);
+  /**
+   * @brief Remove program in map.
+   * 
+   * @param key The key which will be remove in the program map.
+   */
+  void removeProgramMap(uint32_t key);
   /**
    * @brief Get the Sessions Map object.
    * 
-   * @return The sessions map.
+   * @return std::shared_ptr<BPFMap> The seid to session map.
    */
   std::shared_ptr<BPFMap> getSessionsMap() const;
   /**
    * @brief Get the Uplink PDRs Map object.
    * 
-   * @return The uplink PDRs maps.
+   * @return std::shared_ptr<BPFMap> The uplink to PDR map.
    */
   std::shared_ptr<BPFMap> getUplinkPDRsMap() const;
+  /**
+   * @brief Get the Programs Map object.
+   * 
+   * @return std::shared_ptr<BPFMap> The seid to fd map.
+   */
+  std::shared_ptr<BPFMap> getProgramsMap() const;
 
 private:
   /**

@@ -26,4 +26,5 @@ void SignalHandler::tearDown(int signal)
 {
   LOG_FUNC();  
   UserPlaneComponent::getInstance().tearDown();
+  exit(0);
 }

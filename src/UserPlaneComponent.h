@@ -3,6 +3,7 @@
 
 #include <bpf/libbpf.h> // enum libbpf_print_level
 #include <memory>
+#include <observer/OnStateChangeSessionProgramObserver.h>
 
 class SessionManager;
 class RulesUtilities;
@@ -13,7 +14,7 @@ class SessionProgram;
  * @brief User Plane component class to abstract the BPF Service Function Chain for mobile core network.
  *
  */
-class UserPlaneComponent
+class UserPlaneComponent : public OnStateChangeSessionProgramObserver 
 {
 public:
   /**
@@ -37,7 +38,7 @@ public:
   /**
    * @brief Tear down User Plane Component.
    * Tear down all programs that were setup.
-   * 
+   *
    */
   void tearDown();
   /**
@@ -59,6 +60,11 @@ public:
    */
   std::shared_ptr<UPFProgram> getUPFProgram() const;
 
+  // From onNewSessionProgramObserver.
+  void onNewSessionProgram(u_int32_t programId, u_int32_t fileDescriptor) override;
+
+  // From onNewSessionProgramObserver.
+  void onDestroySessionProgram(u_int32_t programId) override;
 private:
   /**
    * @brief Construct a new User Plane Component object.

@@ -36,30 +36,27 @@ void UPFProgram::setup()
   int err;
   unsigned int key_ifmap = 0;
 
-  // Open.
   spSkeleton = mpLifeCycle->open();
-  // Initialize Maps.
   initializeMaps();
-  // Load.
   mpLifeCycle->load();
-  // Attach.
   mpLifeCycle->attach();
 
   // TODO navarrothiago - Remove hardcoded - https://github.com/navarrothiago/upf-bpf/issues/24
   // sXDPProgramInfo[0].ifIndex = if_nametoindex("eth0") ;
   // sXDPProgramInfo[0].ifIndex = if_nametoindex("wlp0s20f3");
   sXDPProgramInfo[0].ifIndex = if_nametoindex("enp0s20f0u4u2u4");
-  sXDPProgramInfo[1].ifIndex = if_nametoindex("veth0");
+  // sXDPProgramInfo[1].ifIndex = if_nametoindex("veth0");
 
   // TODO navarrothiago - remove hardcoded.
-  if(!sXDPProgramInfo[0].ifIndex || !sXDPProgramInfo[1].ifIndex ) {
+  // if(!sXDPProgramInfo[0].ifIndex || !sXDPProgramInfo[1].ifIndex ) {
+  if(!sXDPProgramInfo[0].ifIndex ) {
     perror("if_nametoindex");
     throw std::runtime_error("Interface not found!");
   }
 
   // Get programs FD from skeleton object.
   sXDPProgramInfo[0].programFd = bpf_program__fd(spSkeleton->progs.entry_point);
-  sXDPProgramInfo[1].programFd = bpf_program__fd(spSkeleton->progs.xdp_redirect_gtpu);
+  // sXDPProgramInfo[1].programFd = bpf_program__fd(spSkeleton->progs);
 
   for(uint i = 0; i < spSkeleton->skeleton->prog_cnt; i++) {
 
@@ -85,7 +82,7 @@ void UPFProgram::setup()
     sXDPProgramInfo[i].programId = sXDPProgramInfo[i].info.id;
   }
   
-  mpMaps->getMap("m_id_txcnt").update(key_ifmap, sXDPProgramInfo[1].ifIndex, 0);
+  // mpMaps->getMap("m_id_txcnt").update(key_ifmap, sXDPProgramInfo[1].ifIndex, 0);
 }
 
 std::shared_ptr<BPFMaps> UPFProgram::getMaps()
@@ -124,10 +121,16 @@ void UPFProgram::tearDown()
   }
 }
 
-void UPFProgram::updateProgMap(uint32_t key, uint32_t fd)
+void UPFProgram::updateProgramMap(uint32_t key, uint32_t fd)
 {
   LOG_FUNC();
   mpProgramsMap->update(key, fd, BPF_ANY);
+}
+
+void UPFProgram::removeProgramMap(uint32_t key) 
+{
+  LOG_FUNC();
+  mpProgramsMap->remove(key);
 }
 
 std::shared_ptr<BPFMap> UPFProgram::getSessionsMap() const
@@ -140,6 +143,12 @@ std::shared_ptr<BPFMap> UPFProgram::getUplinkPDRsMap() const
 {
   LOG_FUNC();
   return mpUplinkPDRsMap;
+}
+
+std::shared_ptr<BPFMap> UPFProgram::getProgramsMap() const
+{
+  LOG_FUNC();
+  return mpProgramsMap;
 }
 
 void UPFProgram::initializeMaps()

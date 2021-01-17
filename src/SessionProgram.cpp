@@ -5,13 +5,10 @@
 #include <sys/resource.h>     // rlimit
 #include <utils/LogDefines.h> // Logs
 
-SessionProgram::SessionProgram() { LOG_FUNC(); }
-// SessionProgram& SessionProgram::getInstance()
-// {
-//   LOG_FUNC();
-//   static SessionProgram sInstance;
-//   return sInstance;
-// }
+SessionProgram::SessionProgram() {
+   LOG_FUNC();
+    mpLifeCycle = std::make_unique<SessionProgramLifeCycle>(session_bpf_c__open, session_bpf_c__load, session_bpf_c__attach, session_bpf_c__destroy);
+}
 
 SessionProgram::~SessionProgram()
 {
@@ -26,7 +23,17 @@ void SessionProgram::setup(uint32_t sessionId)
   // initializeMaps();
   mpLifeCycle->load();
   mpLifeCycle->attach();
+ 
+}
 
-  // UPFProgram::getInstance().updateProgMap(sessionId, fd);
-  // mBPFObjectMap.insert(std::pair<uint32_t, bpf_object*>(sessionId, mpSessionBPFObject));
+void SessionProgram::tearDown() 
+{
+  LOG_FUNC();
+  mpLifeCycle->destroy();
+}
+
+int SessionProgram::getFileDescriptor() const
+{
+  LOG_FUNC();
+  return bpf_program__fd(mpLifeCycle->getBPFSkeleton()->progs.entry_point);
 }

@@ -2,6 +2,7 @@
 #include <interfaces/ForwardingActionRules.h>
 #include <interfaces/PacketDetectionRules.h>
 #include <interfaces/SessionBpf.h>
+#include <SessionProgramManager.h>
 #include <pfcp/pfcp_session.h>
 #include <utils/LogDefines.h>
 #include <wrappers/BPFMaps.h>
@@ -24,6 +25,7 @@ void SessionManager::createSession(std::shared_ptr<SessionBpf> pSession)
     throw std::runtime_error("Cannot create session");
   }
 
+  SessionProgramManager::getInstance().create(session.seid);
 }
 
 void SessionManager::removeSession(uint64_t seid)
@@ -355,5 +357,5 @@ void SessionManager::removePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
 void SessionManager::createBPFContext(seid_t_ seid)
 {
   LOG_FUNC();
-  // UserPlaneComponent::getInstance().updateProgMap(seid);
+  // UserPlaneComponent::getInstance().updateProgramMap(seid);
 }

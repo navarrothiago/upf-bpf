@@ -6,7 +6,7 @@
 #include <utils/LogDefines.h>
 
 /**
- * @brief This class abstract the communication with a specific BPF map.
+ * @brief This class abstracts the communication with a specific BPF map.
  */
 class BPFMap
 {
@@ -61,7 +61,7 @@ private:
 template <class KeyType>
 int BPFMap::lookup(KeyType &key, void *pValue)
 {
-  // LOG_FUNC();
+  // Do not put LOG_FUNC(); here.
   int mapFd = bpf_map__fd(mpBPFMap);
   int lookupReturn = bpf_map_lookup_elem(mapFd, &key, pValue);
 
@@ -74,7 +74,7 @@ int BPFMap::lookup(KeyType &key, void *pValue)
 template <class KeyType, class ValueType>
 int BPFMap::update(KeyType &key, ValueType &value, int flags)
 {
-  // LOG_FUNC();
+  // Do not put LOG_FUNC(); here.
   int mapFd = bpf_map__fd(mpBPFMap);
   int updateReturn = bpf_map_update_elem(mapFd, &key, &value, flags);
 
@@ -87,6 +87,7 @@ int BPFMap::update(KeyType &key, ValueType &value, int flags)
 template <class KeyType>
 int BPFMap::remove(KeyType &key)
 {
+  // Do not put LOG_FUNC(); here.
   int mapFd = bpf_map__fd(mpBPFMap);
   int deleteReturn = bpf_map_delete_elem(mapFd, &key);
 

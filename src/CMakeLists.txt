@@ -1,11 +1,14 @@
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/toolchain.cmake)
 add_subdirectory(bpf)
 
+# add_definitions(-DDEBUG_LIBBPF)
+
 add_library(upf_xdp STATIC
   UserPlaneComponent.cpp
   SignalHandler.cpp
   UPFProgram.cpp
   SessionProgram.cpp
+  SessionProgramManager.cpp
   SessionManager.cpp
   wrappers/BPFMaps.cpp
   wrappers/BPFMap.cpp
@@ -26,6 +29,7 @@ target_include_directories(upf_xdp PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bpf>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/skel>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/interfaces>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/observer>
 )
 
 add_dependencies(upf_xdp upf_xdp_bpf_all)

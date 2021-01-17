@@ -21,6 +21,10 @@ class SessionBpf;
 // FIXME navarrothiago - This class compose the UserPlaneComponent. When the program is deleted,
 // this class must be updated.
 
+// TODO navarrothiago - SessionRequestHandler? SessionMessageHandler?
+
+// TODO navarrothiago - Decouple PDR and FAR management.
+
 /**
  * @brief This class abstracts the communication to manager the session BPF maps.
  * It communicate with BPF maps in order to update its PDRs and FARs.
@@ -179,6 +183,7 @@ private:
   std::shared_ptr<BPFMap> mpSessionsMap;
   std::shared_ptr<BPFMap> mpUplinkPDRsMap;
   std::shared_ptr<BPFMap> mpDownlinkPDRsMap;
+  std::shared_ptr<BPFMap> mpProgramsMap;
   std::shared_ptr<BPFMap> mpFARsMap;
 };
 
