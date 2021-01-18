@@ -24,10 +24,10 @@ void Logger::print(const char *pMessage, LOG_TYPE_T type, const char *pFile, int
 
   if(pFile != NULL) {
     if(pMessage != NULL) {
-      out = fmt::format("[{}.{}] ({}, {}) {}", processId, threadId, pFile, line, pMessage);
+      out = fmt::format("[{}.{}] ({}:{}) {}", processId, threadId, pFile, line, pMessage);
       // Free the pointer used to store the list.
     } else {
-      out = fmt::format("[{}.{}] ({}, {}))", processId, threadId, pFile, line);
+      out = fmt::format("[{}.{}] ({}:{}))", processId, threadId, pFile, line);
     }
   } else {
     if(pMessage != NULL) {

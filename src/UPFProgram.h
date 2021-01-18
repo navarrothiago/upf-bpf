@@ -12,6 +12,7 @@
 #include <ProgramLifeCycle.hpp>
 
 class BPFMaps;
+class BPFMap;
 class SessionManager;
 class RulesUtilities;
 

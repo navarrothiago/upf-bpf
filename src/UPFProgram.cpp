@@ -7,6 +7,7 @@
 #include <net/if.h>        // if_nametoindex
 #include <stdexcept>       // exception
 #include <wrappers/BPFMaps.h>
+#include <wrappers/BPFMap.hpp>
 
 UPFProgram::XDPProgramInfo sXDPProgramInfo[2];
 
@@ -34,7 +35,7 @@ void UPFProgram::setup()
   LOG_FUNC();
 
   int err;
-  unsigned int key_ifmap = 0;
+  // unsigned int key_ifmap = 0;
 
   spSkeleton = mpLifeCycle->open();
   initializeMaps();
@@ -130,7 +131,10 @@ void UPFProgram::updateProgramMap(uint32_t key, uint32_t fd)
 void UPFProgram::removeProgramMap(uint32_t key) 
 {
   LOG_FUNC();
-  mpProgramsMap->remove(key);
+  s32 fd;
+  if(mpProgramsMap->lookup(key, &fd) == 0){
+    mpProgramsMap->remove(key);
+  }
 }
 
 std::shared_ptr<BPFMap> UPFProgram::getSessionsMap() const
@@ -159,9 +163,9 @@ void UPFProgram::initializeMaps()
 
   // Warning - The name of the map must be the same of the BPF program.
   auto sessionsMap = mpMaps->getMap("m_seid_session");
-  auto uplinkPDRsMap = mpMaps->getMap("m_teid_pdrs");
+  // auto uplinkPDRsMap = mpMaps->getMap("m_teid_pdrs");
   auto programsMap = mpMaps->getMap("m_jmp_table");
   mpSessionsMap = std::make_shared<BPFMap>(sessionsMap);
-  mpUplinkPDRsMap = std::make_shared<BPFMap>(uplinkPDRsMap);
+  // mpUplinkPDRsMap = std::make_shared<BPFMap>(uplinkPDRsMap);
   mpProgramsMap = std::make_shared<BPFMap>(programsMap);
 }

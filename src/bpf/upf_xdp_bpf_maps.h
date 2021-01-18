@@ -8,11 +8,14 @@
 
 #define MAX_LENGTH 10
 
+// Maps TEID to SessionProgram
 struct bpf_map_def SEC("maps") m_jmp_table = {
 	.type        = BPF_MAP_TYPE_PROG_ARRAY,
-	.key_size    = sizeof(u32), // program identifier. 
-	.value_size  = sizeof(u32), // program.
-	.max_entries = 8,
+	.key_size    = sizeof(teid_t_), // program identifier. 
+	.value_size  = sizeof(s32), // program.
+  // TODO navarrothiago - check how the management works. The size should be equal
+  // to the maximum number of sessions.
+	.max_entries = 10000,
 };
 
 struct bpf_map_def SEC("maps") m_seid_session = {
@@ -27,21 +30,6 @@ struct bpf_map_def SEC("maps") m_id_txcnt = {
 	.key_size    = sizeof(u32), // id
 	.value_size  = sizeof(u32), // tx counter
 	.max_entries = 1,
-};
-
-// Uplink maps.
-struct bpf_map_def SEC("maps") m_teid_pdrs_counter = {
-	.type        = BPF_MAP_TYPE_HASH,
-	.key_size    = sizeof(teid_t_), // teid
-	.value_size  = sizeof(u32), // number of allocated PDR in teid
-	.max_entries = 100000,
-};
-
-struct bpf_map_def SEC("maps") m_teid_pdrs = {
-	.type        = BPF_MAP_TYPE_HASH,
-	.key_size    = sizeof(teid_t_), // teid
-	.value_size  = sizeof(pfcp_pdr_t_) * MAX_LENGTH, // list of pdr
-	.max_entries = 100000,
 };
 
 //  Downlink maps.

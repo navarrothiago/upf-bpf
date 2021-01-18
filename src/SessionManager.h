@@ -96,20 +96,6 @@ public:
    */
   std::shared_ptr<PacketDetectionRules> lookupPDR(uint64_t seid, uint16_t ruleId);
   /**
-   * @brief Lookup PDRs by TEID in the BPF map.
-   *
-   * @param teid The tunnel endpoint identifier which will be used to lookup.
-   * @return pdrs_t The PDRs found or empty with not found.
-   */
-  pdrs_t lookupPDRsUplink(uint32_t teid);
-  /**
-   * @brief Lookup PDRs by UE IP in the BPF map.
-   *
-   * @param ueIPAddress The IP of the user equipament which will be used to lookup.
-   * @return pdrs_t The PDRs found or empty with not found.
-   */
-  pdrs_t lookupPDRsDownlink(uint32_t ueIPAddress);
-  /**
    * @brief Update the FAR in the BPF map.
    *
    * @param seid The session endpoint identifier.
@@ -139,7 +125,6 @@ public:
   void removePDR(uint64_t seid, std::shared_ptr<PacketDetectionRules> pPdr);
 
 private:
-  void createBPFContext(seid_t_ seid);
   /**
    * @brief Lookup PDRs by key (UE IP address or TEID) in the BPF map.
    *
@@ -148,40 +133,8 @@ private:
    */
   template <class KeyType>
   pdrs_t lookupPDRs(KeyType key, std::shared_ptr<BPFMap> pBPFMap);
-  /**
-   * @brief Add the PDR in the BPF map.
-   * Use this method when the source_interface is ACCESS or CORE.
-   *
-   * @param key The key (e.g. TEID, UE IP Address) which will be used to add the PDR.
-   * @param pdr The PDR to be added.
-   * @param pBPFMap The BPF map which is related to the source_interface of the PDR.
-   */
-  template <class KeyType>
-  void addPDR(KeyType key, pfcp_pdr_t_ &pdr, std::shared_ptr<BPFMap> pBPFMap);
-  /**
-   * @brief Update the PDR in the BPF map.
-   * Use this method when the source_interface is ACCESS or CORE.
-   *
-   * @param key The key (e.g. TEID, UE IP Address) which will be used to update the PDR.
-   * @param pdr The PDR to be updated.
-   * @param pBPFMap The BPF map which is related to the source_interface of the PDR.
-   */
-  template <class KeyType>
-  void updatePDR(KeyType key, pfcp_pdr_t_ &pdr, std::shared_ptr<BPFMap> pBPFMap);
-  /**
-   * @brief Remove the PDR in the BPF map.
-   * Use this method when the source_interface is ACCESS or CORE.
-   *
-   * @param key The key which will be used add the PDR.
-   * @param pdr The PDR to be removed.
-   * @param pBPFMap The BPF map which is related to the source_interface of the PDR.
-   */
-  template <class KeyType>
-  void removePDR(KeyType teid, pfcp_pdr_t_ &pdr, std::shared_ptr<BPFMap> pBPFMap);
-
   // Store the abstraction of the BPF map.
   std::shared_ptr<BPFMap> mpSessionsMap;
-  std::shared_ptr<BPFMap> mpUplinkPDRsMap;
   std::shared_ptr<BPFMap> mpDownlinkPDRsMap;
   std::shared_ptr<BPFMap> mpProgramsMap;
   std::shared_ptr<BPFMap> mpFARsMap;
@@ -213,95 +166,6 @@ SessionManager::pdrs_t SessionManager::lookupPDRs(KeyType key, std::shared_ptr<B
   }
 
   return pdrs;
-}
-
-template <class KeyType>
-void SessionManager::addPDR(KeyType key, pfcp_pdr_t_ &pdr, std::shared_ptr<BPFMap> pBPFMap)
-{
-  LOG_FUNC();
-  pfcp_pdrs_t_ pdrs;
-  memset(&pdrs, 0, sizeof(pfcp_pdr_t_));
-
-  // If exists check the counter. If not, add the pdr to pdrs list.
-  // The key could be TEID or the UE IP address.
-  if(pBPFMap->lookup(key, &pdrs) == 0) {
-    // Check the pdr counter.
-    if(pdrs.pdrs_counter >= PDRS_MAX_SIZE) {
-      LOG_ERROR("Array is full!! The PDR {} cannot be added in the key {}", pdr.pdr_id.rule_id, key);
-      throw std::runtime_error("The PDR cannot be added in the key");
-    }
-  }
-
-  LOG_DBG("There is {} PDRs available in the key {} (TEID||UE IP)->PDRs map", pdrs.pdrs_counter, key);
-
-  // Add the element in the end of the pdrs array.
-  // The next position is represented by the counter var.
-  // Update the counter.
-  uint32_t index = pdrs.pdrs_counter++;
-  pdrs.pdrs[index] = pdr;
-
-  // Update eBPF map.
-  pBPFMap->update(key, pdrs, BPF_ANY);
-  LOG_DBG("PDR {} was added at index {} in key {} at (TEID||UE IP)->PDRs map!", pdr.pdr_id.rule_id, index, key);
-  LOG_DBG("There is {} PDRs available in the key {} (TEID||UE IP)->PDRs map", pdrs.pdrs_counter, key);
-}
-
-template <class KeyType>
-void SessionManager::updatePDR(KeyType key, pfcp_pdr_t_ &pdr, std::shared_ptr<BPFMap> pBPFMap)
-{
-  LOG_FUNC();
-  pfcp_pdrs_t_ pdrs;
-  memset(&pdrs, 0, sizeof(pfcp_pdr_t_));
-
-  // If not exists, error. PDR not found.
-  // The key could be TEID or the UE IP address.
-  if(pBPFMap->lookup(key, &pdrs) != 0) {
-    LOG_ERROR("PDR {} not exists in the key {}", pdr.pdr_id.rule_id, key);
-    throw std::runtime_error("The PDR not exists in the key");
-  }
-
-  LOG_DBG("There is {} PDRs available in the key {} (TEID||UE IP)->PDRs map", pdrs.pdrs_counter, key);
-
-  // Remove the element in the end of the pdrs array.
-  // The next position is represented by the counter var.
-  // Update the counter.
-  uint32_t index = pdrs.pdrs_counter++;
-  pdrs.pdrs[index] = pdr;
-
-  // Update eBPF map.
-  pBPFMap->update(key, pdrs, BPF_ANY);
-  LOG_DBG("PDR {} was updated at index {} in key {} at (TEID||UE IP)->PDRs map!", pdr.pdr_id.rule_id, index, key);
-  LOG_DBG("There is {} PDRs available in the key {} (TEID||UE IP)->PDRs map", pdrs.pdrs_counter, key);
-}
-template <class KeyType>
-void SessionManager::removePDR(KeyType key, pfcp_pdr_t_ &pdr, std::shared_ptr<BPFMap> pBPFMap)
-{
-  LOG_FUNC();
-  pfcp_pdrs_t_ pdrs;
-  memset(&pdrs, 0, sizeof(pfcp_pdr_t_));
-
-  // If exists check the counter. If not, add the pdr to pdrs list.
-  // The key could be TEID or the UE IP address.
-  if(pBPFMap->lookup(key, &pdrs) != 0) {
-    // Error, removing PDR that does not exist.
-    LOG_ERROR("Array is empty!! The PDR {} cannot be removed in the key {}", pdr.pdr_id.rule_id, key);
-    throw std::runtime_error("The PDR cannot be added in the key");
-  }
-
-  LOG_DBG("There is {} PDRs available in the key {} (TEID||UE IP)->PDRs map", pdrs.pdrs_counter, key);
-
-  // Remove the element. Only update the counter.
-  uint32_t index = pdrs.pdrs_counter--;
-
-  if(pdrs.pdrs_counter == 0) {
-    LOG_DBG("Free memory, remove PDRs array for the expecific key.");
-    pBPFMap->remove(key);
-  } else {
-    // Update eBPF map.
-    pBPFMap->update(key, pdrs, BPF_ANY);
-  }
-  LOG_DBG("PDR was removed at index {} in key {} at (TEID||UE IP)->PDRs map!", pdr.pdr_id.rule_id, index, key);
-  LOG_DBG("There is {} PDRs available in the key {} (TEID||UE IP)->PDRs map", pdrs.pdrs_counter, key);
 }
 
 #endif // __SESSIONMANAGER_H__

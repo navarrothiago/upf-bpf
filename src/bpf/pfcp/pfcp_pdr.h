@@ -6,6 +6,7 @@
 
 typedef struct pfcp_pdr_s
 {
+  // TODO navarrothiago - Remove local_seid.
   u64 local_seid;
   pdr_id_t_ pdr_id;
   precedence_t_ precedence;

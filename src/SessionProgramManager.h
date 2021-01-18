@@ -54,6 +54,13 @@ public:
    * @param pObserver The observer which will be notify when a SessionProgram is created.
    */
   void setOnNewSessionObserver(OnStateChangeSessionProgramObserver *pObserver);
+  /**
+   * @brief Find the Session Program object.
+   * 
+   * @param seid The session identifier.
+   * @return std::shared_ptr<SessionProgram> The program, which represents the session.
+   */
+  std::shared_ptr<SessionProgram> findSessionProgram(uint32_t seid);
 
 private:
   /**

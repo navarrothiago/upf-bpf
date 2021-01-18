@@ -72,6 +72,12 @@ void SessionProgramManager::setOnNewSessionObserver(OnStateChangeSessionProgramO
   mpOnNewSessionProgramObserver = pObserver;
 }
 
+std::shared_ptr<SessionProgram> SessionProgramManager::findSessionProgram(uint32_t seid) 
+{
+  LOG_FUNC();
+  return mSessionProgramMap.find(seid)->second;
+}
+
 SessionProgramManager::SessionProgramManager() 
 {
   LOG_FUNC();

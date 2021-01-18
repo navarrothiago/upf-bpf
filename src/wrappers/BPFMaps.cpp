@@ -9,7 +9,8 @@ BPFMaps::BPFMaps(bpf_object_skeleton *pBPFObjectSkeleton)
   // Check if there is at least one element.
   if(mpBPFObjectSkeleton->map_cnt >= 0) {
     for(unsigned int i = 0; i < mpBPFObjectSkeleton->map_cnt; i++) {
-      mMaps.emplace_back(*mpBPFObjectSkeleton->maps[i].map);
+      std::string name(mpBPFObjectSkeleton->maps[i].name);
+      mMaps.emplace_back(*mpBPFObjectSkeleton->maps[i].map, name);
     }
   }
 }
