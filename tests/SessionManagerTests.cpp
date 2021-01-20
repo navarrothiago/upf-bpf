@@ -35,6 +35,7 @@ public:
   std::shared_ptr<RulesUtilities> mpRulesFactory;
 };
 
+// TODO navarrothiago - Create UT with two sessions.
 TEST_F(SessionManagerTests, manageSession)
 {
   LOG_FUNC();

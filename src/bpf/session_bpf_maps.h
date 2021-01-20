@@ -44,10 +44,11 @@ struct bpf_map_def SEC("maps") m_teid_pdrs_counter = {
 	.max_entries = 100000,
 };
 // Uplink map.
-struct bpf_map_def SEC("maps") m_teid_pdrs = {
+// TODO navarrothiago - Store multiple PDR.
+struct bpf_map_def SEC("maps") m_teid_pdr = {
 	.type        = BPF_MAP_TYPE_HASH,
 	.key_size    = sizeof(teid_t_), // teid
-	.value_size  = sizeof(pfcp_pdr_t_) * MAX_LENGTH, // list of pdr
+	.value_size  = sizeof(pfcp_pdr_t_), // assuming only one PDR
 	.max_entries = 100000,
 };
 

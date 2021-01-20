@@ -63,6 +63,12 @@ public:
    * @return std::shared_ptr<BPFMap> The uplink to PDR map.
    */
   std::shared_ptr<BPFMap> getUplinkPDRsMap() const;
+  /**
+   * @brief Get the Counter Map object.
+   * 
+   * @return std::shared_ptr<BPFMap> The counter map.
+   */
+  std::shared_ptr<BPFMap> getCounterMap() const;
 
 private:
   /**
@@ -82,6 +88,9 @@ private:
 
   // The uplink PDR eBPF map.
   std::shared_ptr<BPFMap> mpUplinkPDRsMap;
+
+  // The uplink PDR eBPF map.
+  std::shared_ptr<BPFMap> mpCounterMap;
 
   // The BPF lifecycle program.
   std::unique_ptr<SessionProgramLifeCycle> mpLifeCycle;

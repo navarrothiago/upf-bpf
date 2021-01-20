@@ -7,6 +7,7 @@
 #include <pfcp/pfcp_session.h>
 #include <protocols/eth.h>
 #include <utils/logger.h>
+#include "xdp_stats_kern.h"
 // #include <protocols/gtpu.h>
 #include <protocols/ip.h>
 // #include <protocols/udp.h>
@@ -207,12 +208,13 @@ int xdp_redirect_gtpu(struct xdp_md *p_ctx)
 
 // Simple XDP BPF program. Everything packet will be dropped.
 SEC("xdp_entry_point")
-int entry_point(struct xdp_md *ctx){
-  char drop_message[] = "XDP SESSION CONTEXT %d\n";
-  u32 *value;
+int entry_point(struct xdp_md *p_ctx){
+  char drop_message[] = "XDP SESSION CONTEXT\n";
+  // u32 *value;
   u32 key = 0;
 
-  bpf_trace_printk(&drop_message, sizeof(drop_message), *value);
+  bpf_trace_printk(&drop_message, sizeof(drop_message));
+  u32 action = xdp_stats_record_action(p_ctx, XDP_PASS);
   
   return XDP_PASS;
 }

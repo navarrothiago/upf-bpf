@@ -6,6 +6,17 @@
 
 //-------------------------------------
 // 8.2.2 Source Interface
+// FIXME navarrothiago - conflit with destination_interface
+// enum source_interface_value_e
+// {
+//   /* Request / Initial message */
+//   INTERFACE_VALUE_ACCESS = 0,
+//   INTERFACE_VALUE_CORE = 1,
+//   INTERFACE_VALUE_SGI_LAN_N6_LAN = 2,
+//   INTERFACE_VALUE_CP_FUNCTION = 3,
+//   INTERFACE_VALUE_5G_VN_INTERNAL = 4
+// };
+
 typedef struct source_interface
 {
   ie_base_t_ base;

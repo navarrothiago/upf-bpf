@@ -65,6 +65,8 @@ public:
 
   // From onNewSessionProgramObserver.
   void onDestroySessionProgram(u_int32_t programId) override;
+
+  // TODO navarrothiago - getSessionManger?
 private:
   /**
    * @brief Construct a new User Plane Component object.

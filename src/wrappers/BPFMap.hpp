@@ -77,7 +77,7 @@ int BPFMap::lookup(KeyType &key, void *pValue)
   int lookupReturn = bpf_map_lookup_elem(mapFd, &key, pValue);
 
   if(lookupReturn != 0) {
-    LOG_INF("Lookup error: {}. The key {} cannot be removed in map {}", strerror(lookupReturn), key, mName);
+    LOG_INF("{}. The key {} cannot be found in map {}", strerror(lookupReturn), key, mName);
   }else {
     LOG_DBG("The key {} was found at {} map!", key, mName);
   }
@@ -92,7 +92,7 @@ int BPFMap::update(KeyType &key, ValueType &value, int flags)
   int updateReturn = bpf_map_update_elem(mapFd, &key, &value, flags);
 
   if(updateReturn != 0) {
-    LOG_ERROR("Update error: {}. The key {} cannot be updated in map {}", strerror(updateReturn), key, mName);
+    LOG_ERROR("{}. The key {} cannot be updated in map {}", strerror(updateReturn), key, mName);
     throw std::runtime_error("The BPF map cannot be updated");
   }else{
     LOG_DBG("The key {} was updated at {} map!", key, mName);
@@ -108,7 +108,7 @@ int BPFMap::remove(KeyType &key)
   int deleteReturn = bpf_map_delete_elem(mapFd, &key);
 
   if(deleteReturn != 0) {
-    LOG_ERROR("Delete error: {}. The key {} cannot be removed in map {}", strerror(deleteReturn), key, mName);
+    LOG_ERROR("{}. The key {} cannot be removed in map {}", strerror(deleteReturn), key, mName);
     throw std::runtime_error("The BPF map cannot be removed");
   } else {
     LOG_DBG("The key {} was removed at {} map!", key, mName);

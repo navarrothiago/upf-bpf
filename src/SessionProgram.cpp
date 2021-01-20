@@ -59,6 +59,12 @@ std::shared_ptr<BPFMap> SessionProgram::getUplinkPDRsMap() const
   return mpUplinkPDRsMap;
 }
 
+std::shared_ptr<BPFMap> SessionProgram::getCounterMap() const
+{
+  LOG_FUNC();
+  return mpCounterMap;
+}
+
 void SessionProgram::initializeMaps()
 {
   LOG_FUNC();
@@ -69,5 +75,6 @@ void SessionProgram::initializeMaps()
   // Initialize maps.
   mpPDRMap = std::make_shared<BPFMap>(mpMaps->getMap("m_pdrs"));
   mpFARMap = std::make_shared<BPFMap>(mpMaps->getMap("m_fars"));
-  mpUplinkPDRsMap = std::make_shared<BPFMap>(mpMaps->getMap("m_teid_pdrs"));
+  mpUplinkPDRsMap = std::make_shared<BPFMap>(mpMaps->getMap("m_teid_pdr"));
+  mpCounterMap = std::make_shared<BPFMap>(mpMaps->getMap("mc_stats"));
 }

@@ -53,9 +53,7 @@ static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
     return XDP_PASS;
   }
 
-  green();
   bpf_debug("GTP GPDU received");
-  reset();
 
   if(!ip_inner_check_ipv4(p_ctx, (struct iphdr *)(p_gtpuh + 1))) {
     bpf_debug("Invalid IP inner");
@@ -63,7 +61,8 @@ static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
   }
 
   // Jump to session context.
-  bpf_tail_call(p_ctx, &m_jmp_table, p_gtpuh->teid);
+  bpf_tail_call(p_ctx, &m_jmp_table, htonl(p_gtpuh->teid));
+  bpf_debug("BPF tail call was not executed! teid %d", htonl(p_gtpuh->teid));
 
   return XDP_PASS;
 }

@@ -37,7 +37,7 @@ void SessionProgramManager::create(uint32_t seid)
   // Check if there is a key with seid value.
   // TODO navarrothiago - check if can be abstract the programMap.
   if(!mpProgramsMap->lookup(seid, pProgramFd)){
-    LOG_ERROR("Cannot create a new program with key (seid) %d", seid);
+    LOG_ERROR("Session {} already exists. Cannot create a new program with this key", seid);
     throw std::runtime_error("Cannot create a new program with key (seid)");
   }
 
@@ -75,7 +75,14 @@ void SessionProgramManager::setOnNewSessionObserver(OnStateChangeSessionProgramO
 std::shared_ptr<SessionProgram> SessionProgramManager::findSessionProgram(uint32_t seid) 
 {
   LOG_FUNC();
-  return mSessionProgramMap.find(seid)->second;
+  std::shared_ptr<SessionProgram> pSessionProgram;
+
+  auto it = mSessionProgramMap.find(seid);
+  if(it != mSessionProgramMap.end()){
+    pSessionProgram = it->second;
+  }
+
+  return  pSessionProgram;
 }
 
 SessionProgramManager::SessionProgramManager() 

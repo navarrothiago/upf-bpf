@@ -5,24 +5,35 @@
 #include <SessionManager.h>
 #include <UserPlaneComponent.h>
 #include <UPFProgram.h>
+#include <SessionProgramManager.h>
+#include <SessionProgram.h>
 #include <arpa/inet.h> // inet_aton
 #include <assert.h>    // assert
 #include <bpf/libbpf.h>
 #include <bpf/xdp_stats_kern_user.h>
 #include <ie/far_id.h>
 #include <ie/group_ie/pdi.h>
+#include <ie/source_interface.h>
+#include <ie/destination_interface.h>
 #include <pfcp/pfcp_pdr.h>
 #include <pfcp/pfcp_session.h>
 #include <stdio.h>
 #include <unistd.h> //sleep
 #include <wrappers/BPFMaps.h>
+#include "InformationElementFactory.hpp"
 
 static std::shared_ptr<SessionManager> spSessionManager;
 
 // simple per-protocol drop counter
-static void poll_stats(int interval, teid_t_ key_teid)
+static void poll_stats(int interval, teid_t_ teid, seid_t_ seid)
 {
-  auto pMaps = UserPlaneComponent::getInstance().getUPFProgram()->getMaps();
+  auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
+  if(!pSessionProgram){
+    throw std::runtime_error("Session not found!");
+  }
+  auto pUplinkMap = pSessionProgram->getUplinkPDRsMap();
+  auto pCounterMap = pSessionProgram->getCounterMap();
+
   pfcp_pdr_t_ pdr;
   const int nr_cpus = libbpf_num_possible_cpus();
   const uint32_t row = XDP_ACTION_MAX;
@@ -40,7 +51,7 @@ static void poll_stats(int interval, teid_t_ key_teid)
     memset(sum, 0, sizeof(sum));
     sleep(interval);
 
-    if(pMaps->getMap("m_teid_pdrs").lookup(key_teid, &pdr) != 0) {
+    if(pUplinkMap->lookup(teid, &pdr) != 0) {
       perror("lookup error m_teid_pdrs");
       continue;
     }
@@ -48,7 +59,7 @@ static void poll_stats(int interval, teid_t_ key_teid)
     printf("pdr pdi_id rules %d\n", pdr.pdr_id.rule_id);
 
     for(u32 i = 0; i < XDP_ACTION_MAX; i++) {
-      if(pMaps->getMap("mc_stats").lookup(i, values[i]) != 0) {
+      if(pCounterMap->lookup(i, values[i]) != 0) {
         perror("lookup error mc_stats");
         continue;
       }
@@ -64,68 +75,12 @@ static void poll_stats(int interval, teid_t_ key_teid)
   }
 }
 
-int insert_elements(u32 key_teid)
+int main(int argc, char **argv)
 {
-  pfcp_pdr_t_ pdr;
-  pfcp_far_t_ far;
-  pfcp_session_t_ session;
-  u32 counter = 0;
-  u32 pdrs_fars_counter = 0;
-  u32 seid = 1;
-  struct in_addr src_addr;
-
-  auto pMaps = UserPlaneComponent::getInstance().getUPFProgram()->getMaps();
-
-  // Fill the source address;
-  // TODO navarrothiago - Avoid hardcoded.
-  if(inet_aton("10.10.10.10", &src_addr) == 0) {
-    fprintf(stderr, "Invalid address\n");
-    return 1;
-  }
-
-  // Fill the PDR entry
-  pdr.local_seid = seid + 1;
-  pdr.pdr_id.rule_id = key_teid;
-  pdr.outer_header_removal.outer_header_removal_description = OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-  pdr.pdi.source_interface.interface_value = INTERFACE_VALUE_ACCESS;
-  pdr.pdi.fteid.teid = key_teid;
-  pdr.pdi.ue_ip_address.ipv4_address = src_addr.s_addr;
-  counter += 1;
-
-  // Fill the FAR entry with FAR ID 1, INTERFACE_VALUE_CORE, action forward.
-  far.apply_action.forw = true;
-  far.forwarding_parameters.outer_header_creation.outer_header_creation_description = OUTER_HEADER_CREATION_UDP_IPV4;
-  far.forwarding_parameters.destination_interface.interface_value = INTERFACE_VALUE_ACCESS;
-  far.far_id.far_id = 1;
-
-  // Fill the session entry with PDR and FAR.
-  session.seid = pdr.local_seid;
-  session.pdrs[pdrs_fars_counter] = pdr;
-  session.fars[pdrs_fars_counter] = far;
-  pdrs_fars_counter += 1;
-  session.pdrs_counter = pdrs_fars_counter;
-  session.fars_counter = pdrs_fars_counter;
-
-  printf("Update create_pdr at key %d, counter %d\n", key_teid, counter);
-
-  // clang-format off
-  // Update BPF maps
-  if(pMaps->getMap("m_teid_pdrs").update(pdr.pdi.fteid.teid, pdr, BPF_NOEXIST) != 0
-      || pMaps->getMap("m_teid_pdrs_counter").update(pdr.pdi.fteid.teid, counter, BPF_NOEXIST) != 0
-      || pMaps->getMap("m_seid_session").update(session.seid, session, BPF_NOEXIST) != 0) {
-    perror("Update error");
-    return 1;
-  }
-  // clang-format on
-  printf("Updated create_pdr at teid %d, counter %d\n", key_teid, counter);
-  return 0;
-}
-
-int createSessionWithPdrAndFar(u32 key_teid)
-{
-  u32 counter = 0;
-  u32 pdrs_fars_counter = 0;
-  u32 seid = 1;
+  std::shared_ptr<RulesUtilities> mpRulesFactory;
+  mpRulesFactory = std::make_shared<RulesUtilitiesImpl>();
+  UserPlaneComponent::getInstance().setup(mpRulesFactory);
+  spSessionManager = UserPlaneComponent::getInstance().getSessionManager();
   struct in_addr src_addr;
 
   // Fill the source address;
@@ -134,34 +89,21 @@ int createSessionWithPdrAndFar(u32 key_teid)
     fprintf(stderr, "Invalid address\n");
     return 1;
   }
-  // Proprietary structs.
-  std::shared_ptr<pfcp_session_t_> pSessionRaw = std::make_shared<pfcp_session_t_>();
-  std::shared_ptr<pfcp_pdr_t_> pPdrProprietary = std::make_shared<pfcp_pdr_t_>();
-  std::shared_ptr<pfcp_far_t_> pFarProprietary = std::make_shared<pfcp_far_t_>();
+  
+  // Initialize context.
+  seid_t_ seid = 1;
+  u16 pdrId = 10; 
+  u32 farId = 100;
+  u32 teid = 100;
+  apply_action_t_ actions;
+  actions.forw = true;
 
-  // Session identifier.
-  pSessionRaw->seid = 1;
-  std::shared_ptr<SessionBpf> pSession = std::make_shared<SessionBpfImpl>(*pSessionRaw);
+  // Create session, PDR and FAR
+  auto pSession = createSession(seid);
+  auto pPdr = createPDR(pdrId, farId, teid, INTERFACE_VALUE_ACCESS, src_addr);
+  auto pFar = createFAR(farId, actions, INTERFACE_VALUE_CORE);
 
-  // Fill the PDR entry
-  pPdrProprietary->local_seid = seid + 1;
-  pPdrProprietary->pdr_id.rule_id = key_teid;
-  pPdrProprietary->outer_header_removal.outer_header_removal_description = OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-  pPdrProprietary->pdi.source_interface.interface_value = INTERFACE_VALUE_ACCESS;
-  pPdrProprietary->pdi.fteid.teid = key_teid;
-  pPdrProprietary->pdi.ue_ip_address.ipv4_address = src_addr.s_addr;
-  counter += 1;
-
-  // Fill the FAR entry with FAR ID 1, INTERFACE_VALUE_CORE, action forward.
-  pFarProprietary->apply_action.forw = true;
-  pFarProprietary->forwarding_parameters.outer_header_creation.outer_header_creation_description = OUTER_HEADER_CREATION_UDP_IPV4;
-  pFarProprietary->forwarding_parameters.destination_interface.interface_value = INTERFACE_VALUE_ACCESS;
-  pFarProprietary->far_id.far_id = 1;
-
-  // Adapts proprietary struct to the interfaces.
-  std::shared_ptr<PacketDetectionRules> pPdr = std::make_shared<PacketDetectionRulesImpl>(*pPdrProprietary);
-  std::shared_ptr<ForwardingActionRules> pFar = std::make_shared<ForwardingActionRulesImpl>(*pFarProprietary);
-
+  // Request to BPF program.
   LOG_INF("Case: create session");
   spSessionManager->createSession(pSession);
   LOG_INF("Case: add PDR");
@@ -169,27 +111,7 @@ int createSessionWithPdrAndFar(u32 key_teid)
   LOG_INF("Case: add FAR");
   spSessionManager->addFAR(pSession->getSeid(), pFar);
 
-  return 0;
-}
-
-int main(int argc, char **argv)
-{
-  std::shared_ptr<RulesUtilities> mpRulesFactory;
-  mpRulesFactory = std::make_shared<RulesUtilitiesImpl>();
-  UserPlaneComponent::getInstance().setup(mpRulesFactory);
-  spSessionManager = UserPlaneComponent::getInstance().getSessionManager();
-  // SessionProgram rt;
-  // rt.setup(2);
-
-  // if(insert_elements(100)) {
-  //   exit(1);
-  // }
-
-  if(createSessionWithPdrAndFar(100)) {
-    exit(1);
-  }
-
-  poll_stats(2, 100);
+  poll_stats(2, teid, seid);
 
   while(1) {
   };
