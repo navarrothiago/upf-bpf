@@ -21,20 +21,4 @@
 #endif
 
 
-static void red () {
-  bpf_debug("\033[1;31m");
-}
-
-static void green () {
-  bpf_debug("\033[0;32m");
-}
-
-static void yellow() {
-  bpf_debug("\033[1;33m");
-}
-
-static void reset () {
-  bpf_debug("\033[0m");
-}
-
 #endif // __LOGGER_H__

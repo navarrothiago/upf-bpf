@@ -24,7 +24,7 @@ struct bpf_map_def SEC("maps") m_fars = {
 	.value_size  = sizeof(pfcp_far_t_), // list of pdr
 	.max_entries = SESSION_FARS_MAX_SIZE,
 };
-struct bpf_map_def SEC("maps") m_id_txport = {
+struct bpf_map_def SEC("maps") m_redirect_interfaces = {
 	.type        = BPF_MAP_TYPE_DEVMAP,
 	.key_size    = sizeof(u32), // id
 	.value_size  = sizeof(u32), // tx port

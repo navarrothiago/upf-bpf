@@ -13,7 +13,6 @@ class PacketDetectionRules
 public:
   PacketDetectionRules(/* args */) {}
   virtual ~PacketDetectionRules() {}
-  virtual uint64_t getLocalSeid() = 0;
   virtual teid_t_ getTeid() = 0;
   virtual pdr_id_t_ getPdrId() = 0;
   virtual precedence_t_ getPrecedence() = 0;

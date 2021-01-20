@@ -12,12 +12,6 @@ PacketDetectionRulesImpl::~PacketDetectionRulesImpl()
   LOG_FUNC();
 }
 
-uint64_t PacketDetectionRulesImpl::getLocalSeid()
-{
-  LOG_FUNC();
-  return mPdr.local_seid;
-}
-
 teid_t_ PacketDetectionRulesImpl::getTeid()
 {
   LOG_FUNC();

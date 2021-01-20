@@ -193,6 +193,7 @@ static u32 eth_handle(struct xdp_md *p_ctx, struct ethhdr *ethh)
   switch(eth_type) {
   case ETH_P_8021Q:
   case ETH_P_8021AD:
+    bpf_debug("VLAN!! Fix the offset");
     vlan_hdr = (void *)ethh + offset;
     offset += sizeof(*vlan_hdr);
     if(!((void *)ethh + offset > p_data_end))
