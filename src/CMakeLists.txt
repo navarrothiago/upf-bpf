@@ -6,10 +6,10 @@ add_subdirectory(bpf)
 add_library(upf_xdp STATIC
   UserPlaneComponent.cpp
   SignalHandler.cpp
-  UPFProgram.cpp
-  SessionProgram.cpp
   SessionProgramManager.cpp
   SessionManager.cpp
+  programs/UPFProgram.cpp
+  programs/SessionProgram.cpp
   wrappers/BPFMaps.cpp
   wrappers/BPFMap.cpp
   utils/Logger.cpp
@@ -30,6 +30,7 @@ target_include_directories(upf_xdp PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/skel>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/interfaces>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/observer>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/programs>
 )
 
 add_dependencies(upf_xdp upf_xdp_bpf_all)

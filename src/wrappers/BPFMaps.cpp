@@ -34,5 +34,5 @@ BPFMap& BPFMaps::getMap(const char *pName)
     }
   }
   LOG_ERROR("Map {} not found", pName)
-  assert(i < mpBPFObjectSkeleton->map_cnt);
+  throw std::runtime_error("Map was not found");
 }
