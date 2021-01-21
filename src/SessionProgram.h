@@ -68,6 +68,13 @@ public:
    * @return std::shared_ptr<BPFMap> The counter map.
    */
   std::shared_ptr<BPFMap> getCounterMap() const;
+  /**
+   * @brief Get the Egress Interface Map object.
+   * 
+   * @return std::shared_ptr<BPFMap> The egress interface map.
+   */
+  std::shared_ptr<BPFMap> getEgressInterfaceMap() const;
+
 
 private:
   /**

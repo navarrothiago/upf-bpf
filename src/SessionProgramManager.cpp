@@ -4,6 +4,7 @@
 #include <observer/OnStateChangeSessionProgramObserver.h>
 #include <SessionProgram.h>
 #include <UPFProgram.h>
+#include <net/if.h>           // if_nametoindex
 
 SessionProgramManager::~SessionProgramManager() 
 {
@@ -44,6 +45,10 @@ void SessionProgramManager::create(uint32_t seid)
   // Instantiate a new SessionProgram
   std::shared_ptr<SessionProgram> pSessionProgram = std::make_shared<SessionProgram>();
   pSessionProgram->setup();
+  uint32_t ifIndex = if_nametoindex("veth0");
+
+  uint32_t key = 0;
+  pSessionProgram->getEgressInterfaceMap()->update(key, ifIndex, BPF_ANY);
 
   // Update the SessionProgram map.
   mSessionProgramMap.insert(std::pair<uint32_t, std::shared_ptr<SessionProgram>>(seid, pSessionProgram));

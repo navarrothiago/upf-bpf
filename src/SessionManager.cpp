@@ -38,7 +38,7 @@ void SessionManager::addFAR(uint64_t seid, std::shared_ptr<ForwardingActionRules
   auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
 
   if(!pSessionProgram) {
-    LOG_ERROR("Session %d not found", seid);
+    LOG_ERROR("Session {} not found", seid);
     throw std::runtime_error("The FAR cannot be added in the session");
   }
 

@@ -19,6 +19,7 @@ SessionProgram::~SessionProgram()
   LOG_FUNC();
 }
 
+// TODO navarrothiago - Pass configuratino throught args.
 void SessionProgram::setup()
 {
   LOG_FUNC();
@@ -27,17 +28,13 @@ void SessionProgram::setup()
   initializeMaps();
   mpLifeCycle->load();
   mpLifeCycle->attach();
-
-  auto egressInterface = if_nametoindex("veth0");
-
-  // mpMaps->getMap("m_id_txcnt").update(key_ifmap, sXDPProgramInfo[1].ifIndex, 0);
- 
+  mpLifeCycle->link("xdp_redirect_dummy", "veth0");
 }
 
 void SessionProgram::tearDown() 
 {
   LOG_FUNC();
-  mpLifeCycle->destroy();
+  mpLifeCycle->tearDown();
 }
 
 int SessionProgram::getFileDescriptor() const
@@ -68,6 +65,12 @@ std::shared_ptr<BPFMap> SessionProgram::getCounterMap() const
 {
   LOG_FUNC();
   return mpCounterMap;
+}
+
+std::shared_ptr<BPFMap> SessionProgram::getEgressInterfaceMap() const
+{
+  LOG_FUNC();
+  return mpEgressInterfaceMap;
 }
 
 void SessionProgram::initializeMaps()

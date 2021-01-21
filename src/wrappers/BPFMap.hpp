@@ -77,7 +77,7 @@ int BPFMap::lookup(KeyType &key, void *pValue)
   int lookupReturn = bpf_map_lookup_elem(mapFd, &key, pValue);
 
   if(lookupReturn != 0) {
-    LOG_INF("{}. The key {} cannot be found in map {}", strerror(lookupReturn), key, mName);
+    LOG_INF("The key {} cannot be found in map {}", key, mName);
   }else {
     LOG_DBG("The key {} was found at {} map!", key, mName);
   }
