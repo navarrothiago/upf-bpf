@@ -18,13 +18,6 @@ struct bpf_map_def SEC("maps") m_jmp_table = {
 	.max_entries = 10000,
 };
 
-struct bpf_map_def SEC("maps") m_seid_session = {
-	.type        = BPF_MAP_TYPE_HASH,
-	.key_size    = sizeof(seid_t_), // seid
-	.value_size  = sizeof(pfcp_session_t_), // session
-	.max_entries = 100000,
-};
-
 struct bpf_map_def SEC("maps") m_id_txcnt = {
 	.type        = BPF_MAP_TYPE_DEVMAP,
 	.key_size    = sizeof(u32), // id

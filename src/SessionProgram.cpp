@@ -4,6 +4,7 @@
 #include <bpf/libbpf.h>       // bpf wrappers
 #include <sys/resource.h>     // rlimit
 #include <utils/LogDefines.h> // Logs
+#include <net/if.h>           // if_nametoindex
 #include <wrappers/BPFMaps.h>
 #include <wrappers/BPFMap.hpp>
 
@@ -18,7 +19,7 @@ SessionProgram::~SessionProgram()
   LOG_FUNC();
 }
 
-void SessionProgram::setup(uint32_t sessionId)
+void SessionProgram::setup()
 {
   LOG_FUNC();
 
@@ -26,6 +27,10 @@ void SessionProgram::setup(uint32_t sessionId)
   initializeMaps();
   mpLifeCycle->load();
   mpLifeCycle->attach();
+
+  auto egressInterface = if_nametoindex("veth0");
+
+  // mpMaps->getMap("m_id_txcnt").update(key_ifmap, sXDPProgramInfo[1].ifIndex, 0);
  
 }
 
@@ -77,4 +82,5 @@ void SessionProgram::initializeMaps()
   mpFARMap = std::make_shared<BPFMap>(mpMaps->getMap("m_fars"));
   mpUplinkPDRsMap = std::make_shared<BPFMap>(mpMaps->getMap("m_teid_pdr"));
   mpCounterMap = std::make_shared<BPFMap>(mpMaps->getMap("mc_stats"));
+  mpEgressInterfaceMap = std::make_shared<BPFMap>(mpMaps->getMap("m_redirect_interfaces"));
 }

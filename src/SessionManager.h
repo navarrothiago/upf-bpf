@@ -38,10 +38,8 @@ public:
   /**
    * @brief Construct a new Session Manager object.
    *
-   * @param pSessionsMap The sessions BPF map abstraction.
-   * @param pUplinkPdrMap The uplink PDRs BPF map abstraction.
    */
-  SessionManager(std::shared_ptr<BPFMap> pSessionsMap, std::shared_ptr<BPFMap> pUplinkPdrMap);
+  SessionManager();
   /**
    * @brief Destroy the Session Manager object.
    *
@@ -134,7 +132,6 @@ private:
   template <class KeyType>
   pdrs_t lookupPDRs(KeyType key, std::shared_ptr<BPFMap> pBPFMap);
   // Store the abstraction of the BPF map.
-  std::shared_ptr<BPFMap> mpSessionsMap;
   std::shared_ptr<BPFMap> mpDownlinkPDRsMap;
   std::shared_ptr<BPFMap> mpProgramsMap;
   std::shared_ptr<BPFMap> mpFARsMap;

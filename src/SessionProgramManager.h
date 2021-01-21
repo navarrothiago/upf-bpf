@@ -42,7 +42,12 @@ public:
    * @param seid  The session identifier.
    */
   void create(uint32_t seid);
-
+  /**
+   * @brief Remove program session context.
+   * 
+   * @param seid The session identifier.
+   */
+  void remove(uint32_t seid);
   /**
    * @brief Remove all programs.
    * 

@@ -43,7 +43,7 @@ void SessionProgramManager::create(uint32_t seid)
 
   // Instantiate a new SessionProgram
   std::shared_ptr<SessionProgram> pSessionProgram = std::make_shared<SessionProgram>();
-  pSessionProgram->setup(seid);
+  pSessionProgram->setup();
 
   // Update the SessionProgram map.
   mSessionProgramMap.insert(std::pair<uint32_t, std::shared_ptr<SessionProgram>>(seid, pSessionProgram));
@@ -51,6 +51,21 @@ void SessionProgramManager::create(uint32_t seid)
   // Notify observer that a SessionProgram was created.
   // TODO - Pass the pSessionProgram in the arg.
   // mpOnNewSessionProgramObserver->onNewSessionProgram(seid, pSessionProgram->getFileDescriptor());
+
+}
+
+void SessionProgramManager::remove(uint32_t seid) 
+{
+  LOG_FUNC();
+  auto sessionProgram = findSessionProgram(seid);
+  if(!sessionProgram){
+    LOG_ERROR("The session {} does not exist. Cannot be removed", seid);
+    throw std::runtime_error("The session does not exist. Cannot be removed");
+  }
+  sessionProgram->tearDown();
+  mSessionProgramMap.erase(seid);
+  // Notify observer that a SessionProgram was removed.
+  // mpOnNewSessionProgramObserver->onDestroySessionProgram(seid);
 }
 
 void SessionProgramManager::removeAll() 

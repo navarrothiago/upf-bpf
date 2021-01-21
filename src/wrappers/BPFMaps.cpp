@@ -30,9 +30,9 @@ BPFMap& BPFMaps::getMap(const char *pName)
   for(i = 0; i < mpBPFObjectSkeleton->map_cnt; i++) {
     std::string mapStr(mpBPFObjectSkeleton->maps[i].name);
     if(nameStr == mapStr) {
-      break;
+      return mMaps[i];
     }
   }
+  LOG_ERROR("Map {} not found", pName)
   assert(i < mpBPFObjectSkeleton->map_cnt);
-  return mMaps[i];
 }

@@ -31,9 +31,8 @@ public:
   /**
    * @brief Setup the program.
    * 
-   * @param programId The identifier that will be used to locate the program in BPF map.
    */
-  void setup(uint32_t programId);
+  void setup();
   /**
    * @brief Tear down the program.
    * 
@@ -89,8 +88,11 @@ private:
   // The uplink PDR eBPF map.
   std::shared_ptr<BPFMap> mpUplinkPDRsMap;
 
-  // The uplink PDR eBPF map.
+  // The counter packet map.
   std::shared_ptr<BPFMap> mpCounterMap;
+
+  // The egress interface map.
+  std::shared_ptr<BPFMap> mpEgressInterfaceMap;
 
   // The BPF lifecycle program.
   std::unique_ptr<SessionProgramLifeCycle> mpLifeCycle;

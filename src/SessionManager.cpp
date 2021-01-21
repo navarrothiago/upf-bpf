@@ -9,8 +9,7 @@
 #include <utils/LogDefines.h>
 #include <wrappers/BPFMaps.h>
 
-SessionManager::SessionManager(std::shared_ptr<BPFMap> pSessionsMap, std::shared_ptr<BPFMap> pUplinkPdrMap)
-    : mpSessionsMap(pSessionsMap)
+SessionManager::SessionManager()
 {
   LOG_FUNC();
 }
@@ -20,23 +19,16 @@ SessionManager::~SessionManager() { LOG_FUNC(); }
 void SessionManager::createSession(std::shared_ptr<SessionBpf> pSession)
 {
   LOG_FUNC();
-  auto session = pSession->getData();
-  if(mpSessionsMap->update(session.seid, session, BPF_NOEXIST) != 0) {
-    LOG_ERROR("Cannot create session {}", pSession->getSeid());
-    throw std::runtime_error("Cannot create session");
-  }
-
-  SessionProgramManager::getInstance().create(session.seid);
-  LOG_DBG("Session {} has been cretead", session.seid);
+  SessionProgramManager::getInstance().create(pSession->getSeid());
+  LOG_DBG("Session {} has been cretead", pSession->getSeid());
 }
 
 void SessionManager::removeSession(uint64_t seid)
 {
   LOG_FUNC();
-  if(mpSessionsMap->remove(seid) != 0) {
-    LOG_ERROR("Cannot remove session {}", seid);
-    throw std::runtime_error("Cannot remove session");
-  }
+  SessionProgramManager::getInstance().remove(seid);
+  LOG_DBG("Session {} has been removed", seid);
+
 }
 
 // TODO navarrothiago - how can we do atomically?
