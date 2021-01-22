@@ -12,7 +12,8 @@ PIDS := $(shell ps -aux | grep -e UPFProgramTests -e xdp | awk '{print $$2}')
 # DEVICE_IN=eth0
 # Uncomment for OAI
 DEVICE_IN=enp0s20f0u4u2u4
-DEVICE_OUT=veth0
+DEVICE_OUT_UL=veth0
+DEVICE_OUT_DL=veth1
 
 .PHONY: help
 
@@ -66,7 +67,8 @@ all-verbose: ## Build all in verbose mode
 	make copy_objs V=1
 
 config-veth-pair: ## Config veth pair. It must be run before <run-*> targets
-	sudo ./tests/scripts/config_veth_pair.sh $(DEVICE_IN)
+	sudo ./tests/scripts/config_veth_pair.sh ns0 $(DEVICE_OUT_UL) $(DEVICE_IN)
+	sudo ./tests/scripts/config_veth_pair.sh ns1 $(DEVICE_OUT_DL) $(DEVICE_IN)
 
 bild-samples: ## Build samples
 	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
@@ -90,7 +92,7 @@ run-hello-world-samples: all ## Build all and run BPF XDP hello world sample
 
 run-redirect-map-sample: all ## Build all and run BPF XDP redirect sample
 	pushd $(BPF_SAMPLES_DIR) && \
-	sudo ./xdp_redirect_map -S $(DEVICE_IN) $(DEVICE_OUT)
+	sudo ./xdp_redirect_map -S $(DEVICE_IN) $(DEVICE_OUT_UL)
 
 run-control-plane-tests: force-xdp-deload ## Run ControlPlaneTests
 	cd $(BPF_BINARY_DIR) && \
@@ -107,6 +109,7 @@ run-scapy: ## Run scapy for packet manipulation
 
 force-xdp-deload: ## Kill all and force deload XDP programs
 	sudo ip link set dev $(DEVICE_IN) xdpgeneric off
-	sudo ip link set dev $(DEVICE_OUT) xdpgeneric off
+	sudo ip link set dev $(DEVICE_OUT_UL) xdpgeneric off
+	sudo ip link set dev $(DEVICE_OUT_DL) xdpgeneric off
 	# the "true" is used to avoid stop when execute the command.
 	sudo kill -9 $(PIDS) | true 

@@ -37,6 +37,7 @@ void SessionProgramManager::create(uint32_t seid)
 
   // Check if there is a key with seid value.
   // TODO navarrothiago - check if can be abstract the programMap.
+  // FIXME actually it is the teid that must be checked.
   if(!mpProgramsMap->lookup(seid, pProgramFd)){
     LOG_ERROR("Session {} already exists. Cannot create a new program with this key", seid);
     throw std::runtime_error("Cannot create a new program with key (seid)");
@@ -56,6 +57,8 @@ void SessionProgramManager::create(uint32_t seid)
   // Notify observer that a SessionProgram was created.
   // TODO - Pass the pSessionProgram in the arg.
   // mpOnNewSessionProgramObserver->onNewSessionProgram(seid, pSessionProgram->getFileDescriptor());
+  
+  // The mpProgramMap will be update when a PDR, which contain the TEID, is created.
 
 }
 

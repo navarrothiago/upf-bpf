@@ -29,6 +29,7 @@ void SessionProgram::setup()
   mpLifeCycle->load();
   mpLifeCycle->attach();
   mpLifeCycle->link("xdp_redirect_dummy", "veth0");
+  mpLifeCycle->link("xdp_redirect_dummy", "veth1");
 }
 
 void SessionProgram::tearDown() 

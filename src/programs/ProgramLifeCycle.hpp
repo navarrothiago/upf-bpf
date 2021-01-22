@@ -2,14 +2,15 @@
 #define __PROGRAMLIFECYCLE_H__
 
 #include <atomic>
-#include <functional>     // rlimit
+#include <bpf/libbpf.h>    //bpf function
+#include <functional>      // rlimit
+#include <linux/if_link.h> // XDP flags
+#include <map>
+#include <net/if.h>       // if_nametoindex
 #include <sstream>        //stringstream
 #include <sys/resource.h> // rlimit
-#include <net/if.h>        // if_nametoindex
-#include <linux/if_link.h> // XDP flags
-#include <bpf/libbpf.h>    //bpf function
 #include <utils/LogDefines.h>
-#include <map>
+#include <vector>
 
 /**
  * @brief Program states.
@@ -21,11 +22,6 @@ enum ProgramState {
   ATTACHED,
   LINKED,
   DESTROYED,
-};
-
-enum HookState{
-  OFF,
-  HOOKED
 };
 
 template <class BPFSkeletonType>
@@ -73,6 +69,10 @@ public:
    *
    */
   void destroy();
+  /**
+   * @brief Tear down all programs.
+   *
+   */
   void tearDown();
   /**
    * @brief Get BPF skeleton constructed.
@@ -88,12 +88,12 @@ public:
   ProgramState getState() const;
 
 private:
+
   // Mutex for tearDown (async).
   std::mutex sTearDownMutex;
   // The program state.
   std::atomic<ProgramState> mState;
-  std::map<std::string, HookState> mSectionHookStateMap;
-  std::map<std::string, uint32_t> mSectionIfaceMap;
+  std::map<std::string, std::vector<uint32_t>> mSectionLinkInterfacesMap;
   std::function<BPFSkeletonType *()> mOpenFunc;
   std::function<int(BPFSkeletonType *)> mLoadFunc;
   std::function<int(BPFSkeletonType *)> mAttachFunc;
@@ -185,21 +185,31 @@ void ProgramLifeCycle<BPFSkeletonType>::link(std::string sectionName, std::strin
 
   bpf_object__for_each_program(prog, mpSkeleton->obj)
   {
+    // Get section name.
     section = std::string(bpf_program__section_name(prog));
     if(section == sectionName) {
       // Get programs FD from skeleton object.
       fd = bpf_program__fd(prog);
-      mSectionIfaceMap[sectionName] = ifIndex;
-
+      // Link program (fd) to the interface.
       if(bpf_set_link_xdp_fd(ifIndex, fd, XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE) < 0) {
         LOG_ERROR("BPF program link set XDP failed");
         tearDown();
         throw std::runtime_error("BPF program link set XDP failed");
       }
 
-      mSectionHookStateMap[sectionName] = HOOKED;
-      mState = LINKED;
+      // Add a new entry if doesnt exist.
+      // Cc, push back the ney entry to the exist.
+      auto it = mSectionLinkInterfacesMap.find(section);
+      if(it == mSectionLinkInterfacesMap.end()) {
+        std::vector<uint32_t> linkVector;
+        linkVector.push_back(ifIndex);
+        mSectionLinkInterfacesMap[sectionName] = linkVector;
+      } else {
+        it->second.push_back(ifIndex);
+      }
 
+      // Update the global link state.
+      mState = LINKED;
       LOG_INF("BPF program hooked in XDP");
       return;
     };
@@ -217,25 +227,34 @@ void ProgramLifeCycle<BPFSkeletonType>::tearDown()
   std::string section;
 
   if(mState != ProgramState::IDLE) {
+    if(mState != LINKED){
+      LOG_DBG("There are not any program in LINKED state.");
+      destroy();
+      return;
+    }
+    LOG_DBG("There are some program in LINKED state.");
     bpf_object__for_each_program(prog, mpSkeleton->obj)
     {
+      // Get section name.
       section = std::string(bpf_program__section_name(prog));
-      if(mSectionHookStateMap[section] != HOOKED) {
-        LOG_DBG("{} is not in a HOOKED state", section);
+      // Find the section.
+      auto it = mSectionLinkInterfacesMap.find(section);
+      if(it == mSectionLinkInterfacesMap.end()) {
+        LOG_DBG("BPF program {} are not link to any interface", section);
         continue;
       }
-
-      LOG_DBG("BPF program {} is in a HOOKED state", section.c_str());
-      if(bpf_set_link_xdp_fd(mSectionIfaceMap[section], -1, XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE)){
-        LOG_ERROR("BPF program {} cannot change to OFF state", section);
-        throw std::runtime_error("BPF program cannot change to OFF state");
-      };
-      LOG_INF("BPF program {} change to hook state to OFF ", section);
-      mSectionHookStateMap[section] = OFF;
+      // For each link in this section, do unlink.
+      for(auto linkEntry : it->second) {
+        LOG_DBG("BPF program {} is in a HOOKED state", section.c_str());
+        if(bpf_set_link_xdp_fd(linkEntry, -1, XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE)) {
+          LOG_ERROR("BPF program {} cannot unlink the {} interface", section, linkEntry);
+          throw std::runtime_error("BPF program cannot unlink");
+        };
+        LOG_INF("BPF program {} unlink to {} interface", section, linkEntry);
+      }
     }
-    destroy();
   } else {
-    LOG_DBG("Program is in IDLE state. TearDown skipped");
+    LOG_DBG("Programs is in IDLE state. TearDown skipped");
   }
 }
 

@@ -198,10 +198,10 @@ void SessionManager::updatePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
 
   switch(source_interface) {
   case INTERFACE_VALUE_ACCESS:
+    // We are supposing 1x1 (TEIDxPDR)
     // Remove the old entry PDR from TEID->PDR map.
     pUplinkPDRsMap->remove(oldTeid);
     // Add the new entry PDR from TEID->PDR map.
-    // We are supposing 1x1 (TEIDxPDR)
     pUplinkPDRsMap->update(teid, pdr, BPF_NOEXIST);
     break;
   case INTERFACE_VALUE_CORE:
@@ -215,6 +215,7 @@ void SessionManager::updatePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
     throw std::runtime_error("Source interface not supported");
   }
 
+  // TODO navarrothiago - check if TEID can change in update procedures.
   s32 fd = pSessionProgram->getFileDescriptor();
   pUPFProgram->getProgramsMap()->remove(oldTeid);
   pUPFProgram->getProgramsMap()->update(teid, fd, BPF_ANY);
@@ -223,7 +224,6 @@ void SessionManager::updatePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
 
 void SessionManager::removeFAR(uint64_t seid, std::shared_ptr<ForwardingActionRules> pFar)
 {
-
   LOG_FUNC();
   // TODO navarrothiago - Check if it is good to encapsulate in UserPlaneComponent like UPFProgram.
   auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
