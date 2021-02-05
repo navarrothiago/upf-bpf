@@ -24,14 +24,21 @@
 
 static std::shared_ptr<SessionManager> spSessionManager;
 
+enum FlowDirection{
+  UPLINK,
+  DOWNLINK
+};
+
 // simple per-protocol drop counter
-static void poll_stats(int interval, teid_t_ teid, seid_t_ seid)
+static void poll_stats(int interval, teid_t_ teid, struct in_addr ueIpAddress, seid_t_ seid, FlowDirection direction)
 {
   auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
   if(!pSessionProgram){
     throw std::runtime_error("Session not found!");
   }
-  auto pUplinkMap = pSessionProgram->getUplinkPDRsMap();
+
+  // Only used to check if there is a PDR and print.
+  auto pPDRMap = direction == UPLINK ? pSessionProgram->getUplinkPDRsMap() : pSessionProgram->getDownlinkPDRsMap();
   auto pCounterMap = pSessionProgram->getCounterMap();
 
   pfcp_pdr_t_ pdr;
@@ -51,7 +58,9 @@ static void poll_stats(int interval, teid_t_ teid, seid_t_ seid)
     memset(sum, 0, sizeof(sum));
     sleep(interval);
 
-    if(pUplinkMap->lookup(teid, &pdr) != 0) {
+    // Loop again if there isnt a PDR created.
+    if(direction == UPLINK && pPDRMap->lookup(teid, &pdr) != 0 
+      || direction == DOWNLINK && pPDRMap->lookup(ueIpAddress.s_addr, &pdr) != 0) {
       perror("lookup error m_teid_pdrs");
       continue;
     }
@@ -82,6 +91,8 @@ int main(int argc, char **argv)
   UserPlaneComponent::getInstance().setup(mpRulesFactory);
   spSessionManager = UserPlaneComponent::getInstance().getSessionManager();
   struct in_addr src_addr;
+  struct in_addr ue_ip;
+  struct in_addr dst_addr;
 
   // Fill the source address;
   // TODO navarrothiago - Avoid hardcoded.
@@ -89,29 +100,52 @@ int main(int argc, char **argv)
     fprintf(stderr, "Invalid address\n");
     return 1;
   }
-  
+  if(inet_aton("192.168.15.12", &dst_addr) == 0) {
+    fprintf(stderr, "Invalid address\n");
+    return 1;
+  }
+  if(inet_aton("192.168.15.7", &ue_ip) == 0) {
+    fprintf(stderr, "Invalid address\n");
+    return 1;
+  }
+
+  LOG_DBG("src_addr:{} dst_addr:{} ue_ip:{}", src_addr.s_addr, dst_addr.s_addr, ue_ip.s_addr);
+
   // Initialize context.
   seid_t_ seid = 1;
-  u16 pdrId = 10; 
-  u32 farId = 100;
+  u16 pdrIdUL = 10; 
+  u16 pdrIdDL = 20; 
+  u32 farIdUL = 100;
+  u32 farIdDL = 200;
   u32 teid = 100;
   apply_action_t_ actions;
   actions.forw = true;
+  u16 dstPort = 1234;
 
   // Create session, PDR and FAR
   auto pSession = createSession(seid);
-  auto pPdr = createPDR(pdrId, farId, teid, INTERFACE_VALUE_ACCESS, src_addr);
-  auto pFar = createFAR(farId, actions, INTERFACE_VALUE_CORE);
+
+  // Uplink.
+  auto pPdrUL = createPDR(pdrIdUL, farIdUL, teid, INTERFACE_VALUE_ACCESS, src_addr, OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4);
+  auto pFarUL = createFAR(farIdUL, actions, INTERFACE_VALUE_CORE, OUTER_HEADER_CREATION_UDP_IPV4, dst_addr, dstPort);
+
+  // Downlink.
+  auto pPdrDL = createPDR(pdrIdDL, farIdDL, teid, INTERFACE_VALUE_CORE, dst_addr, OUTER_HEADER_REMOVAL_UDP_IPV4);
+  auto pFarDL = createFAR(farIdDL, actions, INTERFACE_VALUE_ACCESS, OUTER_HEADER_CREATION_GTPU_UDP_IPV4, dst_addr, dstPort);
 
   // Request to BPF program.
   LOG_INF("Case: create session");
   spSessionManager->createSession(pSession);
-  LOG_INF("Case: add PDR");
-  spSessionManager->addPDR(pSession->getSeid(), pPdr);
-  LOG_INF("Case: add FAR");
-  spSessionManager->addFAR(pSession->getSeid(), pFar);
+  LOG_INF("Case: add UL PDR");
+  spSessionManager->addPDR(pSession->getSeid(), pPdrUL);
+  LOG_INF("Case: add UL FAR");
+  spSessionManager->addFAR(pSession->getSeid(), pFarUL);
+  LOG_INF("Case: add DL PDR");
+  spSessionManager->addPDR(pSession->getSeid(), pPdrDL);
+  LOG_INF("Case: add DL FAR");
+  spSessionManager->addFAR(pSession->getSeid(), pFarDL);
 
-  poll_stats(2, teid, seid);
+  poll_stats(2, teid, dst_addr, seid, DOWNLINK);
 
   while(1) {
   };

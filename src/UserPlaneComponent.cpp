@@ -82,7 +82,7 @@ void UserPlaneComponent::setup(std::shared_ptr<RulesUtilities> pRulesUtilities)
   mpUPFProgram->setup();
 
   // Set program map in SesssionProgramManager.
-  SessionProgramManager::getInstance().setProgramsMap(mpUPFProgram->getProgramsMap());
+  SessionProgramManager::getInstance().setTeidSessionMap(mpUPFProgram->getTeidSessionMap());
   
   // Pass maps to sessionManager.
   mpSessionManager = std::make_shared<SessionManager>();

@@ -14,6 +14,7 @@
 #include <protocols/udp.h>
 #include <utils/logger.h>
 #include <utils/utils.h>
+#include <lib/crc16.h>
 
 #ifdef KERNEL_SPACE
 #include <linux/in.h>
@@ -24,8 +25,6 @@
 /* Defines xdp_stats_map */
 #include "xdp_stats_kern_user.h"
 #include "xdp_stats_kern.h"
-
-#include "program_defines.h"
 
 /**
  * GTP SECTION.
@@ -61,7 +60,8 @@ static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
   }
 
   // Jump to session context.
-  bpf_tail_call(p_ctx, &m_jmp_table, htonl(p_gtpuh->teid));
+  bpf_debug("BPF tail call to %d tunnel", htonl(p_gtpuh->teid));
+  bpf_tail_call(p_ctx, &m_teid_session, htonl(p_gtpuh->teid));
   bpf_debug("BPF tail call was not executed! teid %d", htonl(p_gtpuh->teid));
 
   return XDP_PASS;
@@ -78,10 +78,11 @@ static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
  * @param udph The UDP header.
  * @return u32 The XDP action.
  */
-static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph)
+static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph, u32 dest_ip)
 {
   void *p_data_end = (void *)(long)p_ctx->data_end;
   u32 dport;
+  uint32_t key = (uint32_t)((dest_ip * 0x80008001) >> 16);
 
   /* Hint: +1 is sizeof(struct udphdr) */
   if((void *)udph + sizeof(*udph) > p_data_end) {
@@ -96,7 +97,10 @@ static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph)
   case GTP_UDP_PORT:
     return gtp_handle(p_ctx, (struct gtpuhdr *)(udph + 1));
   default:
-    bpf_debug("GTP port %lu not valid", dport);
+    bpf_debug("BPF tail call to 0x%x address %d key", dest_ip, key);
+    // TODO navarrothiago - Assuming there is a map one-to-one IP-Session
+    bpf_tail_call(p_ctx, &m_ueip_session, key);
+    bpf_debug("BPF tail call was not executed!");
     return XDP_PASS;
   }
 }
@@ -128,7 +132,7 @@ static u32 ipv4_handle(struct xdp_md *p_ctx, struct iphdr *iph)
   bpf_debug("Valid IPv4 packet: raw daddr:0x%x", ip_dest);
   switch(iph->protocol) {
   case IPPROTO_UDP:
-    return udp_handle(p_ctx, (struct udphdr *)(iph + 1));
+    return udp_handle(p_ctx, (struct udphdr *)(iph + 1), ip_dest);
   case IPPROTO_TCP:
   default:
     bpf_debug("TCP protocol L4");
@@ -193,7 +197,7 @@ static u32 eth_handle(struct xdp_md *p_ctx, struct ethhdr *ethh)
   switch(eth_type) {
   case ETH_P_8021Q:
   case ETH_P_8021AD:
-    bpf_debug("VLAN!! Fix the offset");
+    bpf_debug("VLAN!! Changing the offset");
     vlan_hdr = (void *)ethh + offset;
     offset += sizeof(*vlan_hdr);
     if(!((void *)ethh + offset > p_data_end))

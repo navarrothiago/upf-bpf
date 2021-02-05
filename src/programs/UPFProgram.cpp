@@ -27,9 +27,11 @@ void UPFProgram::setup()
   initializeMaps();
   mpLifeCycle->load();
   mpLifeCycle->attach();
-  // TODO navarrothiago - Remove hardcoded - https://github.com/navarrothiago/upf-bpf/issues/24
+  // Uplink and Downlink interface
   mpLifeCycle->link("xdp_entry_point","enp0s20f0u4u2u4");
-// mpMaps->getMap("m_id_txcnt").update(key_ifmap, sXDPProgramInfo[1].ifIndex, 0);
+
+  // TODO navarrothiago - split to a different downlink interface.
+  // TODO navarrothiago - Remove hardcoded - https://github.com/navarrothiago/upf-bpf/issues/24
 }
 
 std::shared_ptr<BPFMaps> UPFProgram::getMaps()
@@ -49,22 +51,29 @@ void UPFProgram::tearDown()
 void UPFProgram::updateProgramMap(uint32_t key, uint32_t fd)
 {
   LOG_FUNC();
-  mpProgramsMap->update(key, fd, BPF_ANY);
+  mpTeidSessionMap->update(key, fd, BPF_ANY);
 }
 
 void UPFProgram::removeProgramMap(uint32_t key)
 {
   LOG_FUNC();
   s32 fd;
-  if(mpProgramsMap->lookup(key, &fd) == 0) {
-    mpProgramsMap->remove(key);
+  // Remove only if exists.
+  if(mpTeidSessionMap->lookup(key, &fd) == 0) {
+    mpTeidSessionMap->remove(key);
   }
 }
 
-std::shared_ptr<BPFMap> UPFProgram::getProgramsMap() const
+std::shared_ptr<BPFMap> UPFProgram::getTeidSessionMap() const
 {
   LOG_FUNC();
-  return mpProgramsMap;
+  return mpTeidSessionMap;
+}
+
+std::shared_ptr<BPFMap> UPFProgram::getUeIpSessionMap() const
+{
+  LOG_FUNC();
+  return mpUeIpSessionMap;
 }
 
 void UPFProgram::initializeMaps()
@@ -74,5 +83,6 @@ void UPFProgram::initializeMaps()
   mpMaps = std::make_unique<BPFMaps>(mpLifeCycle->getBPFSkeleton()->skeleton);
 
   // Warning - The name of the map must be the same of the BPF program.
-  mpProgramsMap = std::make_shared<BPFMap>(mpMaps->getMap("m_jmp_table"));
+  mpTeidSessionMap = std::make_shared<BPFMap>(mpMaps->getMap("m_teid_session"));
+  mpUeIpSessionMap = std::make_shared<BPFMap>(mpMaps->getMap("m_ueip_session"));
 }

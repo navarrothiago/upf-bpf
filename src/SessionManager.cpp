@@ -6,6 +6,7 @@
 #include <interfaces/PacketDetectionRules.h>
 #include <interfaces/SessionBpf.h>
 #include <pfcp/pfcp_session.h>
+#include <lib/crc16.h>
 #include <utils/LogDefines.h>
 #include <wrappers/BPFMaps.h>
 
@@ -50,7 +51,6 @@ void SessionManager::addFAR(uint64_t seid, std::shared_ptr<ForwardingActionRules
 void SessionManager::addPDR(uint64_t seid, std::shared_ptr<PacketDetectionRules> pPdr)
 {
   LOG_FUNC();
-
   // TODO navarrothiago - Check if it is good to encapsulate in UserPlaneComponent like UPFProgram.
   auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
 
@@ -60,7 +60,6 @@ void SessionManager::addPDR(uint64_t seid, std::shared_ptr<PacketDetectionRules>
   }
 
   auto pUPFProgram = UserPlaneComponent::getInstance().getUPFProgram();
-  auto pUplinkPDRsMap = pSessionProgram->getUplinkPDRsMap();
   auto pdr = pPdr->getData();
 
   // TODO navarrothiago - Check the pdr counter.
@@ -70,21 +69,30 @@ void SessionManager::addPDR(uint64_t seid, std::shared_ptr<PacketDetectionRules>
   // TODO navarrothiago - check the order, maybe it is better to fill the program map in the end.
   auto source_interface = pdr.pdi.source_interface.interface_value;
   auto teid = pdr.pdi.fteid.teid;
+  uint32_t ueIp = pdr.pdi.ue_ip_address.ipv4_address;
+  // uint32_t *pUeIp = &pdr.pdi.ue_ip_address.ipv4_address;
+  // auto key = static_cast<uint32_t>(gen_crc16(reinterpret_cast<uint8_t*>(pUeIp), sizeof(uint32_t)));
+  uint32_t key = static_cast<uint32_t>((ueIp * 0x80008001) >> 16);
+  s32 fd;
 
   switch(source_interface) {
   case INTERFACE_VALUE_ACCESS:
     pSessionProgram->getUplinkPDRsMap()->update(teid, pdr, BPF_ANY);
+    fd = pSessionProgram->getUplinkFileDescriptor();
+    pUPFProgram->getTeidSessionMap()->update(teid, fd, BPF_ANY);
     break;
+  // TODO navarrothiago - change to INTERFACE_VALUE_SGI_LAN_N6_LAN
   case INTERFACE_VALUE_CORE:
-    // addPDR(pdr.pdi.ue_ip_address.ipv4_address, pdr, mpDownlinkPDRsMap);
+    pSessionProgram->getDownlinkPDRsMap()->update(ueIp, pdr, BPF_ANY);
+    fd = pSessionProgram->getDownlinkFileDescriptor();
+    pUPFProgram->getUeIpSessionMap()->update(key, fd, BPF_ANY);
     break;
   default:
     LOG_ERROR("Source interface %d not supported", source_interface);
     throw std::runtime_error("Source interface not supported");
   }
 
-  s32 fd = pSessionProgram->getFileDescriptor();
-  pUPFProgram->getProgramsMap()->update(teid, fd, BPF_ANY);
+  // TODO navarrothiago - Check if it make sense, because we have a UL and DL PDR.
   pSessionProgram->getPDRMap()->update(pdr.pdr_id.rule_id, pdr, BPF_ANY);
 }
 
@@ -216,9 +224,9 @@ void SessionManager::updatePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
   }
 
   // TODO navarrothiago - check if TEID can change in update procedures.
-  s32 fd = pSessionProgram->getFileDescriptor();
-  pUPFProgram->getProgramsMap()->remove(oldTeid);
-  pUPFProgram->getProgramsMap()->update(teid, fd, BPF_ANY);
+  s32 fd = pSessionProgram->getUplinkFileDescriptor();
+  pUPFProgram->getTeidSessionMap()->remove(oldTeid);
+  pUPFProgram->getTeidSessionMap()->update(teid, fd, BPF_ANY);
   pSessionProgram->getPDRMap()->update(pdr.pdr_id.rule_id, pdr, BPF_ANY);
 }
 
@@ -271,6 +279,6 @@ void SessionManager::removePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
     throw std::runtime_error("Source interface not supported");
   }
 
-  pUPFProgram->getProgramsMap()->remove(teid);
+  pUPFProgram->getTeidSessionMap()->remove(teid);
   pSessionProgram->getPDRMap()->remove(pdr.pdr_id.rule_id);
 }

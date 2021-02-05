@@ -133,7 +133,7 @@ private:
   pdrs_t lookupPDRs(KeyType key, std::shared_ptr<BPFMap> pBPFMap);
   // Store the abstraction of the BPF map.
   std::shared_ptr<BPFMap> mpDownlinkPDRsMap;
-  std::shared_ptr<BPFMap> mpProgramsMap;
+  std::shared_ptr<BPFMap> mpTeidSessionMap;
   std::shared_ptr<BPFMap> mpFARsMap;
 };
 

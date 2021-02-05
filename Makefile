@@ -104,9 +104,6 @@ run-session-manager-tests: force-xdp-deload ## Run SessionManagerTests
 
 rerun: force-xdp-deload run ## Build all and run BPF XDP UPF
 
-run-scapy: ## Run scapy for packet manipulation
-	sudo ./extern/scapy/run_scapy
-
 force-xdp-deload: ## Kill all and force deload XDP programs
 	sudo ip link set dev $(DEVICE_IN) xdpgeneric off
 	sudo ip link set dev $(DEVICE_OUT_UL) xdpgeneric off

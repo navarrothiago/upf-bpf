@@ -21,7 +21,9 @@
     "cschlosser.doxdocgen",
     "amiralizadeh9480.cpp-helper",
     "eamodio.gitlens",
-    "albert.tabout"
+    "albert.tabout",
+    "redhat.vscode-yaml",
+    "ms-python.python",
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

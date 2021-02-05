@@ -30,12 +30,6 @@ struct bpf_map_def SEC("maps") m_redirect_interfaces = {
 	.value_size  = sizeof(u32), // tx port
 	.max_entries = 10,
 };
-struct bpf_map_def SEC("maps") m_seid = {
-	.type        = BPF_MAP_TYPE_ARRAY,
-	.key_size    = sizeof(u32), // index
-	.value_size  = sizeof(seid_t_), // seid
-	.max_entries = 1,
-};
 // Uplink map.
 struct bpf_map_def SEC("maps") m_teid_pdrs_counter = {
 	.type        = BPF_MAP_TYPE_HASH,
@@ -51,7 +45,13 @@ struct bpf_map_def SEC("maps") m_teid_pdr = {
 	.value_size  = sizeof(pfcp_pdr_t_), // assuming only one PDR
 	.max_entries = 100000,
 };
-
-
+// Downlink map.
+// TODO navarrothiago - Store multiple PDR.
+struct bpf_map_def SEC("maps") m_ueip_pdr = {
+	.type        = BPF_MAP_TYPE_HASH,
+	.key_size    = sizeof(u32), // UE IP address
+	.value_size  = sizeof(pfcp_pdr_t_), // assuming only one PDR
+	.max_entries = 100000,
+};
 
 #endif // __SESSION_CONTEXT_MAPS_H__

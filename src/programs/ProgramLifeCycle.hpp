@@ -88,7 +88,6 @@ public:
   ProgramState getState() const;
 
 private:
-
   // Mutex for tearDown (async).
   std::mutex sTearDownMutex;
   // The program state.
@@ -227,32 +226,32 @@ void ProgramLifeCycle<BPFSkeletonType>::tearDown()
   std::string section;
 
   if(mState != ProgramState::IDLE) {
-    if(mState != LINKED){
+    if(mState == LINKED) {
+      LOG_DBG("There are some program in LINKED state.");
+      bpf_object__for_each_program(prog, mpSkeleton->obj)
+      {
+        // Get section name.
+        section = std::string(bpf_program__section_name(prog));
+        // Find the section.
+        auto it = mSectionLinkInterfacesMap.find(section);
+        if(it == mSectionLinkInterfacesMap.end()) {
+          LOG_DBG("BPF program {} are not link to any interface", section);
+          continue;
+        }
+        // For each link in this section, do unlink.
+        for(auto linkEntry : it->second) {
+          LOG_DBG("BPF program {} is in a HOOKED state", section.c_str());
+          if(bpf_set_link_xdp_fd(linkEntry, -1, XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE)) {
+            LOG_ERROR("BPF program {} cannot unlink the {} interface", section, linkEntry);
+            throw std::runtime_error("BPF program cannot unlink");
+          };
+          LOG_INF("BPF program {} unlink to {} interface", section, linkEntry);
+        }
+      }
+    } else {
       LOG_DBG("There are not any program in LINKED state.");
-      destroy();
-      return;
     }
-    LOG_DBG("There are some program in LINKED state.");
-    bpf_object__for_each_program(prog, mpSkeleton->obj)
-    {
-      // Get section name.
-      section = std::string(bpf_program__section_name(prog));
-      // Find the section.
-      auto it = mSectionLinkInterfacesMap.find(section);
-      if(it == mSectionLinkInterfacesMap.end()) {
-        LOG_DBG("BPF program {} are not link to any interface", section);
-        continue;
-      }
-      // For each link in this section, do unlink.
-      for(auto linkEntry : it->second) {
-        LOG_DBG("BPF program {} is in a HOOKED state", section.c_str());
-        if(bpf_set_link_xdp_fd(linkEntry, -1, XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE)) {
-          LOG_ERROR("BPF program {} cannot unlink the {} interface", section, linkEntry);
-          throw std::runtime_error("BPF program cannot unlink");
-        };
-        LOG_INF("BPF program {} unlink to {} interface", section, linkEntry);
-      }
-    }
+    destroy();
   } else {
     LOG_DBG("Programs is in IDLE state. TearDown skipped");
   }

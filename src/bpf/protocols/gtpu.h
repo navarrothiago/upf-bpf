@@ -9,8 +9,8 @@
                                 sizeof(struct udphdr) +     \
                                 sizeof(struct gtpuhdr))
 
-// TS 29 281
-#define GTP_UDP_PORT 2152u
+#define GTP_UDP_PORT 2152u //!< TS 29 281
+#define GTP_FLAGS 0x30     //!< Version: GTPv1, Protocol Type: GTP, Others: 0 
 
 // TS 29 281 - Section 6 GTP-U Message Formats
 // Table 6.1-1: Messages in GTP-U
@@ -57,7 +57,7 @@ struct gtpuhdr
   uint32_t teid;
 
   /*The options start here. */
-};
+} __attribute__((packed));
 
 static u32 gtp_handle(struct xdp_md *ctx, struct gtpuhdr *gtpuh);
 

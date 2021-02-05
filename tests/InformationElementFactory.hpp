@@ -21,7 +21,7 @@ std::shared_ptr<SessionBpf> createSession(seid_t_ seid)
   return std::make_shared<SessionBpfImpl>(*pSessionRaw);
 }
 
-std::shared_ptr<PacketDetectionRules> createPDR(u16 pdrId, u32 farId, u32 teid, u32 sourceInterface, struct in_addr ueIPv4)
+std::shared_ptr<PacketDetectionRules> createPDR(u16 pdrId, u32 farId, u32 teid, u32 sourceInterface, struct in_addr ueIPv4, u16 outerHeaderRemoval)
 {
   LOG_FUNC();
   // Proprietary struct.
@@ -30,7 +30,7 @@ std::shared_ptr<PacketDetectionRules> createPDR(u16 pdrId, u32 farId, u32 teid, 
   // PDR.
   pPdrProprietary->pdr_id.rule_id = pdrId;
   pPdrProprietary->far_id.far_id = farId;
-  pPdrProprietary->outer_header_removal.outer_header_removal_description = OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+  pPdrProprietary->outer_header_removal.outer_header_removal_description = outerHeaderRemoval;
   pPdrProprietary->pdi.fteid.teid = teid;
   pPdrProprietary->pdi.source_interface.interface_value = sourceInterface;
   pPdrProprietary->pdi.ue_ip_address.ipv4_address = ueIPv4.s_addr;
@@ -39,7 +39,7 @@ std::shared_ptr<PacketDetectionRules> createPDR(u16 pdrId, u32 farId, u32 teid, 
   return std::make_shared<PacketDetectionRulesImpl>(*pPdrProprietary);
 }
 
-std::shared_ptr<ForwardingActionRules> createFAR(u32 farId, apply_action_t_ actions, u32 destinationInterface)
+std::shared_ptr<ForwardingActionRules> createFAR(u32 farId, apply_action_t_ actions, u32 destinationInterface, u16 outerHeadeCreation, struct in_addr destinationIPv4, u16 destinationPort)
 {
   LOG_FUNC();
   // Proprietary structs.
@@ -48,7 +48,9 @@ std::shared_ptr<ForwardingActionRules> createFAR(u32 farId, apply_action_t_ acti
   // FAR.
   pFarProprietary->far_id.far_id = farId;
   pFarProprietary->apply_action = actions;
-  pFarProprietary->forwarding_parameters.outer_header_creation.outer_header_creation_description = OUTER_HEADER_CREATION_UDP_IPV4;
+  pFarProprietary->forwarding_parameters.outer_header_creation.outer_header_creation_description = outerHeadeCreation;
+  pFarProprietary->forwarding_parameters.outer_header_creation.ipv4_address = destinationIPv4;
+  pFarProprietary->forwarding_parameters.outer_header_creation.port_number = destinationPort;
   pFarProprietary->forwarding_parameters.destination_interface.interface_value = destinationInterface;
 
   // Adapts proprietary struct to the interfaces.

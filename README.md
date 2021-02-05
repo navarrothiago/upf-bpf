@@ -10,6 +10,7 @@ User plane function using BPF and XDP for mobile core network (4G/5G).
 - Configure veth pairs with `make config-veth-pair` in `Linux #0`
 - Install the spdlog library with `make setup`
 - Build, load and run program with `make run` in `Linux #0`
+- Login remote Scapy `ssh -X navarro@192.168.15.7 "cd /work/mestrado/scapy/; sudo -S ./run_scapy"`
 - Generate GTP G-PDU using [Scapy](https://github.com/secdev/scapy) with `gtpu-traffic-generator.py`  in `Linux #1`
 - Open other terminal tab in `Linux #0`
 - Check logs: `sudo cat /sys/kernel/debug/tracing/trace | grep "GPDU"`  in `Linux #0`

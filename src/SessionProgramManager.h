@@ -33,7 +33,7 @@ public:
    * 
    * @param pProgramsMaps  The programs wrapper for BPF map.
    */
-  void setProgramsMap(std::shared_ptr<BPFMap> pProgramsMaps);
+  void setTeidSessionMap(std::shared_ptr<BPFMap> pProgramsMaps);
 
   /**
    * @brief Create a new program related to the SEID.
@@ -75,7 +75,10 @@ private:
   SessionProgramManager();
   
   // The program eBPF map.
-  std::shared_ptr<BPFMap> mpProgramsMap;
+  std::shared_ptr<BPFMap> mpTeidSessionMap;
+
+  // The program eBPF map.
+  std::shared_ptr<BPFMap> mpUeIpSessionMap;
 
   // The observer which will be notify when a SessionProgram is created.
   OnStateChangeSessionProgramObserver *mpOnNewSessionProgramObserver;

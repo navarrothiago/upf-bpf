@@ -28,7 +28,9 @@ void SessionProgram::setup()
   initializeMaps();
   mpLifeCycle->load();
   mpLifeCycle->attach();
+  // Uplink interface destination.
   mpLifeCycle->link("xdp_redirect_dummy", "veth0");
+  // Downlink interface destination.
   mpLifeCycle->link("xdp_redirect_dummy", "veth1");
 }
 
@@ -38,10 +40,16 @@ void SessionProgram::tearDown()
   mpLifeCycle->tearDown();
 }
 
-int SessionProgram::getFileDescriptor() const
+int SessionProgram::getUplinkFileDescriptor() const
 {
   LOG_FUNC();
-  return bpf_program__fd(mpLifeCycle->getBPFSkeleton()->progs.entry_point);
+  return bpf_program__fd(mpLifeCycle->getBPFSkeleton()->progs.uplink_entry_point);
+}
+
+int SessionProgram::getDownlinkFileDescriptor() const
+{
+  LOG_FUNC();
+  return bpf_program__fd(mpLifeCycle->getBPFSkeleton()->progs.downlink_entry_point);
 }
 
 std::shared_ptr<BPFMap> SessionProgram::getPDRMap() const
@@ -60,6 +68,12 @@ std::shared_ptr<BPFMap> SessionProgram::getUplinkPDRsMap() const
 {
   LOG_FUNC();
   return mpUplinkPDRsMap;
+}
+
+std::shared_ptr<BPFMap> SessionProgram::getDownlinkPDRsMap() const
+{
+  LOG_FUNC();
+  return mpDownlinkPDRsMap;
 }
 
 std::shared_ptr<BPFMap> SessionProgram::getCounterMap() const
@@ -85,6 +99,7 @@ void SessionProgram::initializeMaps()
   mpPDRMap = std::make_shared<BPFMap>(mpMaps->getMap("m_pdrs"));
   mpFARMap = std::make_shared<BPFMap>(mpMaps->getMap("m_fars"));
   mpUplinkPDRsMap = std::make_shared<BPFMap>(mpMaps->getMap("m_teid_pdr"));
+  mpDownlinkPDRsMap = std::make_shared<BPFMap>(mpMaps->getMap("m_ueip_pdr"));
   mpCounterMap = std::make_shared<BPFMap>(mpMaps->getMap("mc_stats"));
   mpEgressInterfaceMap = std::make_shared<BPFMap>(mpMaps->getMap("m_redirect_interfaces"));
 }

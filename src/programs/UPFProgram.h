@@ -62,11 +62,18 @@ public:
    */
   void removeProgramMap(uint32_t key);
   /**
-   * @brief Get the Programs Map object.
+   * @brief Get the TEID to session Map object.
    *
-   * @return std::shared_ptr<BPFMap> The seid to fd map.
+   * @return std::shared_ptr<BPFMap> The TEDI to fd map.
    */
-  std::shared_ptr<BPFMap> getProgramsMap() const;
+  std::shared_ptr<BPFMap> getTeidSessionMap() const;
+  /**
+   * @brief Get the UE IP to session Map object.
+   *
+   * @return std::shared_ptr<BPFMap> The UE IP to fd map.
+   */
+  std::shared_ptr<BPFMap> getUeIpSessionMap() const;
+
 
 private:
   /**
@@ -83,7 +90,10 @@ private:
   upf_xdp_bpf_c *spSkeleton;
 
   // The program eBPF map.
-  std::shared_ptr<BPFMap> mpProgramsMap;
+  std::shared_ptr<BPFMap> mpTeidSessionMap;
+
+  // The program eBPF map.
+  std::shared_ptr<BPFMap> mpUeIpSessionMap;
 
   // The BPF lifecycle program.
   std::unique_ptr<UPFProgramLifeCycle> mpLifeCycle;

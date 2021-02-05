@@ -38,6 +38,7 @@ private:
   bpf_object_skeleton *mpBPFObjectSkeleton;
 
   // The reference of all maps in bpf program.
+  // TODO navarrothiago - Change to hash map.
   std::vector<BPFMap> mMaps;
 };
 

@@ -39,11 +39,17 @@ public:
    */
   void tearDown();
   /**
-   * @brief Get the File Descriptor (entry point) object.
+   * @brief Get the Downlink File Descriptor (entry point) object.
    * 
    * @return int The file descriptor of the entry point program.
    */
-  int getFileDescriptor() const;
+  int getUplinkFileDescriptor() const;
+  /**
+   * @brief Get the Uplink File Descriptor (entry point) object.
+   * 
+   * @return int The file descriptor of the entry point program.
+   */
+  int getDownlinkFileDescriptor() const;
   /**
    * @brief Get PDR maps reference.
    * 
@@ -62,6 +68,12 @@ public:
    * @return std::shared_ptr<BPFMap> The uplink to PDR map.
    */
   std::shared_ptr<BPFMap> getUplinkPDRsMap() const;
+  /**
+   * @brief Get the Downlink PDRs Map object.
+   * 
+   * @return std::shared_ptr<BPFMap> The uplink to PDR map.
+   */
+  std::shared_ptr<BPFMap> getDownlinkPDRsMap() const;
   /**
    * @brief Get the Counter Map object.
    * 
@@ -94,6 +106,9 @@ private:
 
   // The uplink PDR eBPF map.
   std::shared_ptr<BPFMap> mpUplinkPDRsMap;
+
+  // The downlink PDR eBPF map.
+  std::shared_ptr<BPFMap> mpDownlinkPDRsMap;
 
   // The counter packet map.
   std::shared_ptr<BPFMap> mpCounterMap;
