@@ -1,9 +1,6 @@
 [submodule "extern/libbpf"]
 	path = extern/libbpf
 	url = git@github.com:libbpf/libbpf.git
-[submodule "extern/scapy"]
-	path = extern/scapy
-	url = git@github.com:secdev/scapy.git
 [submodule "extern/googletest"]
 	path = extern/googletest
 	url = git@github.com:google/googletest.git
