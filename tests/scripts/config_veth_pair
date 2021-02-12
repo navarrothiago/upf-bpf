@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+#
+# Based on - Veth XDP: XDP for Containers (see slides)
+
+main() {
+
+  # set -o errexit
+  set -o pipefail
+  set -o nounset
+
+  local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local -r filename="${dirname}/$(basename "${BASH_SOURCE[0]}")"
+
+  source "${dirname}"/environment.sh
+
+  local nr_cpu=$(nproc)
+  local namespace=$1
+  local veth=$2
+  local phy_nic=$3
+
+  if [ "$#" -ne 3 ]; then
+    echo "Illegal number of parameters"
+    exit 1
+  fi
+
+  echo "Remove namespace ${namespace}"
+  sudo ip netns del ${namespace}
+
+  echo "Create a namespace"
+  sudo ip netns add ${namespace}
+
+  # Wait namespace to be create.
+  # Workaround: Cannot find device "vethX"
+  sleep .2
+
+  # Put veth2 in ${namespace}.
+  # Number of queues should be equal to the number of CPUs.
+  echo "Create a veth pair with ${veth} and veth2."
+  sudo ip link add ${veth} numrxqueues ${nr_cpu} numtxqueues ${nr_cpu} type veth \
+    peer name veth2 netns ${namespace} numrxqueues ${nr_cpu} numtxqueues ${nr_cpu}
+
+  echo "Tx vlan off in ${veth}"
+  sudo ethtool -K ${veth} tx off txvlan off
+
+  echo "Tx vlan off in veth2"
+  sudo ip netns exec ${namespace} ethtool -K veth2 tx off txvlan off
+
+  # FIXME navarrothiago - Not working.
+  #sudo ethtool -K phy_nic rxvlan off
+
+  echo "Get veth2 mac address"
+  local mac_of_veth1=$(sudo ip netns exec ${namespace} cat /sys/class/net/veth2/address)
+
+  echo "Create a bridge forward database"
+  sudo bridge fdb add ${mac_of_veth1} dev ${phy_nic} self # Unicast filter
+
+  echo "Turn ifaces up"
+  sudo ip link set ${veth} up
+  sudo ip netns exec ${namespace} ip link set veth2 up
+
+  exit 0
+}
+main "$@"

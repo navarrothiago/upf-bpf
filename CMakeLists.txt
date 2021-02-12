@@ -19,7 +19,7 @@ if(NOT TARGET spdlog)
 endif()
 
 # Set global property (all targets are impacted)
-set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
+# set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
 
 option(PACKAGE_TESTS "Build the tests" ON)
 if(PACKAGE_TESTS)
@@ -85,6 +85,8 @@ install(
     NAMESPACE "${namespace}"
     DESTINATION "${config_install_dir}"
 )
+
+install(FILES Makefile DESTINATION "." )
 
 add_subdirectory(samples)
 add_subdirectory(src)

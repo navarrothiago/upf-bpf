@@ -59,7 +59,7 @@ static void poll_stats(int interval, teid_t_ teid, struct in_addr ueIpAddress, s
     sleep(interval);
 
     // Loop again if there isnt a PDR created.
-    if(direction == UPLINK && pPDRMap->lookup(teid, &pdr) != 0 
+    if(direction == UPLINK && pPDRMap->lookup(teid, &pdr) != 0
       || direction == DOWNLINK && pPDRMap->lookup(ueIpAddress.s_addr, &pdr) != 0) {
       perror("lookup error m_teid_pdrs");
       continue;
@@ -100,21 +100,21 @@ int main(int argc, char **argv)
     fprintf(stderr, "Invalid address\n");
     return 1;
   }
-  if(inet_aton("192.168.15.12", &dst_addr) == 0) {
+  if(inet_aton("10.1.3.27", &dst_addr) == 0) {
     fprintf(stderr, "Invalid address\n");
     return 1;
   }
-  if(inet_aton("192.168.15.7", &ue_ip) == 0) {
-    fprintf(stderr, "Invalid address\n");
-    return 1;
-  }
+  // if(inet_aton("10.1.3.27", &ue_ip) == 0) {
+  //   fprintf(stderr, "Invalid address\n");
+  //   return 1;
+  // }
 
   LOG_DBG("src_addr:{} dst_addr:{} ue_ip:{}", src_addr.s_addr, dst_addr.s_addr, ue_ip.s_addr);
 
   // Initialize context.
   seid_t_ seid = 1;
-  u16 pdrIdUL = 10; 
-  u16 pdrIdDL = 20; 
+  u16 pdrIdUL = 10;
+  u16 pdrIdDL = 20;
   u32 farIdUL = 100;
   u32 farIdDL = 200;
   u32 teid = 100;

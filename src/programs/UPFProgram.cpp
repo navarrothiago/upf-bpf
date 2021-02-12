@@ -4,7 +4,7 @@
 #include <bpf/libbpf.h>    // bpf wrappers
 #include <iostream>        // cout
 #include <stdexcept>       // exception
-#include <utils/LogDefines.h> 
+#include <utils/LogDefines.h>
 #include <wrappers/BPFMap.hpp>
 #include <wrappers/BPFMaps.h>
 
@@ -28,7 +28,7 @@ void UPFProgram::setup()
   mpLifeCycle->load();
   mpLifeCycle->attach();
   // Uplink and Downlink interface
-  mpLifeCycle->link("xdp_entry_point","enp0s20f0u4u2u4");
+  mpLifeCycle->link("xdp_entry_point","enp3s0f0");
 
   // TODO navarrothiago - split to a different downlink interface.
   // TODO navarrothiago - Remove hardcoded - https://github.com/navarrothiago/upf-bpf/issues/24

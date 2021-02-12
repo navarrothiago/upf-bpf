@@ -54,3 +54,9 @@ target_link_libraries(ControlPlaneTests
   asan
   spdlog::spdlog
 )
+
+install(
+    TARGETS UPFProgramTests ControlPlaneTests
+    RUNTIME
+)
+install( DIRECTORY scripts DESTINATION "tests" )

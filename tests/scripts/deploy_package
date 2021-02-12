@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# Copy package with binary and libraries.
+
+main() {
+
+  set -o errexit
+  set -o pipefail
+  set -o nounset
+
+  local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local -r filename="${dirname}/$(basename "${BASH_SOURCE[0]}")"
+
+  source "${dirname}"/environment.sh
+
+  echo
+  echo "Copy package with binary and libraries."
+
+  if [ -n "${TREX_SERVER_NAME}" ]; then
+    scp -r "${LOCAL_PACKAGE}" "${DUT_NAME}":"${DUT_UPLOAD_DIR}"
+  else
+    scp -r "${LOCAL_PACKAGE}" "${DUT_USERNAME}"@"${DUT_IP}":"${DUT_UPLOAD_DIR}"
+  fi
+
+  exit 0
+}
+
+main "$@"

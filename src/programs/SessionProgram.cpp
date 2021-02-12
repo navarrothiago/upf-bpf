@@ -8,7 +8,7 @@
 #include <wrappers/BPFMaps.h>
 #include <wrappers/BPFMap.hpp>
 
-SessionProgram::SessionProgram() 
+SessionProgram::SessionProgram()
 {
   LOG_FUNC();
   mpLifeCycle = std::make_unique<SessionProgramLifeCycle>(session_bpf_c__open, session_bpf_c__load, session_bpf_c__attach, session_bpf_c__destroy);
@@ -19,7 +19,7 @@ SessionProgram::~SessionProgram()
   LOG_FUNC();
 }
 
-// TODO navarrothiago - Pass configuratino throught args.
+// TODO navarrothiago - Pass configuration throught args.
 void SessionProgram::setup()
 {
   LOG_FUNC();
@@ -29,12 +29,12 @@ void SessionProgram::setup()
   mpLifeCycle->load();
   mpLifeCycle->attach();
   // Uplink interface destination.
-  mpLifeCycle->link("xdp_redirect_dummy", "veth0");
+  // mpLifeCycle->link("xdp_redirect_dummy", "veth0");
   // Downlink interface destination.
-  mpLifeCycle->link("xdp_redirect_dummy", "veth1");
+  mpLifeCycle->link("xdp_redirect_dummy", "enp3s0f1");
 }
 
-void SessionProgram::tearDown() 
+void SessionProgram::tearDown()
 {
   LOG_FUNC();
   mpLifeCycle->tearDown();

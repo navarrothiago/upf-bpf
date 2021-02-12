@@ -24,6 +24,8 @@
     "albert.tabout",
     "redhat.vscode-yaml",
     "ms-python.python",
+    "l13rary.l13-sh-snippets",
+    "foxundermoon.shell-format",
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
@@ -41,14 +43,16 @@
     "--privileged",
     "--name=upf-bpf",
     "--net=host",
-    "-v",
-    "${localEnv:HOME}/.bashrc:/root/.bashrc"
   ],
 
 	// Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-in-docker.
 	// Mounts persitent history. See https://code.visualstudio.com/docs/remote/containers-advanced#_persist-bash-history-between-runs.
 	"mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
          "source=openair-cn-cups-bashhistory,target=/commandhistory,type=volume",
+         "source=${localEnv:HOME}/.ssh,target=/home/oai-spgwu/.ssh,type=bind,consistency=cached",
+         "source=${localEnv:HOME}/.bashrc,target=/home/oai-spgwu/.bashrc,type=bind,consistency=cached",
+         "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached",
+         "source=${localEnv:HOME}/.bashrc,target=/root/.bashrc,type=bind,consistency=cached",
 	],
 
 	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.

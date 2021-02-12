@@ -2,6 +2,10 @@ BPF_SAMPLES_DIR=build/samples
 BPF_BINARY_DIR=build/tests
 NUM_THREADS=4
 GTEST_FILTER_ARGS="*.*"
+USERNAME=oai-spgwu
+IMAGE=upee
+VERSION=v1.0
+DOCKERFILE_DEVEL=Dockerfile
 
 # Get all PIDs from *xdp* that is running.
 PIDS := $(shell ps -aux | grep -e UPFProgramTests -e xdp | awk '{print $$2}')
@@ -11,9 +15,10 @@ PIDS := $(shell ps -aux | grep -e UPFProgramTests -e xdp | awk '{print $$2}')
 # Uncomment fo Docker standalone
 # DEVICE_IN=eth0
 # Uncomment for OAI
-DEVICE_IN=enp0s20f0u4u2u4
+# DEVICE_IN=enp0s20f0u4u2u4
+DEVICE_IN?=enp3s0f0
 DEVICE_OUT_UL=veth0
-DEVICE_OUT_DL=veth1
+DEVICE_OUT_DL=enp3s0f1
 
 .PHONY: help
 
@@ -34,11 +39,12 @@ all: ## Build all
 	make copy_samples_objs && \
 	make copy_objs
 
+
 install: ## Install package
 	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
-  cmake --build build --target install
+  cmake --build build --target install --parallel
 
-setup: config-veth-pair ## Setup dependencies: Execute config-veth-pair and install dependencies
+setup: ## Build dependencies
 	git submodule update --init --recursive && \
 	cd extern/spdlog && \
 	mkdir -p build && cd build && \
@@ -54,8 +60,8 @@ clean: ## Clean all build files
 
 clean-all: clean ## Clean all build and dependencies
 	cd extern/libbpf/src && \
-	make clean && \
-	rm -Rf extern/spdlog/build 
+	make clean
+	rm -Rf extern/spdlog/build
 
 all-verbose: ## Build all in verbose mode
 	mkdir -p build && \
@@ -67,8 +73,12 @@ all-verbose: ## Build all in verbose mode
 	make copy_objs V=1
 
 config-veth-pair: ## Config veth pair. It must be run before <run-*> targets
-	sudo ./tests/scripts/config_veth_pair.sh ns0 $(DEVICE_OUT_UL) $(DEVICE_IN)
-	sudo ./tests/scripts/config_veth_pair.sh ns1 $(DEVICE_OUT_DL) $(DEVICE_IN)
+	sudo ./tests/scripts/config_veth_pair ns0 $(DEVICE_OUT_UL) $(DEVICE_IN)
+	sudo ./tests/scripts/config_veth_pair ns1 $(DEVICE_OUT_DL) $(DEVICE_IN)
+
+rm-veth-pair: ## Remove veth pairs
+	sudo ip netns del ns0
+	sudo ip netns del ns1
 
 bild-samples: ## Build samples
 	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
@@ -104,9 +114,29 @@ run-session-manager-tests: force-xdp-deload ## Run SessionManagerTests
 
 rerun: force-xdp-deload run ## Build all and run BPF XDP UPF
 
+dut-run: ## Run ControlPlaneTests on DUT
+	sudo ./bin/ControlPlaneTests
+
 force-xdp-deload: ## Kill all and force deload XDP programs
-	sudo ip link set dev $(DEVICE_IN) xdpgeneric off
-	sudo ip link set dev $(DEVICE_OUT_UL) xdpgeneric off
-	sudo ip link set dev $(DEVICE_OUT_DL) xdpgeneric off
 	# the "true" is used to avoid stop when execute the command.
-	sudo kill -9 $(PIDS) | true 
+	sudo ip link set dev $(DEVICE_IN) xdpgeneric off | true
+	sudo ip link set dev $(DEVICE_OUT_UL) xdpgeneric off | true
+	sudo ip link set dev $(DEVICE_OUT_DL) xdpgeneric off | true
+	sudo kill -9 $(PIDS) | true
+
+trex: ## Install, deploy configuration and run t-rex on remote server
+	tests/scripts/remote_install_trex
+	tests/scripts/deploy_trex_config
+	tests/scripts/remote_run_trex_server
+
+docker-build: ## Build development image
+	docker build --tag=$(IMAGE):$(VERSION) --rm -f docker/$(DOCKERFILE_DEVEL) .
+
+docker-run: ## Run development container
+	docker run -it --rm \
+		--volume $(PWD):/workspace \
+		--volume $(HOME)/.ssh:/root/.ssh/ \
+		--volume $(HOME)/.ssh:/home/$(USERNAME)/.ssh/ \
+		--privileged \
+		--workdir /workspace $(IMAGE):$(VERSION) \
+		/bin/bash

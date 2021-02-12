@@ -82,6 +82,8 @@ static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph, u32 dest_ip)
 {
   void *p_data_end = (void *)(long)p_ctx->data_end;
   u32 dport;
+
+  // Apply hash function.
   uint32_t key = (uint32_t)((dest_ip * 0x80008001) >> 16);
 
   /* Hint: +1 is sizeof(struct udphdr) */
@@ -221,6 +223,8 @@ int entry_point(struct xdp_md *p_ctx)
 {
   void *p_data = (void *)(long)p_ctx->data;
   struct ethhdr *eth = p_data;
+
+  bpf_debug("XDP ENTRY POINT");
 
   // Start to handle the ethernet header.
   u32 action = xdp_stats_record_action(p_ctx, eth_handle(p_ctx, eth));

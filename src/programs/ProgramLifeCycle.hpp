@@ -190,8 +190,9 @@ void ProgramLifeCycle<BPFSkeletonType>::link(std::string sectionName, std::strin
       // Get programs FD from skeleton object.
       fd = bpf_program__fd(prog);
       // Link program (fd) to the interface.
-      if(bpf_set_link_xdp_fd(ifIndex, fd, XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE) < 0) {
-        LOG_ERROR("BPF program link set XDP failed");
+      // if(bpf_set_link_xdp_fd(ifIndex, fd, XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE) < 0) {
+      if(bpf_set_link_xdp_fd(ifIndex, fd, XDP_FLAGS_UPDATE_IF_NOEXIST) < 0) {
+        LOG_ERROR("BPF program {} link set XDP failed", sectionName);
         tearDown();
         throw std::runtime_error("BPF program link set XDP failed");
       }
@@ -209,7 +210,7 @@ void ProgramLifeCycle<BPFSkeletonType>::link(std::string sectionName, std::strin
 
       // Update the global link state.
       mState = LINKED;
-      LOG_INF("BPF program hooked in XDP");
+      LOG_INF("BPF program {} hooked in XDP", sectionName);
       return;
     };
   }
