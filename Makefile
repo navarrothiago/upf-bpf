@@ -126,13 +126,12 @@ force-xdp-deload: ## Kill all and force deload XDP programs
 	sudo kill -9 $(PIDS) | true
 
 trex: ## Install, deploy configuration and run t-rex on remote server
-	tests/scripts/install_trex
+	tests/scripts/install_trex_remote
 	tests/scripts/deploy_trex_config
 	tests/scripts/run_trex_server
 
 trex-tests: ## Run trex test case
 	tests/scripts/run_test_case $(TEST_CASE)
-
 
 docker-build: ## Build development image
 	docker build --tag=$(IMAGE):$(VERSION) --rm -f docker/$(DOCKERFILE_DEVEL) .

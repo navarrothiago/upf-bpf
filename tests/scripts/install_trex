@@ -12,7 +12,7 @@ main() {
   local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
   local -r upload_dir="${1:-/tmp/}"
-  local -r trex_version="${2:-v2.38}"
+  local -r trex_version="${2:-v2.37}"
   local -r trex_shasum="${3:-290c1be468335a2de2e69f217b139c9b1198732e529bfd069348d05297548b8a}"
   local -r shasum=$(cat "${upload_dir}"/"${trex_version}".tar.gz | sha256sum | awk '{print $1}')
   local -r trex_dir="${upload_dir}"/"${trex_version}"
