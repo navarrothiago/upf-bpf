@@ -9,17 +9,12 @@ main() {
   set -o nounset
 
   local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  local -r filename="${dirname}/$(basename "${BASH_SOURCE[0]}")"
 
   source "${dirname}"/environment.sh
 
-  if [ -n "${TREX_SERVER_NAME}" ]; then
-    scp -r "${LOCAL_CONFIG_DIR}" "${TREX_SERVER_NAME}":"${TREX_SERVER_UPLOAD_DIR}"
-    scp -r "${LOCAL_TRAFFIC_DIR}" "${TREX_SERVER_NAME}":"${TREX_SERVER_UPLOAD_DIR}"
-  else
-    scp -r "${LOCAL_CONFIG_DIR}" "${TREX_SERVER_USERNAME}"@"${TREX_SERVER_IP}":"${TREX_SERVER_UPLOAD_DIR}"
-    scp -r "${LOCAL_TRAFFIC_DIR}" "${TREX_SERVER_USERNAME}"@"${TREX_SERVER_IP}":"${TREX_SERVER_UPLOAD_DIR}"
-  fi
+  scp -r "${LOCAL_CONFIG_DIR}" "${TREX_SERVER_SSH}":"${TREX_SERVER_UPLOAD_DIR}"
+  scp -r "${LOCAL_TRAFFIC_DIR}" "${TREX_SERVER_SSH}":"${TREX_SERVER_UPLOAD_DIR}"
+  scp -r "${LOCAL_TEST_CASES_DIR}" "${TREX_SERVER_SSH}":"${TREX_SERVER_UPLOAD_DIR}"
 
   exit 0
 }

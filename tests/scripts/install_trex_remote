@@ -18,11 +18,7 @@ main() {
   echo
   echo "Installing t-rex on "${TREX_SERVER_IP}""
   echo
-  if [ -n "${TREX_SERVER_NAME}" ]; then
-    ssh "${TREX_SERVER_NAME}" "bash -s" -- < "${dirname}"/install_trex  "${TREX_SERVER_UPLOAD_DIR}" "${TREX_VERSION}"
-  else
-    ssh "${TREX_SERVER_USERNAME}"@"${TREX_SERVER_IP}" "bash -s" -- < "${dirname}"/install_trex  "${TREX_SERVER_UPLOAD_DIR}" "${TREX_VERSION}"
-  fi
+  ssh "${TREX_SERVER_SSH}" "bash -s" -- "${TREX_SERVER_UPLOAD_DIR}" "${TREX_VERSION}" <"${dirname}"/install_trex
 }
 
 main "$@"

@@ -13,18 +13,13 @@ main() {
   source "${dirname}"/environment.sh
 
   echo
-  echo "Run t-rex server on "${DUT_IP}"."
+  echo "Run t-rex server on "${TREX_SERVER_IP}"."
+  echo
   # https://superuser.com/questions/1138707/ssh-makes-all-typed-passwords-visible-when-command-is-provided-as-an-argument-to
 
-  if [ -n "${TREX_SERVER_NAME}" ]; then
-    ssh -t "${TREX_SERVER_NAME}" \
-        "cd ${TREX_SERVER_UPLOAD_DIR}/${TREX_VERSION}
+  ssh -t "${TREX_SERVER_SSH}" \
+    "cd ${TREX_SERVER_UPLOAD_DIR}/${TREX_VERSION}
         sudo ./t-rex-64 -i --cfg ${REMOTE_CONFIG_DIR}/platform_profile_dpdk.yaml"
-  else
-    ssh -t "${TREX_SERVER_USERNAME}"@"${TREX_SERVER_IP}" \
-        "cd ${TREX_SERVER_UPLOAD_DIR}/${TREX_VERSION}
-        sudo ./t-rex-64 -i --cfg ${REMOTE_CONFIG_DIR}/platform_profile.yaml"
-  fi
   exit 0
 }
 main "$@"

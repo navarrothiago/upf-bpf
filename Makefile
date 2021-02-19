@@ -6,6 +6,8 @@ USERNAME=oai-spgwu
 IMAGE=upee
 VERSION=v1.0
 DOCKERFILE_DEVEL=Dockerfile
+TEST_CASE?=hello_world
+
 
 # Get all PIDs from *xdp* that is running.
 PIDS := $(shell ps -aux | grep -e UPFProgramTests -e xdp | awk '{print $$2}')
@@ -38,7 +40,6 @@ all: ## Build all
 	make copy_bpf_program && \
 	make copy_samples_objs && \
 	make copy_objs
-
 
 install: ## Install package
 	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
@@ -125,9 +126,13 @@ force-xdp-deload: ## Kill all and force deload XDP programs
 	sudo kill -9 $(PIDS) | true
 
 trex: ## Install, deploy configuration and run t-rex on remote server
-	tests/scripts/remote_install_trex
+	tests/scripts/install_trex
 	tests/scripts/deploy_trex_config
-	tests/scripts/remote_run_trex_server
+	tests/scripts/run_trex_server
+
+trex-tests: ## Run trex test case
+	tests/scripts/run_test_case $(TEST_CASE)
+
 
 docker-build: ## Build development image
 	docker build --tag=$(IMAGE):$(VERSION) --rm -f docker/$(DOCKERFILE_DEVEL) .

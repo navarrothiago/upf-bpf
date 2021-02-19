@@ -15,13 +15,8 @@ main() {
 
   echo
   echo "Copy package with binary and libraries."
-
-  if [ -n "${TREX_SERVER_NAME}" ]; then
-    scp -r "${LOCAL_PACKAGE}" "${DUT_NAME}":"${DUT_UPLOAD_DIR}"
-  else
-    scp -r "${LOCAL_PACKAGE}" "${DUT_USERNAME}"@"${DUT_IP}":"${DUT_UPLOAD_DIR}"
-  fi
-
+  echo
+  scp -r "${LOCAL_PACKAGE}" "${TREX_CLIENT_SSH}":"${DUT_UPLOAD_DIR}"
   exit 0
 }
 

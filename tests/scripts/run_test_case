@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# Run the t-rex on client.
+
+main() {
+
+  set -o errexit
+  set -o pipefail
+  set -o nounset
+
+  local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  source "${dirname}"/environment.sh
+
+  local run_trex_client_command="export PYTHONPATH='"${TREX_CLIENT_LIB_DIR}"'; python3 "${REMOTE_TEST_CASES_DIR}"/"${1}".py"
+
+  echo
+  echo "Run t-rex client on "${TREX_CLIENT_IP}"."
+
+  # https://superuser.com/questions/1138707/ssh-makes-all-typed-passwords-visible-when-command-is-provided-as-an-argument-to
+  ssh -t "${TREX_CLIENT_SSH}" "${run_trex_client_command}"
+
+  exit 0
+}
+main "$@"
