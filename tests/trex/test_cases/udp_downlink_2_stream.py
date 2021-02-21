@@ -1,18 +1,19 @@
-# import stl_path
+#import stl_path
 from trex_stl_lib.api import *
 
 import time
 import json
 
+# simple packet creation
+def create_pkt(src):
 
-def create_pkt(size):
-    # simple packet creation
-    pkt = Ether()/IP(src="10.1.2.27", dst="10.1.3.27")/UDP(dport=1234)
-    pad = max(0, size - len(pkt)) * 'x'
-    return STLPktBuilder(pkt=pkt/pad)
-
+    return STLPktBuilder(
+        pkt=Ether()/IP(src=src, dst="10.1.3.27") /
+        UDP(dport=1234)/Raw('x'*20)
+    )
 
 def simple_burst():
+
     # create client
     c = STLClient()
     # username/server can be changed those are the default
@@ -26,7 +27,9 @@ def simple_burst():
         # c.set_verbose("debug")
 
         # create two streams
-        s1 = STLStream(packet=create_pkt(64),
+        s1 = STLStream(packet=create_pkt("10.1.2.29"),
+                       mode=STLTXCont())
+        s2 = STLStream(packet=create_pkt("10.1.2.30"),
                        mode=STLTXCont())
 
         # connect to server
@@ -37,7 +40,7 @@ def simple_burst():
         c.reset(ports=[0, 1])
 
         # add both streams to ports
-        c.add_streams(s1, ports=[0])
+        c.add_streams([s1, s2], ports=[0])
 
         # clear the stats before injecting
         c.clear_stats()

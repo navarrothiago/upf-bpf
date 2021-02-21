@@ -90,4 +90,10 @@
     "strstream": "cpp",
     "typeindex": "cpp"
   },
+
+  "git.ignoreLimitWarning": true,
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}/tests/trex/trex_client/interactive"
+  ],
+  "python.linting.enabled": false,
 }
