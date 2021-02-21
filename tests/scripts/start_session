@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# ==============================================
+# Author: Thiago Navarro
+# email: navarro.ime@gmail.com
+#
+# Script for testbed.
+# Run the server and client on remote servers.
+# Run control plane on dut.
+#
+# Packages required: tmux
+#
+# TODO:
+#=============================================
+
+#Create remote session with panes
+initialize() {
+  echo "Initializing on session "${session_name}"..."
+
+  # Initialize windowns and panes
+  tmux kill-session -t $session_name -n testbed 2>/dev/null
+  # Create window 0
+  tmux -2 new-session -d -s $session_name
+  tmux rename-window -t 0 'Testbed'
+  # Create window 1
+  tmux new-window -d -t $session_name -n 'Local'
+  # Create window 2
+  tmux new-window -d -t $session_name -n 'Trex Server'
+
+  # Configure layout
+  tmux split-window -t $session_name:0.0 -h
+  tmux split-window -t $session_name:0.1 -v
+
+  # Select window 0 pane 2
+  tmux select-pane -t "$session_name":0.2
+
+  tmux send-keys -t $session_name:2.0 ""${dirname}"/install_trex_remote" C-m
+  tmux send-keys -t $session_name:2.0 ""${dirname}"/deploy_trex_config" C-m
+  tmux send-keys -t $session_name:2.0 ""${dirname}"/run_trex_server" C-m "${Password}" C-m
+  tmux send-keys -t $session_name:2.0 ""${Password}"" C-m
+  tmux send-keys -t $session_name:0.0 "ssh peru" C-m
+  tmux send-keys -t $session_name:0.1 "ssh india" C-m
+  tmux send-keys -t $session_name:0.2 "ssh india" C-m
+  # Wait the trex server startup for 5s.
+  tmux send-keys -t $session_name:0.0 "sleep 15; cd "${TREX_SERVER_DIR}"; ./trex-console" C-m
+  tmux send-keys -t $session_name:0.1 "cd "${DUT_UPLOAD_DIR}"; sudo ip link set dev enp3s0f1 xdp off; sudo ip link set dev enp3s0f0 xdp off; make dut-run" C-m "${Password}" C-m
+}
+
+attach() {
+  echo "Attaching on session "${session_name}"..."
+  tmux select-pane -t $session_name:0.0
+  tmux -2 attach-session -t $session_name
+}
+
+stop() {
+  echo "Stopping on session "${session_name}"..."
+}
+
+force_kill() {
+  echo "Killing on session "${session_name}"..."
+  sleep 2
+  tmux kill-session -t $session_name 2>/dev/null
+}
+
+main() {
+  # set -o errexit
+  set -o pipefail
+  set -o nounset
+  # set -x
+
+  local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local -r filename="${dirname}/$(basename "${BASH_SOURCE[0]}")"
+  local -r session_name="upee"
+
+  source "${dirname}"/environment.sh
+
+  # if [[ $# != 4 ]]; then
+  #   echo >&2 "TODO!! "
+  #   echo >&2 "e.g. ./vms-session epc 127.0.0.1 enodeb 127.0.0.2"
+  #   exit 1
+  # fi
+  echo -n "Enter the server admin password:"
+  echo
+  read -s Password
+
+  initialize
+  attach
+  stop
+  force_kill
+}
+
+main "$@"

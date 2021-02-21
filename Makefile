@@ -133,6 +133,9 @@ trex: ## Install, deploy configuration and run t-rex on remote server
 trex-tests: ## Run trex test case
 	tests/scripts/run_test_case $(TEST_CASE)
 
+start-session: ## Create a test session using tmux
+	tests/scripts/start_session
+
 docker-build: ## Build development image
 	docker build --tag=$(IMAGE):$(VERSION) --rm -f docker/$(DOCKERFILE_DEVEL) .
 
