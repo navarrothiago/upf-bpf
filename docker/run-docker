@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+main() {
+
+  set -o errexit
+  set -o pipefail
+  set -o nounset
+
+  local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  source "${dirname}"/../env.sh
+
+	docker run -it --rm \
+		--volume "${WORKSPACE}":/workspace \
+		--privileged \
+		--workdir /workspace "${IMAGE}":"${VERSION}" \
+		/bin/bash
+
+  exit 0
+}
+main "$@"

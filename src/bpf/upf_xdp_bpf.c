@@ -26,6 +26,7 @@
 #include "xdp_stats_kern_user.h"
 #include "xdp_stats_kern.h"
 
+
 /**
  * GTP SECTION.
  */
@@ -83,7 +84,7 @@ static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph, u32 dest_ip)
   void *p_data_end = (void *)(long)p_ctx->data_end;
   u32 dport;
 
-  // Apply hash function.
+  // Apply hash function due to limitation of size of the program map.
   uint32_t key = (uint32_t)((dest_ip * 0x80008001) >> 16);
 
   /* Hint: +1 is sizeof(struct udphdr) */

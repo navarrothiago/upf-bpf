@@ -22,7 +22,7 @@ public:
    * @brief Construct a new Session Program object.
    * 
    */
-  SessionProgram();
+  SessionProgram(const std::string& gtpInterface, const std::string& udpInterface);
   /**
    * @brief Destroy the Session Program object.
    * 
@@ -118,5 +118,11 @@ private:
 
   // The BPF lifecycle program.
   std::unique_ptr<SessionProgramLifeCycle> mpLifeCycle;
+
+  // The GTP interface.
+  std::string mGTPInterface;
+
+  // The UDP interface.
+  std::string mUDPInterface;
 };
 #endif // __SESSIONPROGRAM_H__

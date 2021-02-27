@@ -1,0 +1,25 @@
+/**
+ * Auto-generated file. Do not modify this file.
+ * Check Configuration.cpp.in.
+ */
+#include "Configuration.h"
+#include <string>
+#include <utils/LogDefines.h>
+
+std::string Configuration::sGTPInterface = "@GTP_INTERFACE@";
+std::string Configuration::sUDPInterface = "@UDP_INTERFACE@";
+unsigned char Configuration::sIsSocketBufferEnabled = @SOCKET_BUFFER_ENABLED@;
+
+Configuration::Configuration(int argc, char **argv)
+{
+  if(argc >= 2) {
+    Configuration::sGTPInterface = argv[1];
+    Configuration::sUDPInterface = argv[2];
+  }
+
+  LOG_DBG("GTP Inteface {}", Configuration::sGTPInterface);
+  LOG_DBG("UDP Inteface {}", Configuration::sUDPInterface);
+  for(int i = 1; i < argc; ++i) {
+    LOG_DBG("arg %2d = %s\n", i, argv[i]);
+  }
+}

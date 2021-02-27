@@ -1,0 +1,28 @@
+#!/bin/bash
+
+main() {
+
+  # set -o errexit
+  set -o pipefail
+  set -o nounset
+
+  local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  source "${dirname}"/../../env.sh
+  local gtp_interface=${1:-veth0}
+  local udp_interface=${2:-veth1}
+
+	# the "true" is used to avoid stop when execute the command.
+	ip link set dev "${gtp_interface}" xdpgeneric off | ip link set dev "${gtp_interface}" xdpgeneric off | true
+	ip link set dev "${gtp_interface}" xdp off | ip link set dev "${gtp_interface}" xdp off | true
+	ip link set dev "${udp_interface}" xdpgeneric off | ip link set dev "${udp_interface}" xdpgeneric off | true
+	ip link set dev "${udp_interface}" xdp off | ip link set dev "${udp_interface}" xdp off | true
+
+  # Get all PIDs from *xdp* that is running.
+  local pids=$(ps -aux | grep -e UPFProgramTests -e xdp | awk '{print $2}')
+	kill -9 "${pids}" | true
+
+  echo "XDP program was released!"
+  exit 0
+}
+
+main "$@"

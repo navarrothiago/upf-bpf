@@ -30,6 +30,7 @@ initialize() {
   # Configure layout
   tmux split-window -t $session_name:0.0 -h
   tmux split-window -t $session_name:0.1 -v
+  tmux split-window -t $session_name:0.1 -v
 
   # Select window 0 pane 2
   tmux select-pane -t "$session_name":0.2
@@ -41,9 +42,11 @@ initialize() {
   tmux send-keys -t $session_name:0.0 "ssh peru" C-m
   tmux send-keys -t $session_name:0.1 "ssh india" C-m
   tmux send-keys -t $session_name:0.2 "ssh india" C-m
+  tmux send-keys -t $session_name:0.3 "ssh india" C-m
   # Wait the trex server startup for 5s.
   tmux send-keys -t $session_name:0.0 "sleep 15; cd "${TREX_SERVER_DIR}"; ./trex-console" C-m
   tmux send-keys -t $session_name:0.1 "cd "${DUT_UPLOAD_DIR}"; sudo ip link set dev enp3s0f1 xdp off; sudo ip link set dev enp3s0f0 xdp off; make dut-run" C-m "${Password}" C-m
+  tmux send-keys -t $session_name:0.2 "htop" C-m
 }
 
 attach() {
@@ -72,7 +75,7 @@ main() {
   local -r filename="${dirname}/$(basename "${BASH_SOURCE[0]}")"
   local -r session_name="upee"
 
-  source "${dirname}"/environment.sh
+  source "${dirname}"/../../env.sh
 
   # if [[ $# != 4 ]]; then
   #   echo >&2 "TODO!! "
@@ -82,6 +85,9 @@ main() {
   echo -n "Enter the server admin password:"
   echo
   read -s Password
+
+  # Enable nested tmux session.
+  unset TMUX
 
   initialize
   attach

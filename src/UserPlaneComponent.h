@@ -33,8 +33,10 @@ public:
    * Used to setup all the program.
    *
    * @param pRulesUtilities
+   * @param gtpInterface 
+   * @param udpInterface 
    */
-  void setup(std::shared_ptr<RulesUtilities> pRulesUtilities);
+  void setup(std::shared_ptr<RulesUtilities> pRulesUtilities, const std::string& gtpInterface, const std::string& udpInterface);
   /**
    * @brief Tear down User Plane Component.
    * Tear down all programs that were setup.
@@ -59,6 +61,18 @@ public:
    * @return std::shared_ptr<UPFProgram> The UPFProgram reference.
    */
   std::shared_ptr<UPFProgram> getUPFProgram() const;
+  /**
+   * @brief Get the GTP interface.
+   * 
+   * @return std::string The GTP interface.
+   */
+  std::string getGTPInterface() const;
+  /**
+   * @brief Get UDP interface.
+   * 
+   * @return std::string The UDP interface.
+   */
+  std::string getUDPInterface() const;
 
   // From onNewSessionProgramObserver.
   void onNewSessionProgram(u_int32_t programId, u_int32_t fileDescriptor) override;
@@ -89,6 +103,12 @@ private:
 
   // The SessionProgram (BPF program for PFCP Session) reference.
   std::shared_ptr<SessionProgram> mpSessionProgram;
+
+  // The GTP interface.
+  std::string mGTPInterface;
+
+  // The UDP interface.
+  std::string mUDPInterface;
 };
 
 #endif // __USERPLANECOMPONENT_H__

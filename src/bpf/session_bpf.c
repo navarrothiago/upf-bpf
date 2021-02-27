@@ -124,8 +124,6 @@ static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_fa
   pcn_l3_csum_replace(p_ctx, IP_CSUM_OFFSET, 0, l3sum, 0);
 
   bpf_debug("GTPU header were pushed!");
-
-  return bpf_redirect_map(&m_redirect_interfaces, 0, 0);
 }
 
 /**
@@ -136,7 +134,7 @@ static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_fa
  * @return u32 XDP action.
  */
 
-static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far)
+static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far, enum FlowDirection direction)
 {
   u8 dest_interface;
   u16 outer_header_creation;
@@ -163,7 +161,7 @@ static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far)
       case OUTER_HEADER_CREATION_UDP_IPV4:
         bpf_debug("OUTER_HEADER_CREATION_UDP_IPV4");
         // swap_src_dst_mac(p_data);
-        return bpf_redirect_map(&m_redirect_interfaces, 0, 0);
+        return bpf_redirect_map(&m_redirect_interfaces, direction, 0);
         break;
       case OUTER_HEADER_CREATION_UDP_IPV6:
         bpf_debug("OUTER_HEADER_CREATION_UDP_IPV6");
@@ -178,7 +176,8 @@ static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far)
       switch(outer_header_creation) {
       case OUTER_HEADER_CREATION_GTPU_UDP_IPV4:
         bpf_debug("OUTER_HEADER_CREATION_GTPU_UDP_IPV4");
-        return create_outer_header_gtpu_ipv4(p_ctx, p_far);
+        create_outer_header_gtpu_ipv4(p_ctx, p_far);
+        return bpf_redirect_map(&m_redirect_interfaces, direction, 0);
         break;
       case OUTER_HEADER_CREATION_GTPU_UDP_IPV6:
         bpf_debug("OUTER_HEADER_CREATION_GTPU_UDP_IPV6");
@@ -330,7 +329,7 @@ static u32 pfcp_pdr_lookup_uplink(struct xdp_md *p_ctx)
 
     // Lets apply the forwarding actions rule.
     p_far = bpf_map_lookup_elem(&m_fars, &p_pdr->far_id.far_id);
-    return pfcp_far_apply(p_ctx, p_far);
+    return pfcp_far_apply(p_ctx, p_far, UPLINK);
   }
 
   return XDP_PASS;
@@ -387,7 +386,7 @@ static u32 pfcp_pdr_lookup_downlink(struct xdp_md *p_ctx)
     // Lets apply the forwarding actions rule.
     p_far = bpf_map_lookup_elem(&m_fars, &p_pdr->far_id.far_id);
     bpf_debug("PDR associated with UP IP %d found! PDR id:%d and FAR id:%d", htonl(p_iph->daddr), p_pdr->pdr_id.rule_id, p_pdr->far_id.far_id);
-    return pfcp_far_apply(p_ctx, p_far);
+    return pfcp_far_apply(p_ctx, p_far, DOWNLINK);
   }
 
   return XDP_PASS;

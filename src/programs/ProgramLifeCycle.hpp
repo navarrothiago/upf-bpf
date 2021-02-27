@@ -11,6 +11,7 @@
 #include <sys/resource.h> // rlimit
 #include <utils/LogDefines.h>
 #include <vector>
+#include <Configuration.h>
 
 /**
  * @brief Program states.
@@ -98,6 +99,7 @@ private:
   std::function<int(BPFSkeletonType *)> mAttachFunc;
   std::function<void(BPFSkeletonType *)> mDestroyFunc;
   BPFSkeletonType *mpSkeleton;
+  uint32_t mFlags;
 };
 
 template <class BPFSkeletonType>
@@ -108,6 +110,7 @@ ProgramLifeCycle<BPFSkeletonType>::ProgramLifeCycle(std::function<BPFSkeletonTyp
     , mDestroyFunc(destroyFunc)
 {
   LOG_FUNC();
+  mFlags = Configuration::sIsSocketBufferEnabled ? XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE : XDP_FLAGS_UPDATE_IF_NOEXIST;
 }
 
 template <class BPFSkeletonType>
@@ -179,6 +182,7 @@ void ProgramLifeCycle<BPFSkeletonType>::link(std::string sectionName, std::strin
   // TODO navarrothiago - remove hardcoded.
   if(!ifIndex) {
     perror("if_nametoindex");
+    LOG_ERROR("Interface {} not found", interface);
     throw std::runtime_error("Interface not found!");
   }
 
@@ -190,8 +194,7 @@ void ProgramLifeCycle<BPFSkeletonType>::link(std::string sectionName, std::strin
       // Get programs FD from skeleton object.
       fd = bpf_program__fd(prog);
       // Link program (fd) to the interface.
-      // if(bpf_set_link_xdp_fd(ifIndex, fd, XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE) < 0) {
-      if(bpf_set_link_xdp_fd(ifIndex, fd, XDP_FLAGS_UPDATE_IF_NOEXIST) < 0) {
+      if(bpf_set_link_xdp_fd(ifIndex, fd, mFlags) < 0) {
         LOG_ERROR("BPF program {} link set XDP failed", sectionName);
         tearDown();
         throw std::runtime_error("BPF program link set XDP failed");
@@ -210,7 +213,7 @@ void ProgramLifeCycle<BPFSkeletonType>::link(std::string sectionName, std::strin
 
       // Update the global link state.
       mState = LINKED;
-      LOG_INF("BPF program {} hooked in XDP", sectionName);
+      LOG_INF("BPF program {} hooked in {} XDP interface", sectionName, interface);
       return;
     };
   }
@@ -242,7 +245,7 @@ void ProgramLifeCycle<BPFSkeletonType>::tearDown()
         // For each link in this section, do unlink.
         for(auto linkEntry : it->second) {
           LOG_DBG("BPF program {} is in a HOOKED state", section.c_str());
-          if(bpf_set_link_xdp_fd(linkEntry, -1, XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE)) {
+          if(bpf_set_link_xdp_fd(linkEntry, -1, mFlags)) {
             LOG_ERROR("BPF program {} cannot unlink the {} interface", section, linkEntry);
             throw std::runtime_error("BPF program cannot unlink");
           };

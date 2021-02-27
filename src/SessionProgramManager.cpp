@@ -2,8 +2,10 @@
 #include <utils/LogDefines.h>
 #include <wrappers/BPFMap.hpp>
 #include <observer/OnStateChangeSessionProgramObserver.h>
+#include <UserPlaneComponent.h>
 #include <SessionProgram.h>
 #include <UPFProgram.h>
+#include <types.h>
 #include <net/if.h>           // if_nametoindex
 
 SessionProgramManager::~SessionProgramManager()
@@ -43,13 +45,18 @@ void SessionProgramManager::create(uint32_t seid)
   }
 
   // Instantiate a new SessionProgram
-  std::shared_ptr<SessionProgram> pSessionProgram = std::make_shared<SessionProgram>();
+  auto udpInterface = UserPlaneComponent::getInstance().getUDPInterface();
+  auto gtpInterface = UserPlaneComponent::getInstance().getGTPInterface();
+  std::shared_ptr<SessionProgram> pSessionProgram = std::make_shared<SessionProgram>(gtpInterface, udpInterface);
   pSessionProgram->setup();
-  uint32_t ifIndex = if_nametoindex("enp3s0f1");
 
-  // TODO navarrothiago - Initialize key egress interface map.
-  uint32_t key = 0;
-  pSessionProgram->getEgressInterfaceMap()->update(key, ifIndex, BPF_ANY);
+  // Initialize key egress interface map.
+  uint32_t udpInterfaceIndex = if_nametoindex(udpInterface.c_str());
+  uint32_t gtpInterfaceIndex = if_nametoindex(gtpInterface.c_str());
+  uint32_t uplinkId = static_cast<uint32_t>(FlowDirection::UPLINK);
+  uint32_t downlinkId = static_cast<uint32_t>(FlowDirection::DOWNLINK);
+  pSessionProgram->getEgressInterfaceMap()->update(uplinkId, udpInterfaceIndex, BPF_ANY);
+  pSessionProgram->getEgressInterfaceMap()->update(downlinkId, gtpInterfaceIndex, BPF_ANY);
 
   // Update the SessionProgram map.
   mSessionProgramMap.insert(std::pair<uint32_t, std::shared_ptr<SessionProgram>>(seid, pSessionProgram));

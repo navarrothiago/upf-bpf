@@ -14,8 +14,6 @@ UserPlaneComponent::UserPlaneComponent()
 #ifdef DEBUG_LIBBPF
   libbpf_set_print(UserPlaneComponent::printLibbpfLog);
 #endif
-  // TODO navarrothiago - Create the programs according to the load configuration
-  mpUPFProgram = std::make_shared<UPFProgram>();
 }
 
 UserPlaneComponent::~UserPlaneComponent()
@@ -40,6 +38,18 @@ std::shared_ptr<UPFProgram> UserPlaneComponent::getUPFProgram() const
 {
   LOG_FUNC();
   return mpUPFProgram;
+}
+
+std::string UserPlaneComponent::getGTPInterface() const
+{
+  LOG_FUNC();
+  return mGTPInterface;
+}
+
+std::string UserPlaneComponent::getUDPInterface() const
+{
+  LOG_FUNC();
+  return mUDPInterface;
 }
 
 void UserPlaneComponent::onNewSessionProgram(u_int32_t programId, u_int32_t fileDescriptor)
@@ -67,11 +77,14 @@ UserPlaneComponent &UserPlaneComponent::getInstance()
   return sInstance;
 }
 
-void UserPlaneComponent::setup(std::shared_ptr<RulesUtilities> pRulesUtilities)
+void UserPlaneComponent::setup(std::shared_ptr<RulesUtilities> pRulesUtilities, const std::string& gtpInterface, const std::string& udpInterface)
 {
   LOG_FUNC();
 
   mpRulesUtilities = pRulesUtilities;
+  mGTPInterface = gtpInterface;
+  mUDPInterface = udpInterface;
+  mpUPFProgram = std::make_shared<UPFProgram>(gtpInterface, udpInterface);
 
   if(!mpUPFProgram) {
     LOG_ERROR("Program not initialized");

@@ -9,7 +9,7 @@ main() {
   set -o nounset
 
   local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  source "${dirname}"/environment.sh
+  source "${dirname}"/../../env.sh
   local test_case_file="${1}".py
   local run_trex_client_command="export PYTHONPATH='"${TREX_CLIENT_LIB_DIR}"'; python3 "${REMOTE_TEST_CASES_DIR}"/""${test_case_file}"
 

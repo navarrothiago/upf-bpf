@@ -1,10 +1,13 @@
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/toolchain.cmake)
 add_subdirectory(bpf)
 
-# add_definitions(-DDEBUG_LIBBPF)
+set(GTP_INTERFACE $ENV{GTP_INTERFACE})
+set(UDP_INTERFACE $ENV{UDP_INTERFACE})
+set(SOCKET_BUFFER_ENABLED $ENV{SOCKET_BUFFER_ENABLED})
 
 add_library(upf_xdp STATIC
   UserPlaneComponent.cpp
+  Configuration.cpp
   SignalHandler.cpp
   SessionProgramManager.cpp
   SessionManager.cpp
@@ -34,6 +37,16 @@ target_include_directories(upf_xdp PUBLIC
 )
 
 add_dependencies(upf_xdp upf_xdp_bpf_all)
+
+configure_file (
+    ${PROJECT_SOURCE_DIR}/cmake/Configuration.h.in
+    ${PROJECT_SOURCE_DIR}/src/Configuration.h
+)
+
+configure_file (
+    ${PROJECT_SOURCE_DIR}/cmake/Configuration.cpp.in
+    ${PROJECT_SOURCE_DIR}/src/Configuration.cpp
+)
 
 # Targets:
 #   * <prefix>/lib/upf_bpf.a

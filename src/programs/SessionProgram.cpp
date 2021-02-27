@@ -8,7 +8,8 @@
 #include <wrappers/BPFMaps.h>
 #include <wrappers/BPFMap.hpp>
 
-SessionProgram::SessionProgram()
+SessionProgram::SessionProgram(const std::string& gtpInterface, const std::string& udpInterface)
+  : mGTPInterface(gtpInterface), mUDPInterface(udpInterface)
 {
   LOG_FUNC();
   mpLifeCycle = std::make_unique<SessionProgramLifeCycle>(session_bpf_c__open, session_bpf_c__load, session_bpf_c__attach, session_bpf_c__destroy);
@@ -28,10 +29,11 @@ void SessionProgram::setup()
   initializeMaps();
   mpLifeCycle->load();
   mpLifeCycle->attach();
-  // Uplink interface destination.
-  // mpLifeCycle->link("xdp_redirect_dummy", "veth0");
-  // Downlink interface destination.
-  mpLifeCycle->link("xdp_redirect_dummy", "enp3s0f1");
+
+  // It must have one program linked to the redirect interface in order the operation would be successful.
+  // Assume there are already a program linked to the interfaces. So we dont need to link a dummy program.
+  // mpLifeCycle->link("xdp_redirect_dummy", mUDPInterface.c_str());
+  // mpLifeCycle->link("xdp_redirect_dummy", mGTPInterface.c_str());
 }
 
 void SessionProgram::tearDown()

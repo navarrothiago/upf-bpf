@@ -7,7 +7,8 @@
 	"context": "..",
 
 	// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-	"dockerFile": "../docker/Dockerfile",
+	// "dockerFile": "../docker/Dockerfile",
+  "image": "upee:v1.0",
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/bash",
@@ -48,11 +49,7 @@
 	// Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-in-docker.
 	// Mounts persitent history. See https://code.visualstudio.com/docs/remote/containers-advanced#_persist-bash-history-between-runs.
 	"mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
-         "source=openair-cn-cups-bashhistory,target=/commandhistory,type=volume",
-         "source=${localEnv:HOME}/.ssh,target=/home/oai-spgwu/.ssh,type=bind,consistency=cached",
-         "source=${localEnv:HOME}/.bashrc,target=/home/oai-spgwu/.bashrc,type=bind,consistency=cached",
-         "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached",
-         "source=${localEnv:HOME}/.bashrc,target=/root/.bashrc,type=bind,consistency=cached",
+         "source=openair-cn-cups-bashhistory,target=/commandhistory,type=volume"
 	],
 
 	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.

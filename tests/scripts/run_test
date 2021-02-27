@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+main() {
+
+  set -o errexit
+  set -o pipefail
+
+  local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  source "${dirname}"/../../env.sh
+
+  local test_binary=$1
+  local gtp_interface=${2:-veth0}
+  local udp_interface=${3:-veth1}
+
+	cd "${BPF_BINARY_DIR}" && \
+	sudo ./"${test_binary}" "${gtp_interface}" "${udp_interface}"
+
+  exit 0
+}
+main "$@"

@@ -10,7 +10,7 @@ main() {
 
   local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-  source "${dirname}"/environment.sh
+  source "${dirname}"/../../env.sh
 
   echo
   echo "Run t-rex server on "${TREX_SERVER_IP}"."

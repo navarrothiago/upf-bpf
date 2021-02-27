@@ -8,7 +8,8 @@
 #include <wrappers/BPFMap.hpp>
 #include <wrappers/BPFMaps.h>
 
-UPFProgram::UPFProgram()
+UPFProgram::UPFProgram(const std::string& gtpInterface, const std::string& udpInterface)
+  : mGTPInterface(gtpInterface), mUDPInterface(udpInterface)
 {
   LOG_FUNC();
   mpLifeCycle = std::make_unique<UPFProgramLifeCycle>(upf_xdp_bpf_c__open, upf_xdp_bpf_c__load, upf_xdp_bpf_c__attach, upf_xdp_bpf_c__destroy);
@@ -27,11 +28,15 @@ void UPFProgram::setup()
   initializeMaps();
   mpLifeCycle->load();
   mpLifeCycle->attach();
-  // Uplink and Downlink interface
-  mpLifeCycle->link("xdp_entry_point","enp3s0f0");
+  // Entry point interface
+  if(mUDPInterface.empty() || mGTPInterface.empty()){
+    LOG_ERROR("GTP or UDP interface not defined!");
+    throw std::runtime_error("GTP or UDP interface not defined!");
+  }
 
-  // TODO navarrothiago - split to a different downlink interface.
-  // TODO navarrothiago - Remove hardcoded - https://github.com/navarrothiago/upf-bpf/issues/24
+  mpLifeCycle->link("xdp_entry_point", mUDPInterface.c_str());
+  mpLifeCycle->link("xdp_entry_point", mGTPInterface.c_str());
+
 }
 
 std::shared_ptr<BPFMaps> UPFProgram::getMaps()

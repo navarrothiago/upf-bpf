@@ -1,5 +1,6 @@
 #include <SessionManager.h>
 #include <UserPlaneComponent.h>
+#include <Configuration.h>
 #include <gtest/gtest.h>
 #include <pfcp/pfcp_pdr.h>
 #include <utils/LogDefines.h>
@@ -21,7 +22,7 @@ public:
   void SetUp() override
   {
     LOG_FUNC();
-    UserPlaneComponent::getInstance().setup(mpRulesFactory);
+    UserPlaneComponent::getInstance().setup(mpRulesFactory, Configuration::sGTPInterface, Configuration::sUDPInterface);
     mpSessionManager = UserPlaneComponent::getInstance().getSessionManager();
   }
   void TearDown() override

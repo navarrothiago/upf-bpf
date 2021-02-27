@@ -21,13 +21,10 @@
 #include <unistd.h> //sleep
 #include <wrappers/BPFMaps.h>
 #include "InformationElementFactory.hpp"
+#include <types.h>
+#include <Configuration.h>
 
 static std::shared_ptr<SessionManager> spSessionManager;
-
-enum FlowDirection{
-  UPLINK,
-  DOWNLINK
-};
 
 // simple per-protocol drop counter
 static void poll_stats(int interval, teid_t_ teid, struct in_addr ueIpAddress, seid_t_ seid, FlowDirection direction)
@@ -86,9 +83,10 @@ static void poll_stats(int interval, teid_t_ teid, struct in_addr ueIpAddress, s
 
 int main(int argc, char **argv)
 {
+  Configuration(argc, argv);
   std::shared_ptr<RulesUtilities> mpRulesFactory;
   mpRulesFactory = std::make_shared<RulesUtilitiesImpl>();
-  UserPlaneComponent::getInstance().setup(mpRulesFactory);
+  UserPlaneComponent::getInstance().setup(mpRulesFactory, Configuration::sGTPInterface, Configuration::sUDPInterface);
   spSessionManager = UserPlaneComponent::getInstance().getSessionManager();
   struct in_addr src_addr;
   struct in_addr ue_ip;

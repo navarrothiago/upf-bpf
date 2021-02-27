@@ -9,6 +9,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/tests/ControlPlaneTests",
+      "args": ["veth0", "veth1"],
       // "program": "${workspaceFolder}/build/tests/UPFProgramTests",
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build/tests",

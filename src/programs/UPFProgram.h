@@ -27,7 +27,7 @@ public:
    * @brief Construct a new UPFProgram object.
    *
    */
-  explicit UPFProgram();
+  explicit UPFProgram(const std::string& gtpInterface, const std::string& udpInterface);
   /**
    * @brief Destroy the UPFProgram object
    */
@@ -97,6 +97,12 @@ private:
 
   // The BPF lifecycle program.
   std::unique_ptr<UPFProgramLifeCycle> mpLifeCycle;
+
+  // The GTP interface.
+  std::string mGTPInterface;
+
+  // The UDP interface.
+  std::string mUDPInterface;
 };
 
 #endif // __BPFPROGRAMMANAGER_H__

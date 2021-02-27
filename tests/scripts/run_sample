@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+main() {
+
+  set -o errexit
+  set -o pipefail
+  set -o nounset
+
+  local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  source "${dirname}"/../../env.sh
+
+  local sample_binary_name=$1
+
+	cd "${BPF_SAMPLES_DIR}" && \
+	sudo ./"${sample_binary_name}" | sudo cat /sys/kernel/debug/tracing/trace
+
+  exit 0
+}
+
+main "$@"

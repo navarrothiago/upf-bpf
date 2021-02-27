@@ -10,7 +10,7 @@ main() {
 
   local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-  source "${dirname}"/environment.sh
+  source "${dirname}"/../../env.sh
 
   scp -r "${LOCAL_CONFIG_DIR}" "${TREX_SERVER_SSH}":"${TREX_SERVER_UPLOAD_DIR}"
   scp -r "${LOCAL_TRAFFIC_DIR}" "${TREX_SERVER_SSH}":"${TREX_SERVER_UPLOAD_DIR}"

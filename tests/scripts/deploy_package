@@ -11,7 +11,7 @@ main() {
   local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   local -r filename="${dirname}/$(basename "${BASH_SOURCE[0]}")"
 
-  source "${dirname}"/environment.sh
+  source "${dirname}"/../../env.sh
 
   echo
   echo "Copy package with binary and libraries."

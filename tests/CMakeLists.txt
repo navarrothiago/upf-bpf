@@ -18,6 +18,7 @@ include_directories(${CMAKE_SOURCE_DIR}/build/src/skel)
 include_directories(${CMAKE_SOURCE_DIR}/tests)
 
 add_executable(UPFProgramTests
+  Main.cpp
   SessionManagerTests.cpp
   interfaces/ForwardingActionRulesImpl.cpp
   interfaces/PacketDetectionRulesImpl.cpp
@@ -36,7 +37,6 @@ link_directories(${CMAKE_SOURCE_DIR}/extern/libbpf/src)
 target_link_libraries(UPFProgramTests
   asan
   gtest
-  gtest_main
   upf_xdp
   spdlog::spdlog
 )

@@ -2,7 +2,7 @@
 #
 # Based on - Veth XDP: XDP for Containers (see slides)
 
-main() {
+create_namespace() {
 
   # set -o errexit
   set -o pipefail
@@ -11,7 +11,7 @@ main() {
   local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   local -r filename="${dirname}/$(basename "${BASH_SOURCE[0]}")"
 
-  source "${dirname}"/environment.sh
+  source "${dirname}"/../../env.sh
 
   local nr_cpu=$(nproc)
   local namespace=$1
@@ -57,6 +57,19 @@ main() {
   echo "Turn ifaces up"
   sudo ip link set ${veth} up
   sudo ip netns exec ${namespace} ip link set veth2 up
+
+}
+
+main() {
+
+  # set -o errexit
+  set -o pipefail
+  set -o nounset
+
+  local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+  create_namespace ns0 veth0 veth2
+  create_namespace ns1 veth1 veth3
 
   exit 0
 }
