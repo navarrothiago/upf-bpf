@@ -11,6 +11,7 @@ create_namespace() {
   local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   local -r filename="${dirname}/$(basename "${BASH_SOURCE[0]}")"
 
+  # TODO navarrothiago - check if it is recommend to call env.sh here.
   source "${dirname}"/../../env.sh
 
   local nr_cpu=$(nproc)

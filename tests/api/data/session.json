@@ -1,0 +1,10 @@
+{
+  "seid": 1,
+  "pdrIdDL": 20,
+  "farIdDL": 200,
+  "pdrIdUL": 10,
+  "farIdUL": 100,
+  "teid": 100,
+  "srcIPAddress": "10.10.10.10",
+  "dstIPAddress": "10.1.3.27"
+}

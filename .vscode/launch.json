@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run",
+      "name": "ControlPlaneTests",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/tests/ControlPlaneTests",
@@ -25,5 +25,26 @@
         }
       ],
     },
+    {
+      "name": "API",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/tests/api/api",
+      // "args": ["veth0", "veth1"],
+      // "program": "${workspaceFolder}/build/tests/UPFProgramTests",
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/build/tests/api",
+      "environment": [],
+      "externalConsole": false,
+      "miDebuggerPath": "${workspaceFolder}/.vscode/gdb",
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+    }
   ]
 }

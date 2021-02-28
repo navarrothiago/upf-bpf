@@ -20,10 +20,10 @@ add_library(upf_xdp STATIC
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../extern/libbpf/src)
 target_link_libraries(upf_xdp
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../extern/libbpf/src/libbpf.a
-  PUBLIC spdlog::spdlog
-  PUBLIC elf
-  PUBLIC z
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../extern/libbpf/src/libbpf.a
+  PRIVATE spdlog::spdlog
+  PRIVATE elf
+  PRIVATE z
 )
 
 target_include_directories(upf_xdp PUBLIC

@@ -22,10 +22,13 @@ install: ## Install package
 
 setup: ## Build dependencies
 	git submodule update --init --recursive && \
-	cd extern/spdlog && \
-	mkdir -p build && cd build && \
-	cmake .. && make -j && sudo make install && \
-	cd ../../../ && \
+	cmake -Hextern/spdlog -Bextern/spdlog/build && \
+  cmake --build extern/spdlog/build --target install --parallel && \
+	cd extern/cpp-httplib/ && python3 split.py && cd - &&\
+	cmake -Hextern/cpp-httplib -Bextern/cpp-httplib/build && \
+  cmake --build extern/cpp-httplib/build --target install --parallel && \
+	cmake -Hextern/json -Bextern/json/build -DJSON_MultipleHeaders=ON && \
+  cmake --build extern/json/build --target install && \
 	cd extern/libbpf/src && \
 	make -j
 
@@ -96,6 +99,9 @@ trex: ## Install, deploy configuration and run t-rex on remote server
 	tests/scripts/deploy_trex_config
 	tests/scripts/run_trex_server
 
+api: force-xdp-deload ## Run server API
+	build/tests/api/api
+
 trex-run-downlink-test-case: ## Run trex test case
 	tests/scripts/run_test_case udp_downlink_tuple_gen
 
@@ -110,3 +116,6 @@ docker-run: ## Run development container
 
 copy-control-plane-test: ## Copy to remote server ControlPlaneTest binary
 	scp package/bin/ControlPlaneTests india:~/package/bin/
+
+deploy-package: ## Deploy package (bin, lib, scripts) on the DUT server
+	scp -r package india:~/

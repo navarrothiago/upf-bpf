@@ -8,14 +8,27 @@ endif()
 
 message(STATUS "CMAKE={${CMAKE_SYSTEM_PROCESSOR}}")
 
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/extern/libbpf/src AND ${CMAKE_CURRENT_SOURCE_DIR}/extern/spdlog)
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/extern/libbpf/src 
+    AND ${CMAKE_CURRENT_SOURCE_DIR}/extern/spdlog 
+    AND ${CMAKE_CURRENT_SOURCE_DIR}/extern/cpp-httplib
+    AND ${CMAKE_CURRENT_SOURCE_DIR}/extern/json)
   execute_process(COMMAND git submodule update --init --recursive
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
 if(NOT TARGET spdlog)
-    # Stand-alone build
-    find_package(spdlog REQUIRED)
+  # Stand-alone build
+  find_package(spdlog REQUIRED)
+endif()
+
+if(NOT TARGET httplib)
+  # Stand-alone build
+  find_package(httplib REQUIRED)
+endif()
+
+if(NOT TARGET nlohmann_json)
+  # Stand-alone build
+  find_package(nlohmann_json 3.9.1 REQUIRED)
 endif()
 
 # Set global property (all targets are impacted)

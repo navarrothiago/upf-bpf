@@ -1,5 +1,6 @@
 include_directories(interfaces)
 add_subdirectory(interfaces)
+add_subdirectory(api)
 
 # The extra path here is needed to correct the build path because we are calling it from a subdirectory.
 add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" "extern/googletest" EXCLUDE_FROM_ALL)
@@ -59,4 +60,5 @@ install(
     TARGETS UPFProgramTests ControlPlaneTests
     RUNTIME
 )
+
 install( DIRECTORY scripts DESTINATION "tests" )

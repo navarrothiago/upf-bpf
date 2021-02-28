@@ -7,3 +7,9 @@
 [submodule "extern/spdlog"]
 	path = extern/spdlog
 	url = git@github.com:gabime/spdlog.git
+[submodule "extern/cpp-httplib"]
+	path = extern/cpp-httplib
+	url = git@github.com:yhirose/cpp-httplib.git
+[submodule "extern/json"]
+	path = extern/json
+	url = git@github.com:nlohmann/json.git

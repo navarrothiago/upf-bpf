@@ -45,7 +45,8 @@ initialize() {
   tmux send-keys -t $session_name:0.3 "ssh india" C-m
   # Wait the trex server startup for 5s.
   tmux send-keys -t $session_name:0.0 "sleep 15; cd "${TREX_SERVER_DIR}"; ./trex-console" C-m
-  tmux send-keys -t $session_name:0.1 "cd "${DUT_UPLOAD_DIR}"; sudo ip link set dev enp3s0f1 xdp off; sudo ip link set dev enp3s0f0 xdp off; make dut-run" C-m "${Password}" C-m
+  # tmux send-keys -t $session_name:0.1 "cd "${DUT_UPLOAD_DIR}"; sudo ip link set dev enp3s0f1 xdp off; sudo ip link set dev enp3s0f0 xdp off; make dut-run" C-m "${Password}" C-m
+  tmux send-keys -t $session_name:0.1 "cd "${DUT_UPLOAD_DIR}"; sudo ip link set dev enp3s0f1 xdp off; sudo ip link set dev enp3s0f0 xdp off; ./bin/api "${DUT_IP}"" C-m "${Password}" C-m
   tmux send-keys -t $session_name:0.2 "htop" C-m
 }
 
