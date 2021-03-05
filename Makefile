@@ -100,7 +100,7 @@ trex: ## Install, deploy configuration and run t-rex on remote server
 	tests/scripts/run_trex_server
 
 api: force-xdp-deload ## Run server API
-	build/tests/api/api
+	build/tests/api/api 127.0.0.1
 
 trex-run-downlink-test-case: ## Run trex test case
 	tests/scripts/run_test_case udp_downlink_tuple_gen
