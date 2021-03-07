@@ -1,0 +1,40 @@
+#!/bin/bash
+main() {
+
+  set -o errexit
+  set -o pipefail
+  set -o nounset
+  set -x
+
+  local -r context="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  source "${context}"/../env.sh
+  local env_file_name=env.sh
+
+  # Copy configuration files and ssh keys to the docker context folder.
+  cp "${GIT_CONFIG}" "${context}"
+  cp "${SSH_FOLDER}"/"${SSH_PRIVATE_KEY_FILE}" "${context}"
+  cp "${SSH_FOLDER}"/"${SSH_PUBLIC_KEY_FILE}" "${context}"
+  cp "${SSH_FOLDER}"/"${SSH_CONFIG_FILE}" "${context}"
+  cp "${BASH_RC}" "${context}"
+  # echo ""${WORKSPACE}"/env.sh" > "${BASH_RC}"
+  cp "${context}"/../env.sh "${context}"
+
+  # Build dockerfile.
+  docker build --tag="${IMAGE}":"${VERSION}" --rm -f "${context}"/"${DOCKERFILE}" "${context}" \
+               --build-arg ENV_FILENAME="${env_file_name}" \
+               --build-arg DUT_SERVER_IP="${DUT_IP}" \
+               --build-arg TREX_SERVER_IP="${TREX_SERVER_IP}" \
+               --build-arg JUMP_SERVER_USERNAME="${JUMP_SERVER_USERNAME}" \
+               --build-arg JUMP_SERVER_IP="${JUMP_SERVER_IP}" \
+               --build-arg JUMP_SERVER_PORT="${JUMP_SERVER_PORT}"
+
+  # Remove configuration files and ssh keys from the docker context folder.
+  rm "${context}"/.gitconfig
+  rm "${context}"/"${SSH_PRIVATE_KEY_FILE}"
+  rm "${context}"/"${SSH_PUBLIC_KEY_FILE}"
+  rm "${context}"/"${SSH_CONFIG_FILE}"
+  rm "${context}"/.bashrc
+  rm "${context}"/env.sh
+}
+
+main "$@"

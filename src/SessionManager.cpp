@@ -55,7 +55,7 @@ void SessionManager::addPDR(uint64_t seid, std::shared_ptr<PacketDetectionRules>
   auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
 
   if(!pSessionProgram) {
-    LOG_ERROR("Session %d not found", seid);
+    LOG_ERROR("Session {} not found", seid);
     throw std::runtime_error("The PDR cannot be added in the session");
   }
 
@@ -88,7 +88,7 @@ void SessionManager::addPDR(uint64_t seid, std::shared_ptr<PacketDetectionRules>
     pUPFProgram->getUeIpSessionMap()->update(key, fd, BPF_ANY);
     break;
   default:
-    LOG_ERROR("Source interface %d not supported", source_interface);
+    LOG_ERROR("Source interface {} not supported", source_interface);
     throw std::runtime_error("Source interface not supported");
   }
 
@@ -105,7 +105,7 @@ std::shared_ptr<PacketDetectionRules> SessionManager::lookupPDR(uint64_t seid, u
   auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
 
   if(!pSessionProgram) {
-    LOG_ERROR("Session %d not found", seid);
+    LOG_ERROR("Session {} not found", seid);
     throw std::runtime_error("The PDR cannot be lookup in the session");
   }
 
@@ -133,7 +133,7 @@ std::shared_ptr<ForwardingActionRules> SessionManager::lookupFAR(uint64_t seid, 
   auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
 
   if(!pSessionProgram) {
-    LOG_ERROR("Session %d not found", seid);
+    LOG_ERROR("Session {} not found", seid);
     throw std::runtime_error("The FAR cannot be lookup in the session");
   }
 
@@ -159,7 +159,7 @@ void SessionManager::updateFAR(uint64_t seid, std::shared_ptr<ForwardingActionRu
 
   // Check if there is the session.
   if(!pSessionProgram) {
-    LOG_ERROR("Session %d not found", seid);
+    LOG_ERROR("Session {} not found", seid);
     throw std::runtime_error("The FAR cannot be updated in the session");
   }
 
@@ -181,7 +181,7 @@ void SessionManager::updatePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
 
   // Check if there is the session.
   if(!pSessionProgram) {
-    LOG_ERROR("Session %d not found", seid);
+    LOG_ERROR("Session {} not found", seid);
     throw std::runtime_error("The PDR cannot be updated in the session");
   }
 
@@ -219,7 +219,7 @@ void SessionManager::updatePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
     // addPDR(pdr.pdi.fteid.teid, pdr, mpDownlinkPDRsMap);
     break;
   default:
-    LOG_ERROR("Source interface %d not supported", source_interface);
+    LOG_ERROR("Source interface {} not supported", source_interface);
     throw std::runtime_error("Source interface not supported");
   }
 
@@ -238,7 +238,7 @@ void SessionManager::removeFAR(uint64_t seid, std::shared_ptr<ForwardingActionRu
 
   // Check if there is the session.
   if(!pSessionProgram) {
-    LOG_ERROR("Session %d not found", seid);
+    LOG_ERROR("Session {} not found", seid);
     throw std::runtime_error("The FAR cannot be removed in the session");
   }
 
@@ -253,7 +253,7 @@ void SessionManager::removePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
   auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
 
   if(!pSessionProgram) {
-    LOG_ERROR("Session %d not found", seid);
+    LOG_ERROR("Session {} not found", seid);
     throw std::runtime_error("The PDR cannot be removed in the session");
   }
   auto pUPFProgram = UserPlaneComponent::getInstance().getUPFProgram();
@@ -275,7 +275,7 @@ void SessionManager::removePDR(uint64_t seid, std::shared_ptr<PacketDetectionRul
     // removePDR(pPdr->getPdi().ue_ip_address.ipv4_address, pdr, mpDownlinkPDRsMap);
     break;
   default:
-    LOG_ERROR("Source interface %d not supported", source_interface);
+    LOG_ERROR("Source interface {} not supported", source_interface);
     throw std::runtime_error("Source interface not supported");
   }
 

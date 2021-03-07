@@ -134,7 +134,11 @@ RUN apt-get install -y apt-transport-https ca-certificates curl gnupg-agent soft
     && apt-get install -y docker-ce-cli
 
 RUN chown root /root/.ssh/config
+
+ARG ENV_FILENAME="env.sh"
+ADD ${ENV_FILENAME} ${ENV_FILENAME}
+
 # Omit if you want to keep the default as root.
 # USER $USERNAME
 
-CMD /bin/bash
+CMD ${ENV_FILENAME} && /bin/bash

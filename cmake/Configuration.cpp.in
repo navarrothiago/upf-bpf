@@ -20,6 +20,6 @@ Configuration::Configuration(int argc, char **argv)
   LOG_DBG("GTP Inteface {}", Configuration::sGTPInterface);
   LOG_DBG("UDP Inteface {}", Configuration::sUDPInterface);
   for(int i = 1; i < argc; ++i) {
-    LOG_DBG("arg %2d = %s\n", i, argv[i]);
+    LOG_DBG("arg {} = {}", i, argv[i]);
   }
 }

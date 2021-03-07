@@ -40,7 +40,9 @@ clean: ## Clean all build files
 clean-all: clean ## Clean all build and dependencies
 	cd extern/libbpf/src && \
 	make clean
-	rm -Rf extern/spdlog/build
+	rm -Rf extern/spdlog/build 
+	rm -Rf extern/cpp-httplib/build
+	rm -Rf extern/json/build
 
 all-verbose: ## Build all in verbose mode
 	mkdir -p build && \
@@ -99,8 +101,9 @@ trex: ## Install, deploy configuration and run t-rex on remote server
 	tests/scripts/deploy_trex_config
 	tests/scripts/run_trex_server
 
+# TODO navarrothiago: wrap in a script.
 api: force-xdp-deload ## Run server API
-	build/tests/api/api 127.0.0.1
+	build/tests/api/api 127.0.0.1 1234
 
 trex-run-downlink-test-case: ## Run trex test case
 	tests/scripts/run_test_case udp_downlink_tuple_gen
@@ -109,13 +112,14 @@ tmux: ## Create a test session using tmux
 	tests/scripts/start_session
 
 docker-build: ## Build development image
-	docker/build-docker
+	docker/build_docker
 
 docker-run: ## Run development container
-	docker/run-docker
+	docker/run_docker
 
 copy-control-plane-test: ## Copy to remote server ControlPlaneTest binary
 	scp package/bin/ControlPlaneTests india:~/package/bin/
 
 deploy-package: ## Deploy package (bin, lib, scripts) on the DUT server
+	# ssh "${TREX_CLIENT_SSH}" pkill "${API_PROGRAM_NAME}"
 	scp -r package india:~/

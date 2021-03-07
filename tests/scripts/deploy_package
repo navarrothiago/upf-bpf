@@ -16,6 +16,8 @@ main() {
   echo
   echo "Copy package with binary and libraries."
   echo
+
+  ssh "${TREX_SERVER_SSH}" "bash -s" -- "${TREX_SERVER_UPLOAD_DIR}" "${TREX_VERSION}" <"${dirname}"/install_trex
   scp -r "${LOCAL_PACKAGE}" "${TREX_CLIENT_SSH}":"${DUT_UPLOAD_DIR}"
   exit 0
 }

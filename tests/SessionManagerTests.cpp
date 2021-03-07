@@ -29,6 +29,7 @@ public:
   {
     LOG_FUNC();
     UserPlaneComponent::getInstance().tearDown();
+    UserPlaneComponent::getInstance().getUPFProgram().reset();
     mpSessionManager.reset();
   }
   virtual ~SessionManagerTests() {}

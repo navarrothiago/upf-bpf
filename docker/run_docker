@@ -9,9 +9,10 @@ main() {
   source "${dirname}"/../env.sh
 
 	docker run -it --rm \
-		--volume "${WORKSPACE}":/workspace \
+		--env-file "${dirname}"/../env.sh \
+		--volume "${dirname}"/../:"${WORKSPACE}" \
 		--privileged \
-		--workdir /workspace "${IMAGE}":"${VERSION}" \
+		--workdir "${WORKSPACE}" "${IMAGE}":"${VERSION}" \
 		/bin/bash
 
   exit 0

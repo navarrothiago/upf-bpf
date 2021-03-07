@@ -81,12 +81,6 @@ void UserPlaneComponent::setup(std::shared_ptr<RulesUtilities> pRulesUtilities, 
 {
   LOG_FUNC();
 
-  // Check if the component has already been initialize.
-  if (mpUPFProgram){
-    LOG_INF("Program has already bee initialized");
-    return;
-  }
-
   mpRulesUtilities = pRulesUtilities;
   mGTPInterface = gtpInterface;
   mUDPInterface = udpInterface;
