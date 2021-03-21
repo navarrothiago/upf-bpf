@@ -97,4 +97,5 @@
     "${workspaceFolder}/tests/trex/trex_client/interactive"
   ],
   "python.linting.enabled": false,
+  "python.pythonPath": "/usr/bin/python3",
 }

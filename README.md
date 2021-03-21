@@ -31,6 +31,7 @@ User plane function using BPF and XDP for mobile core network (4G/5G).
 
 ## Dependencies
 
+Upee
 - libbpf
 - libelf
 - libz
@@ -38,9 +39,12 @@ User plane function using BPF and XDP for mobile core network (4G/5G).
 - llvm >= version 3.7.1
 - kernel-headers => version 5.3
 - bpftool
+
+Test
 - scapy v2.4.3
 - spdlog
 - gtest
+- sysstat
 
 ## Tree
 
@@ -61,9 +65,6 @@ The directory structure was created based on this [notes](https://blogs.oracle.c
 
 ## Contact
 
-- :sunglasses:: Thiago Navarro
-- :mailbox:: navarro.ime@gmail.com
-- Discord: navarrothiago#9698
-- INTRIG Discord: https://discord.gg/ZcBHze8
-
-## Feel free to contribuite
+Thiago Navarro  
+Email: navarro.ime@gmail.com  
+Twitter: navarr0thiag0

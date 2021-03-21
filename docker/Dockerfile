@@ -135,6 +135,14 @@ RUN apt-get install -y apt-transport-https ca-certificates curl gnupg-agent soft
 
 RUN chown root /root/.ssh/config
 
+RUN apt-get update && \
+    apt-get install  -y \
+    python3-pip
+
+RUN pip3 install ipykernel
+RUN pip3 install matplotlib
+RUN pip3 install paramiko
+
 ARG ENV_FILENAME="env.sh"
 ADD ${ENV_FILENAME} ${ENV_FILENAME}
 

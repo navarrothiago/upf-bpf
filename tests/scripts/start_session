@@ -45,7 +45,7 @@ initialize() {
   tmux send-keys -t $session_name:0.1 "ssh "${DUT_NAME}"" C-m
   tmux send-keys -t $session_name:0.2 "ssh "${DUT_NAME}"" C-m
   tmux send-keys -t $session_name:0.3 "ssh "${DUT_NAME}"" C-m
-  tmux send-keys -t $session_name:3.0 "ssh -L "${LOCAL_SSH_PORT_FORWARDING}":"${DUT_IP}":"${API_HTTP_PORT}" -N "${DUT_NAME}" -v -v" C-m
+  tmux send-keys -t $session_name:3.0 "ssh -L "${LOCAL_HTTP_SSH_PORT_FORWARDING}":"${DUT_IP}":"${API_HTTP_PORT}" -L "${LOCAL_TREX_SYNC_SSH_PORT_FORWARDING}":"${TREX_SERVER_IP}":"${TREX_SERVER_SYNC_PORT}" -L "${LOCAL_TREX_ASYNC_SSH_PORT_FORWARDING}":"${TREX_SERVER_IP}":"${TREX_SERVER_ASYNC_PORT}" -N "${JUMP_SERVER_NAME}" -v -v" C-m
   # Wait the trex server startup for 5s.
   tmux send-keys -t $session_name:0.0 "sleep 15; cd "${TREX_SERVER_DIR}"; ./trex-console" C-m
   # tmux send-keys -t $session_name:0.1 "cd "${DUT_UPLOAD_DIR}"; sudo ip link set dev enp3s0f1 xdp off; sudo ip link set dev enp3s0f0 xdp off; make dut-run" C-m "${Password}" C-m
