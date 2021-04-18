@@ -9,7 +9,10 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/tests/ControlPlaneTests",
-      "args": ["veth0", "veth1"],
+      "args": [
+        "veth0",
+        "veth1"
+      ],
       // "program": "${workspaceFolder}/build/tests/UPFProgramTests",
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build/tests",
@@ -30,7 +33,10 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/tests/UPFProgramTests",
-      "args": ["veth0", "veth1"],
+      "args": [
+        "veth0",
+        "veth1"
+      ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build/tests",
       "environment": [],
@@ -65,6 +71,13 @@
           "ignoreFailures": true
         }
       ],
+    },
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
     }
   ]
 }

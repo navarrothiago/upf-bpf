@@ -25,8 +25,13 @@
     "albert.tabout",
     "redhat.vscode-yaml",
     "ms-python.python",
+    "ms-python.vscode-pylance",
     "l13rary.l13-sh-snippets",
     "foxundermoon.shell-format",
+    "TabNine.tabnine-vscode",
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-portuguese",
+    "shan.code-settings-sync",
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

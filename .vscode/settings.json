@@ -98,4 +98,13 @@
   ],
   "python.linting.enabled": false,
   "python.pythonPath": "/usr/bin/python3",
+  "cSpell.enabled": true,
+  "search.exclude": {
+    "**/extern/**": true,
+  },
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/tests/trex/trex_client/interactive",
+    "${workspaceFolder}/tests/trex/test_cases/"
+  ]
+
 }
