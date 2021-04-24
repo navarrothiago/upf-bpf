@@ -70,9 +70,7 @@ void SessionManager::addPDR(uint64_t seid, std::shared_ptr<PacketDetectionRules>
   auto source_interface = pdr.pdi.source_interface.interface_value;
   auto teid = pdr.pdi.fteid.teid;
   uint32_t ueIp = pdr.pdi.ue_ip_address.ipv4_address;
-  // uint32_t *pUeIp = &pdr.pdi.ue_ip_address.ipv4_address;
-  // auto key = static_cast<uint32_t>(gen_crc16(reinterpret_cast<uint8_t*>(pUeIp), sizeof(uint32_t)));
-  uint32_t key = static_cast<uint32_t>((ueIp * 0x80008001) >> 16);
+  uint32_t programIdkey = static_cast<uint32_t>((ueIp * 0x80008001) >> 16);
   s32 fd;
 
   switch(source_interface) {
@@ -85,7 +83,7 @@ void SessionManager::addPDR(uint64_t seid, std::shared_ptr<PacketDetectionRules>
   case INTERFACE_VALUE_CORE:
     pSessionProgram->getDownlinkPDRsMap()->update(ueIp, pdr, BPF_ANY);
     fd = pSessionProgram->getDownlinkFileDescriptor();
-    pUPFProgram->getUeIpSessionMap()->update(key, fd, BPF_ANY);
+    pUPFProgram->getUeIpSessionMap()->update(programIdkey, fd, BPF_ANY);
     break;
   default:
     LOG_ERROR("Source interface {} not supported", source_interface);

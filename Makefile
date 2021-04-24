@@ -122,4 +122,4 @@ copy-control-plane-test: ## Copy to remote server ControlPlaneTest binary
 
 deploy-package: ## Deploy package (bin, lib, scripts) on the DUT server
 	# ssh "${TREX_CLIENT_SSH}" pkill "${API_PROGRAM_NAME}"
-	scp -r package india:~/
+	rsync -av package/ india:~/package

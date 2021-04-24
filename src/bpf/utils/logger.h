@@ -19,6 +19,13 @@
 #else
 #define bpf_debug(fmt, ...) { } while (0)
 #endif
+#define bpf_debug2(fmt, ...)						\
+		({							\
+			char ____fmt[] = fmt;				\
+			bpf_trace_printk(____fmt, sizeof(____fmt),	\
+				     ##__VA_ARGS__);			\
+		})
+#else
 
 
 #endif // __LOGGER_H__

@@ -143,6 +143,10 @@ RUN pip3 install ipykernel
 RUN pip3 install matplotlib
 RUN pip3 install paramiko
 
+RUN apt-get update && \
+    apt-get install  -y \
+    rsync
+
 ARG ENV_FILENAME="env.sh"
 ADD ${ENV_FILENAME} ${ENV_FILENAME}
 

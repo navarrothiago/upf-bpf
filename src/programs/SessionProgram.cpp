@@ -90,6 +90,12 @@ std::shared_ptr<BPFMap> SessionProgram::getEgressInterfaceMap() const
   return mpEgressInterfaceMap;
 }
 
+std::shared_ptr<BPFMap> SessionProgram::getArpTableMap() const
+{
+  LOG_FUNC();
+  return mpArpTableMap;
+}
+
 void SessionProgram::initializeMaps()
 {
   LOG_FUNC();
@@ -104,4 +110,8 @@ void SessionProgram::initializeMaps()
   mpDownlinkPDRsMap = std::make_shared<BPFMap>(mpMaps->getMap("m_ueip_pdr"));
   mpCounterMap = std::make_shared<BPFMap>(mpMaps->getMap("mc_stats"));
   mpEgressInterfaceMap = std::make_shared<BPFMap>(mpMaps->getMap("m_redirect_interfaces"));
+  mpArpTableMap = std::make_shared<BPFMap>(mpMaps->getMap("m_arp_table"));
+
+  // 10.1.2.29 - 90:e2:ba:27:fd:3c
+  // 10.1.3.29 - 90:e2:ba:27:fd:3d
 }

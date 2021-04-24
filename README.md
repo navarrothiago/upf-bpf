@@ -1,7 +1,9 @@
 User plane function using BPF and XDP for mobile core network (4G/5G).
 
 ## Usage
+### Build Docker Image
 
+Copy the keys to jump server and run `make docker-build`
 ### Testing
 
 ![setup-for-GPDU-debug-issue-2-upf-bpf](https://user-images.githubusercontent.com/42647168/86470179-4486cc80-bd11-11ea-8f55-fee848b12e11.png)
@@ -45,6 +47,7 @@ Test
 - spdlog
 - gtest
 - sysstat
+- trex v2.86
 
 ## Tree
 
@@ -63,8 +66,13 @@ The directory structure was created based on this [notes](https://blogs.oracle.c
 └── src: Source files directory
 ```
 
+## TRex 
+
+If you faced the problem below, create a symbolic from `libc.a -> liblibc.a`
+`No such file or directory: b'liblibc.a'`
+
 ## Contact
 
-Thiago Navarro  
-Email: navarro.ime@gmail.com  
+Thiago Navarro
+Email: navarro.ime@gmail.com
 Twitter: navarr0thiag0

@@ -86,7 +86,12 @@ public:
    * @return std::shared_ptr<BPFMap> The egress interface map.
    */
   std::shared_ptr<BPFMap> getEgressInterfaceMap() const;
-
+  /**
+   * @brief Get the Arp Table Map object.
+   * 
+   * @return std::shared_ptr<BPFMap>  The arp table map.
+   */
+  std::shared_ptr<BPFMap> getArpTableMap() const;
 
 private:
   /**
@@ -115,6 +120,9 @@ private:
 
   // The egress interface map.
   std::shared_ptr<BPFMap> mpEgressInterfaceMap;
+
+  // The arp table map.
+  std::shared_ptr<BPFMap> mpArpTableMap;
 
   // The BPF lifecycle program.
   std::unique_ptr<SessionProgramLifeCycle> mpLifeCycle;

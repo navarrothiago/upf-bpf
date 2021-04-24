@@ -1,24 +1,25 @@
 #include "Controller.h"
-#include <UserPlaneComponent.h>
-#include <SessionManager.h>
+#include <Configuration.h>
 #include <InformationElementFactory.hpp>
 #include <RulesUtilitiesImpl.h>
-#include <Configuration.h>
+#include <SessionManager.h>
+#include <SessionProgramManager.h>
+#include <UserPlaneComponent.h>
+#include <programs/SessionProgram.h>
 #include <utils/LogDefines.h>
+#include <utils/Util.h>
+#include <linux/bpf.h>
+#include <wrappers/BPFMap.hpp>
+#include <netinet/ether.h>
+
 
 static std::shared_ptr<SessionManager> spSessionManager;
 
-Controller::Controller(/* args */) 
-{
-  LOG_FUNC();
-}
+Controller::Controller(/* args */) { LOG_FUNC(); }
 
-Controller::~Controller() 
-{
-  LOG_FUNC();  
-}
+Controller::~Controller() { LOG_FUNC(); }
 
-int Controller::setup(json jBody) 
+int Controller::setup(json jBody)
 {
   LOG_FUNC();
   std::shared_ptr<RulesUtilities> mpRulesFactory;
@@ -34,7 +35,7 @@ int Controller::setup(json jBody)
   return 200;
 }
 
-int Controller::createSesssion(json jBody) 
+int Controller::createSesssion(json jBody)
 {
   LOG_FUNC();
   seid_t_ seid = jBody["seid"];
@@ -43,8 +44,9 @@ int Controller::createSesssion(json jBody)
   u32 farIdUL = jBody["pdrIdDL"];
   u32 farIdDL = jBody["farIdDL"];
   u32 teid = jBody["teid"];
-  std::string srcIPAddress= jBody["srcIPAddress"];
-  std::string dstIPAddress= jBody["dstIPAddress"];
+  std::string srcIPAddress = jBody["srcIPAddress"];
+  std::string dstIPAddress = jBody["dstIPAddress"];
+
   apply_action_t_ actions;
   actions.forw = true;
   u16 dstPort = 1234;
@@ -83,7 +85,27 @@ int Controller::createSesssion(json jBody)
   spSessionManager->addPDR(pSession->getSeid(), pPdrDL);
   LOG_INF("Case: add DL FAR");
   spSessionManager->addFAR(pSession->getSeid(), pFarDL);
+  LOG_INF("Case: update ARP Table");
+  auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
+
+  std::map<std::string, std::string> arpTable;
+  for(const auto &element : jBody["arpTable"]) {
+    std::cout << element << std::endl;
+
+    // Map ip to mac address.
+    arpTable[element["ip"]] = element["mac"];
+
+    struct in_addr ip_addr;
+    if(inet_aton(std::string(element["ip"]).c_str(), &ip_addr) == 0) {
+     
+      return 400;
+    }
+
+    auto ip = static_cast<uint32_t>(ip_addr.s_addr);
+    // auto pMacAddress = Util::getInstance().stringToMac(element["mac"]).data();
+    auto pMacAddress = ether_aton(std::string(element["mac"]).c_str());
+    pSessionProgram->getArpTableMap()->update(ip, pMacAddress->ether_addr_octet, BPF_ANY);
+  }
 
   return 200;
-
 }

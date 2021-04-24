@@ -64,7 +64,7 @@ public:
   /**
    * @brief Get the TEID to session Map object.
    *
-   * @return std::shared_ptr<BPFMap> The TEDI to fd map.
+   * @return std::shared_ptr<BPFMap> The TEID to fd map.
    */
   std::shared_ptr<BPFMap> getTeidSessionMap() const;
   /**

@@ -234,4 +234,4 @@ int entry_point(struct xdp_md *p_ctx)
   return action;
 }
 
-char _license[] SEC("license") = "GPL";
+// char _license[] SEC("license") = "GPL";

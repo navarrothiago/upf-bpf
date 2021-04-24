@@ -34,12 +34,6 @@ struct bpf_map_def SEC("maps") m_ue_ip_pdr = {
     .value_size = sizeof(u32),                      //!< PDR
     .max_entries = 100000,
 };
-// struct bpf_map_def SEC("maps") m_id_txcnt = {
-// 	.type        = BPF_MAP_TYPE_DEVMAP,
-// 	.key_size    = sizeof(u32), // id
-// 	.value_size  = sizeof(u32), // tx counter
-// 	.max_entries = 1,
-// };
 // //  Downlink maps.
 // struct bpf_map_def SEC("maps") m_ue_ip_pdrs_counter = {
 // 	.type        = BPF_MAP_TYPE_HASH,

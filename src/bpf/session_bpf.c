@@ -19,7 +19,8 @@
 #include <endian.h>
 
 #ifndef LOCAL_IP
-#define LOCAL_IP 0
+// 10.1.3.30
+#define LOCAL_IP 503513354
 #endif
 #ifndef LOCAL_MAC
 #define LOCAL_MAC 0
@@ -44,6 +45,8 @@ static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_fa
   struct iphdr *p_ip;
   void *p_data = (void *)(long)p_ctx->data;
   void *p_data_end = (void *)(long)p_ctx->data_end;
+  void *p_mac_address;
+  struct bpf_fib_lookup fib_params = {};
 
   // KISS - Lets start using the first PDR (high priority).
   // Resize the header in order to put the GTP/UPD/IP headers.
@@ -76,6 +79,10 @@ static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_fa
     return XDP_DROP;
   }
 
+  // TODO navarrothiago -  Check this code
+  // https://github.com/atoonk/xdp-tutorial/blob/master/packet-solutions/xdp_prog_kern_03.c#L225-L320
+
+
   // Add the outer IP header
   p_ip->version = 4;
   p_ip->ihl = 5; // No options
@@ -100,12 +107,18 @@ static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_fa
   p_udp->len = htons(ntohs(p_inner_ip->tot_len) + sizeof(*p_udp) + sizeof(struct gtpuhdr));
   p_udp->check = 0;
 
-  bpf_debug("Destination MAC:%x:%x:%x", p_eth->h_dest[0], p_eth->h_dest[1], p_eth->h_dest[2]);
-  bpf_debug("Destination MAC:%x:%x:%x", p_eth->h_dest[3], p_eth->h_dest[4], p_eth->h_dest[5]);
-  swap_src_dst_mac(p_data);
-  bpf_debug("Destination MAC:%x:%x:%x", p_eth->h_dest[0], p_eth->h_dest[1], p_eth->h_dest[2]);
-  bpf_debug("Destination MAC:%x:%x:%x", p_eth->h_dest[3], p_eth->h_dest[4], p_eth->h_dest[5]);
-  bpf_debug("Destination IP:%d Port:%d", p_ip->daddr, p_far->forwarding_parameters.outer_header_creation.port_number);
+  bpf_debug("Destination MAC:%x:%x:%x\n", p_eth->h_dest[0], p_eth->h_dest[1], p_eth->h_dest[2]);
+  bpf_debug("Destination MAC:%x:%x:%x\n", p_eth->h_dest[3], p_eth->h_dest[4], p_eth->h_dest[5]);
+  p_mac_address = bpf_map_lookup_elem(&m_arp_table, &p_ip->daddr);
+  if(!p_mac_address) {
+    bpf_debug("mac not found!!\n");
+    return XDP_DROP;
+  }
+  // swap_src_dst_mac(p_data);
+  memcpy(p_eth->h_dest, p_mac_address, sizeof(p_eth->h_dest));
+  bpf_debug("Destination MAC:%x:%x:%x\n", p_eth->h_dest[0], p_eth->h_dest[1], p_eth->h_dest[2]);
+  bpf_debug("Destination MAC:%x:%x:%x\n", p_eth->h_dest[3], p_eth->h_dest[4], p_eth->h_dest[5]);
+  bpf_debug("Destination IP:%d Port:%d\n", p_ip->daddr, p_far->forwarding_parameters.outer_header_creation.port_number);
 
   // Add the GTP header
   struct gtpuhdr *p_gtpuh = (void *)(p_udp + 1);
@@ -117,7 +130,7 @@ static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_fa
   memcpy(p_gtpuh, &flags, sizeof(u8));
   p_gtpuh->message_type = GTPU_G_PDU;
   p_gtpuh->message_length = p_inner_ip->tot_len;
-  p_gtpuh->teid =  p_far->forwarding_parameters.outer_header_creation.teid;
+  p_gtpuh->teid = p_far->forwarding_parameters.outer_header_creation.teid;
 
   // Compute l3 checksum
   __wsum l3sum = pcn_csum_diff(0, 0, (__be32 *)p_ip, sizeof(*p_ip), 0);
@@ -362,7 +375,6 @@ static u32 pfcp_pdr_lookup_downlink(struct xdp_md *p_ctx)
 
   offset = sizeof(struct ethhdr) + sizeof(struct iphdr) + sizeof(struct udphdr);
 
-
   if(p_data + offset > p_data_end) {
     bpf_debug("Invalid GTP packet!");
     return XDP_PASS;
@@ -410,4 +422,5 @@ int downlink_entry_point(struct xdp_md *p_ctx)
   return xdp_stats_record_action(p_ctx, action);
 }
 
+// For printk.
 char _license[] SEC("license") = "GPL";

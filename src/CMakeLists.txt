@@ -16,6 +16,7 @@ add_library(upf_xdp STATIC
   wrappers/BPFMaps.cpp
   wrappers/BPFMap.cpp
   utils/Logger.cpp
+  utils/Util.cpp
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../extern/libbpf/src)

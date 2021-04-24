@@ -54,4 +54,12 @@ struct bpf_map_def SEC("maps") m_ueip_pdr = {
 	.max_entries = 100000,
 };
 
+// Static ARP Table. Used to get the MAC address of the next hop.
+// TODO navarrothiago - pinned this maps. It not depend on the session program
+struct bpf_map_def SEC("maps") m_arp_table = {
+	.type        = BPF_MAP_TYPE_HASH,
+	.key_size    = sizeof(u32), // IPv4 address
+	.value_size  = 6, // MAC address
+	.max_entries = 2,
+};
 #endif // __SESSION_CONTEXT_MAPS_H__
