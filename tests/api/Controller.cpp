@@ -5,15 +5,15 @@
 #include <SessionManager.h>
 #include <SessionProgramManager.h>
 #include <UserPlaneComponent.h>
+#include <linux/bpf.h>
+#include <netinet/ether.h>
 #include <programs/SessionProgram.h>
 #include <utils/LogDefines.h>
 #include <utils/Util.h>
-#include <linux/bpf.h>
 #include <wrappers/BPFMap.hpp>
-#include <netinet/ether.h>
-
 
 static std::shared_ptr<SessionManager> spSessionManager;
+static std::map<std::string, FlowDirection> sMapFlowDirection = {{"downlink", DOWNLINK}, {"uplink", UPLINK}};
 
 Controller::Controller(/* args */) { LOG_FUNC(); }
 
@@ -38,14 +38,6 @@ int Controller::setup(json jBody)
 int Controller::createSesssion(json jBody)
 {
   LOG_FUNC();
-  seid_t_ seid = jBody["seid"];
-  u16 pdrIdUL = jBody["pdrIdUL"];
-  u16 pdrIdDL = jBody["farIdUL"];
-  u32 farIdUL = jBody["pdrIdDL"];
-  u32 farIdDL = jBody["farIdDL"];
-  u32 teid = jBody["teid"];
-  std::string srcIPAddress = jBody["srcIPAddress"];
-  std::string dstIPAddress = jBody["dstIPAddress"];
 
   apply_action_t_ actions;
   actions.forw = true;
@@ -55,36 +47,42 @@ int Controller::createSesssion(json jBody)
   struct in_addr ue_ip;
   struct in_addr dst_addr;
 
-  if(inet_aton(srcIPAddress.c_str(), &src_addr) == 0) {
-    fprintf(stderr, "Invalid address\n");
-    return 400;
-  }
-  if(inet_aton(dstIPAddress.c_str(), &dst_addr) == 0) {
-    fprintf(stderr, "Invalid address\n");
-    return 400;
-  }
-  // Create session, PDR and FAR
-  auto pSession = createSession(seid);
-
-  // Uplink.
-  auto pPdrUL = createPDR(pdrIdUL, farIdUL, teid, INTERFACE_VALUE_ACCESS, src_addr, OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4);
-  auto pFarUL = createFAR(farIdUL, actions, INTERFACE_VALUE_CORE, OUTER_HEADER_CREATION_UDP_IPV4, dst_addr, dstPort);
-
-  // Downlink.
-  auto pPdrDL = createPDR(pdrIdDL, farIdDL, teid, INTERFACE_VALUE_CORE, dst_addr, OUTER_HEADER_REMOVAL_UDP_IPV4);
-  auto pFarDL = createFAR(farIdDL, actions, INTERFACE_VALUE_ACCESS, OUTER_HEADER_CREATION_GTPU_UDP_IPV4, dst_addr, dstPort);
-
-  // Request to BPF program.
+  // TODO navarrothiago - Create a logic to parse the json and only after that create the session, pdr and far.
+  seid_t_ seid = jBody["seid"];
   LOG_INF("Case: create session");
+  auto pSession = createSession(seid);
   spSessionManager->createSession(pSession);
-  LOG_INF("Case: add UL PDR");
-  spSessionManager->addPDR(pSession->getSeid(), pPdrUL);
-  LOG_INF("Case: add UL FAR");
-  spSessionManager->addFAR(pSession->getSeid(), pFarUL);
-  LOG_INF("Case: add DL PDR");
-  spSessionManager->addPDR(pSession->getSeid(), pPdrDL);
-  LOG_INF("Case: add DL FAR");
-  spSessionManager->addFAR(pSession->getSeid(), pFarDL);
+
+  for(const auto &element : jBody["pdrs"]) {
+    u32 sourceInterface, destinationInterface;
+    u16 outerHeaderRemoval, outerHeaderCreation;
+
+    switch(sMapFlowDirection[element["type"]]) {
+    case UPLINK:
+      LOG_DBG("Uplink direction");
+      sourceInterface = INTERFACE_VALUE_ACCESS;
+      outerHeaderRemoval = OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+      destinationInterface = INTERFACE_VALUE_CORE;
+      outerHeaderCreation = OUTER_HEADER_CREATION_UDP_IPV4;
+      break;
+    case DOWNLINK:
+      LOG_DBG("Downlink direction");
+      sourceInterface = INTERFACE_VALUE_CORE;
+      outerHeaderRemoval = OUTER_HEADER_REMOVAL_UDP_IPV4;
+      destinationInterface = INTERFACE_VALUE_ACCESS;
+      outerHeaderCreation = OUTER_HEADER_CREATION_GTPU_UDP_IPV4;
+      break;
+    default:
+      break;
+    }
+    auto pPdr = createPDR(element["pdrId"], element["farId"], element["teid"], sourceInterface, Util::convertIpToInet(std::string(element["dstIPAddress"])), outerHeaderRemoval);
+    auto pFar = createFAR(element["farId"], actions, destinationInterface, outerHeaderCreation, Util::convertIpToInet(std::string(element["dstIPAddress"])), dstPort);
+    LOG_INF("Case: add PDR");
+    spSessionManager->addPDR(pSession->getSeid(), pPdr);
+    LOG_INF("Case: add FAR");
+    spSessionManager->addFAR(pSession->getSeid(), pFar);
+  }
+
   LOG_INF("Case: update ARP Table");
   auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
 
@@ -97,7 +95,7 @@ int Controller::createSesssion(json jBody)
 
     struct in_addr ip_addr;
     if(inet_aton(std::string(element["ip"]).c_str(), &ip_addr) == 0) {
-     
+
       return 400;
     }
 
@@ -106,6 +104,5 @@ int Controller::createSesssion(json jBody)
     auto pMacAddress = ether_aton(std::string(element["mac"]).c_str());
     pSessionProgram->getArpTableMap()->update(ip, pMacAddress->ether_addr_octet, BPF_ANY);
   }
-
   return 200;
 }

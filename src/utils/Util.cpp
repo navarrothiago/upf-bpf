@@ -26,9 +26,11 @@ std::vector<u_char> Util::stringToMac(std::string const &s)
   return macAddress;
 }
 
-Util &Util::getInstance()
-{
-  LOG_FUNC();
-  static Util sInstance;
-  return sInstance;
+struct in_addr Util::convertIpToInet(std::string ipAddress){
+  struct in_addr inetIpAddress;
+  if(inet_aton(ipAddress.c_str(), &inetIpAddress) == 0) {
+    fprintf(stderr, "Invalid address\n");
+    throw std::runtime_error("Invalid address");
+  }
+  return inetIpAddress;
 }
