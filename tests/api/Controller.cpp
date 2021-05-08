@@ -14,6 +14,13 @@
 
 static std::shared_ptr<SessionManager> spSessionManager;
 static std::map<std::string, FlowDirection> sMapFlowDirection = {{"downlink", DOWNLINK}, {"uplink", UPLINK}};
+static std::map<std::string, u8> sMapInterface = {{"INTERFACE_VALUE_CORE", INTERFACE_VALUE_CORE},
+                                                  {"INTERFACE_VALUE_ACCESS", INTERFACE_VALUE_ACCESS}};
+static std::map<std::string, u32> sMapOuterHeader = {
+    {"OUTER_HEADER_CREATION_GTPU_UDP_IPV4", OUTER_HEADER_CREATION_GTPU_UDP_IPV4},
+    {"OUTER_HEADER_CREATION_UDP_IPV4", OUTER_HEADER_CREATION_UDP_IPV4},
+    {"OUTER_HEADER_REMOVAL_UDP_IPV4", OUTER_HEADER_REMOVAL_UDP_IPV4},
+    {"OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4", OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4}};
 
 Controller::Controller(/* args */) { LOG_FUNC(); }
 
@@ -54,35 +61,23 @@ int Controller::createSesssion(json jBody)
   spSessionManager->createSession(pSession);
 
   for(const auto &element : jBody["pdrs"]) {
-    u32 sourceInterface, destinationInterface;
-    u16 outerHeaderRemoval, outerHeaderCreation;
-
-    switch(sMapFlowDirection[element["type"]]) {
-    case UPLINK:
-      LOG_DBG("Uplink direction");
-      sourceInterface = INTERFACE_VALUE_ACCESS;
-      outerHeaderRemoval = OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-      destinationInterface = INTERFACE_VALUE_CORE;
-      outerHeaderCreation = OUTER_HEADER_CREATION_UDP_IPV4;
-      break;
-    case DOWNLINK:
-      LOG_DBG("Downlink direction");
-      sourceInterface = INTERFACE_VALUE_CORE;
-      outerHeaderRemoval = OUTER_HEADER_REMOVAL_UDP_IPV4;
-      destinationInterface = INTERFACE_VALUE_ACCESS;
-      outerHeaderCreation = OUTER_HEADER_CREATION_GTPU_UDP_IPV4;
-      break;
-    default:
-      break;
-    }
-    auto pPdr = createPDR(element["pdrId"], element["farId"], element["teid"], sourceInterface, Util::convertIpToInet(std::string(element["dstIPAddress"])), outerHeaderRemoval);
-    auto pFar = createFAR(element["farId"], actions, destinationInterface, outerHeaderCreation, Util::convertIpToInet(std::string(element["dstIPAddress"])), dstPort);
+    auto pPdr = createPDR(element["pdrId"], element["farId"], element["pdi"]["teid"],
+                          sMapInterface[element["pdi"]["sourceInterface"]],
+                          Util::convertIpToInet(std::string(element["pdi"]["ueIPAddress"])),
+                          sMapOuterHeader[element["outerHeaderRemoval"]]);
     LOG_INF("Case: add PDR");
     spSessionManager->addPDR(pSession->getSeid(), pPdr);
+  }
+
+  for(const auto &element : jBody["fars"]) {
+    auto pFar = createFAR(
+        element["farId"], actions, sMapInterface[element["forwardingParameters"]["destinationInterface"]],
+        sMapOuterHeader[element["forwardingParameters"]["outerHeaderCreation"]["outerHeaderCreationDescription"]],
+        Util::convertIpToInet(std::string(element["forwardingParameters"]["outerHeaderCreation"]["ipv4Address"])),
+        element["forwardingParameters"]["outerHeaderCreation"]["portNumber"]);
     LOG_INF("Case: add FAR");
     spSessionManager->addFAR(pSession->getSeid(), pFar);
   }
-
   LOG_INF("Case: update ARP Table");
   auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
 
