@@ -187,8 +187,9 @@ rx_queue_size_list = np.geomspace(1, 10, num=2, dtype=int)
 timestr = time.strftime("%Y%m%d-%H%M%S")
 test_case_name="DownlinkMaxThoughtput"
 
+# TODO navarrothiago - the number of flows does not correspond to the what it supposed to be.
+
 for flow in flow_list:
-    # Run the tests
     for rx_size in rx_queue_size_list:
         test_case="{}-{}-{}flow-{}rx".format(timestr, test_case_name, flow, rx_size)
         with open("tests/reports/{}.json".format(test_case), "w") as dump_file:
