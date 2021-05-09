@@ -26,14 +26,14 @@ Controller::Controller(/* args */) { LOG_FUNC(); }
 
 Controller::~Controller() { LOG_FUNC(); }
 
-int Controller::setup(json jBody)
+int Controller::setup(json &jRequest, json &jReponse)
 {
   LOG_FUNC();
   std::shared_ptr<RulesUtilities> mpRulesFactory;
   mpRulesFactory = std::make_shared<RulesUtilitiesImpl>();
 
-  Configuration::sGTPInterface = jBody["gtpInterface"];
-  Configuration::sUDPInterface = jBody["udpInterface"];
+  Configuration::sGTPInterface = jRequest["gtpInterface"];
+  Configuration::sUDPInterface = jRequest["udpInterface"];
   LOG_DBG("GTP interface: {}", Configuration::sGTPInterface);
   LOG_DBG("UDP interface: {}", Configuration::sUDPInterface);
 
@@ -42,25 +42,25 @@ int Controller::setup(json jBody)
   return 200;
 }
 
-int Controller::createSesssion(json jBody)
+int Controller::createSesssion(json &jRequest, json &jResponse)
 {
   LOG_FUNC();
 
   apply_action_t_ actions;
   actions.forw = true;
-  u16 dstPort = 1234;
-  dstPort = 1234;
-  struct in_addr src_addr;
-  struct in_addr ue_ip;
-  struct in_addr dst_addr;
+  // u16 dstPort = 1234;
+  // dstPort = 1234;
+  // struct in_addr src_addr;
+  // struct in_addr ue_ip;
+  // struct in_addr dst_addr;
 
   // TODO navarrothiago - Create a logic to parse the json and only after that create the session, pdr and far.
-  seid_t_ seid = jBody["seid"];
+  seid_t_ seid = jRequest["seid"];
   LOG_INF("Case: create session");
   auto pSession = createSession(seid);
   spSessionManager->createSession(pSession);
 
-  for(const auto &element : jBody["pdrs"]) {
+  for(const auto &element : jRequest["pdrs"]) {
     auto pPdr = createPDR(element["pdrId"], element["farId"], element["pdi"]["teid"],
                           sMapInterface[element["pdi"]["sourceInterface"]],
                           Util::convertIpToInet(std::string(element["pdi"]["ueIPAddress"])),
@@ -69,7 +69,7 @@ int Controller::createSesssion(json jBody)
     spSessionManager->addPDR(pSession->getSeid(), pPdr);
   }
 
-  for(const auto &element : jBody["fars"]) {
+  for(const auto &element : jRequest["fars"]) {
     auto pFar = createFAR(
         element["farId"], actions, sMapInterface[element["forwardingParameters"]["destinationInterface"]],
         sMapOuterHeader[element["forwardingParameters"]["outerHeaderCreation"]["outerHeaderCreationDescription"]],
@@ -82,7 +82,7 @@ int Controller::createSesssion(json jBody)
   auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
 
   std::map<std::string, std::string> arpTable;
-  for(const auto &element : jBody["arpTable"]) {
+  for(const auto &element : jRequest["arpTable"]) {
     std::cout << element << std::endl;
 
     // Map ip to mac address.

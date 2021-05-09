@@ -142,6 +142,7 @@ RUN apt-get update && \
 RUN pip3 install ipykernel
 RUN pip3 install matplotlib
 RUN pip3 install paramiko
+RUN pip3 install autopep8
 
 RUN apt-get update && \
     apt-get install  -y \

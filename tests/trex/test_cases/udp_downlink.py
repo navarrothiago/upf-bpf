@@ -1,15 +1,19 @@
 #!/bin/python3
 
 # import stl_path
+from tokenize import String
 from unittest import result
+from zipfile import Path
 from trex_stl_lib.api import *
+import numpy as np
 
 import time
 import json
 import argparse
 import subprocess
 from collections import defaultdict
-d = defaultdict(dict)
+
+json_output = defaultdict(dict)
 
 
 def create_pkt_flow(size, ip_min, ip_max, nflows, field):
@@ -92,7 +96,7 @@ def simple_burst(streams, m, duration):
         # print("Packets sent       0 --> 1:   {0} pkts".format(stats[0]["opackets"]))
         # print("Rx Mpps            0 --> 1:   {0} Mpps".format(float(stats[1]["rx_pps"])/1000000))
 
-        d[current_test]["throughput"] = float(stats[1]["rx_pps"])/1000000
+        json_output[current_test]["throughput"] = float(stats[1]["rx_pps"])/1000000
 
         if (stats[0]["opackets"] > 100):
             passed = True
@@ -116,10 +120,24 @@ def run_mpstat(duration):
     global current_test
     cmd = 'ssh india mpstat -P ALL {} 1 -o JSON'.format(int(duration))
     print("Running mpstat... {}".format(cmd))
-    d[current_test]["mpstat"] = os.popen(cmd).read()
-    # print(d[current_test]["mpstat"])
-    return d[current_test]["mpstat"]
+    output = os.popen(cmd).read()
+    # print(json.loads(output))
+    json_output[current_test]["mpstat"] = json.loads(output)
 
+def run_ethtool_set_rx_queue(number_rx_queue, password):
+    print("Setting NIC rx queue size...")
+    ifaces = ["enp3s0f0", "enp3s0f1"]
+    for iface in ifaces:
+        cmd = 'echo {} | ssh india sudo -S ethtool -L {} combined {}'.format(password, iface, int(number_rx_queue))
+        print("Running ethtool... {}".format(cmd))
+        os.popen(cmd)
+        cmd = 'echo {} | ssh india sudo -S ethtool -l {} '.format(password, iface)
+        print("Running ethtool... {}".format(cmd))
+        print(os.popen(cmd).read())
+        # TODO navarrothiago - Check if it is worth to store this value
+        # d[current_test]["rx_queue"] = number_rx_queue
+    print("Setting NIC rx queue size...DONE")
+    print()
 
 def setup_test_case(name):
     global current_test
@@ -152,20 +170,31 @@ parser.add_argument("-a",
                     "--auto", 
                     help="Ignore all arguments and run in mode automatic",
                     action="store_true")
+parser.add_argument('-p',
+                    '--password',
+                    default="",
+                    help="Password of the DUT host")
 args = parser.parse_args()
 
-# x_core = np.arange(1, 13, 1)
+json_output = defaultdict(dict)
 
-d = defaultdict(dict)
 current_test = ""
-flow_list = [1, 10, 100, 1000]
+flow_list = [1000]
+# flow_list = np.geomspace(1, 1000, num=4, dtype=int)
+rx_queue_size_list = np.arange(1, 13, 1)
+rx_queue_size_list = np.geomspace(1, 10, num=2, dtype=int)
+
+timestr = time.strftime("%Y%m%d-%H%M%S")
+test_case_name="DownlinkMaxThoughtput"
 
 for flow in flow_list:
     # Run the tests
-    setup_test_case("Downlink Max Thoughtput - {} flow".format(flow))
-    s1 = STLStream(packet=create_pkt_flow(args.size, "16.0.0.1",
-                   "16.0.0.254", flow, "src"), mode=STLTXCont())
-    simple_burst([s1], args.multiplier, args.duration)
-
-# Print results
-print(d)
+    for rx_size in rx_queue_size_list:
+        test_case="{}-{}-{}flow-{}rx".format(timestr, test_case_name, flow, rx_size)
+        with open("tests/reports/{}.json".format(test_case), "w") as dump_file:
+            run_ethtool_set_rx_queue(rx_size, args.password)
+            setup_test_case("{}".format(test_case))
+            s1 = STLStream(packet=create_pkt_flow(args.size, "16.0.0.1",
+                        "16.0.0.254", int(flow), "src"), mode=STLTXCont())
+            simple_burst([s1], args.multiplier, args.duration)
+            json.dump(json_output[test_case]["mpstat"], dump_file, indent=2, separators=(',', ': '), sort_keys=True)

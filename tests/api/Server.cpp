@@ -30,14 +30,16 @@ int main(int argc, char *argv[])
   });
 
   svr.Post("/configure", [](const Request& req, Response& res) {
-    json jBody = json::parse(req.body);
-    res.status = Controller::setup(jBody);
+    json jRequest = json::parse(req.body);
+    json jResponse;
+    res.status = Controller::setup(jRequest, jResponse);
     res.set_content("{\"teste\": \"Hello World!\"s}", "application/json");
   });
 
   svr.Post("/createSession", [](const Request &req, Response &res) {
-    json jBody = json::parse(req.body);
-    res.status = Controller::createSesssion(jBody);
+    json jRequest = json::parse(req.body);
+    json jResponse;
+    res.status = Controller::createSesssion(jRequest, jResponse);
     res.set_content("{\"teste\": \"Hello World!\"s}", "application/json");
   });
 

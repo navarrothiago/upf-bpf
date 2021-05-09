@@ -6,8 +6,8 @@
 #include <httplib.h>
 #include <map>
 #include <nlohmann/json.hpp>
-#include <types.h>
 #include <string>
+#include <types.h>
 
 using json = nlohmann::json;
 
@@ -16,11 +16,11 @@ class Controller
 public:
   Controller(/* args */);
   virtual ~Controller();
-  static int setup(json jBody);
-  static int createSesssion(json jBody);
+  static int setup(json &jRequest, json &jResponse);
+  static int createSesssion(json &jRequest, json &jResponse);
 
-// private:
-//   static std::map<std::string, FlowDirection> sMapFlowDirection; 
+  // private:
+  //   static std::map<std::string, FlowDirection> sMapFlowDirection;
 };
 
 #endif // __CONTROLLER_H__

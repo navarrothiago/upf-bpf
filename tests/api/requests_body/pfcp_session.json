@@ -1,0 +1,59 @@
+{
+  "seid": 1,
+  "pdrs": [
+    {
+      "pdrId": 20,
+      "farId": 200,
+      "outerHeaderRemoval": "OUTER_HEADER_REMOVAL_UDP_IPV4",
+      "pdi": {
+        "teid": 100,
+        "sourceInterface": "INTERFACE_VALUE_CORE",
+        "ueIPAddress": "10.1.3.27"
+      }
+    },
+    {
+      "pdrId": 10,
+      "farId": 100,
+      "outerHeaderRemoval": "OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4",
+      "pdi": {
+        "teid": 100,
+        "sourceInterface": "INTERFACE_VALUE_ACCESS",
+        "ueIPAddress": "10.1.3.27"
+      }
+    }
+  ],
+  "fars": [
+    {
+      "farId": 200,
+      "forwardingParameters": {
+        "outerHeaderCreation": {
+          "outerHeaderCreationDescription": "OUTER_HEADER_CREATION_GTPU_UDP_IPV4",
+          "ipv4Address": "10.1.3.27",
+          "portNumber": 1234
+        },
+        "destinationInterface": "INTERFACE_VALUE_ACCESS"
+      }
+    },
+    {
+      "farId": 100,
+      "forwardingParameters": {
+        "outerHeaderCreation": {
+          "outerHeaderCreationDescription": "OUTER_HEADER_CREATION_UDP_IPV4",
+          "ipv4Address": "10.1.3.27",
+          "portNumber": 1234
+        },
+        "destinationInterface": "INTERFACE_VALUE_CORE"
+      }
+    }
+  ],
+  "arpTable": [
+    {
+      "ip": "10.1.2.27",
+      "mac": "90:e2:ba:27:fd:3c"
+    },
+    {
+      "ip": "10.1.3.27",
+      "mac": "90:e2:ba:27:fd:3d"
+    }
+  ]
+}
