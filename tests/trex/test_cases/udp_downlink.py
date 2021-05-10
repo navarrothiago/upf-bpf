@@ -13,7 +13,7 @@ import argparse
 import subprocess
 from collections import defaultdict
 
-json_output = defaultdict(dict)
+item = defaultdict(dict)
 
 
 def create_pkt_flow(size, ip_min, ip_max, nflows, field):
@@ -96,7 +96,7 @@ def simple_burst(streams, m, duration):
         # print("Packets sent       0 --> 1:   {0} pkts".format(stats[0]["opackets"]))
         # print("Rx Mpps            0 --> 1:   {0} Mpps".format(float(stats[1]["rx_pps"])/1000000))
 
-        json_output[current_test]["throughput"] = float(stats[1]["rx_pps"])/1000000
+        item["throughput"] = float(stats[1]["rx_pps"])/1000000
 
         if (stats[0]["opackets"] > 100):
             passed = True
@@ -122,12 +122,14 @@ def run_mpstat(duration):
     print("Running mpstat... {}".format(cmd))
     output = os.popen(cmd).read()
     # print(json.loads(output))
-    json_output[current_test]["mpstat"] = json.loads(output)
+    item["mpstat"] = json.loads(output)
 
 def run_ethtool_set_rx_queue(number_rx_queue, password):
     print("Setting NIC rx queue size...")
     ifaces = ["enp3s0f0", "enp3s0f1"]
+    dicIface = {}
     for iface in ifaces:
+        dicIface[iface] = int(number_rx_queue)
         cmd = 'echo {} | ssh india sudo -S ethtool -L {} combined {}'.format(password, iface, int(number_rx_queue))
         print("Running ethtool... {}".format(cmd))
         os.popen(cmd)
@@ -136,6 +138,7 @@ def run_ethtool_set_rx_queue(number_rx_queue, password):
         print(os.popen(cmd).read())
         # TODO navarrothiago - Check if it is worth to store this value
         # d[current_test]["rx_queue"] = number_rx_queue
+    item["ethtool"] = dicIface
     print("Setting NIC rx queue size...DONE")
     print()
 
@@ -176,7 +179,10 @@ parser.add_argument('-p',
                     help="Password of the DUT host")
 args = parser.parse_args()
 
-json_output = defaultdict(dict)
+json_output = {
+    "items": []
+}
+
 
 current_test = ""
 flow_list = [1000]
@@ -191,11 +197,15 @@ test_case_name="DownlinkMaxThoughtput"
 
 for flow in flow_list:
     for rx_size in rx_queue_size_list:
+        item = defaultdict(dict)
         test_case="{}-{}-{}flow-{}rx".format(timestr, test_case_name, flow, rx_size)
-        with open("tests/reports/{}.json".format(test_case), "w") as dump_file:
-            run_ethtool_set_rx_queue(rx_size, args.password)
-            setup_test_case("{}".format(test_case))
-            s1 = STLStream(packet=create_pkt_flow(args.size, "16.0.0.1",
-                        "16.0.0.254", int(flow), "src"), mode=STLTXCont())
-            simple_burst([s1], args.multiplier, args.duration)
-            json.dump(json_output[test_case]["mpstat"], dump_file, indent=2, separators=(',', ': '), sort_keys=True)
+        item["testCase"] = test_case
+        run_ethtool_set_rx_queue(rx_size, args.password)
+        setup_test_case("{}".format(test_case))
+        s1 = STLStream(packet=create_pkt_flow(args.size, "16.0.0.1",
+                    "16.0.0.254", int(flow), "src"), mode=STLTXCont())
+        simple_burst([s1], args.multiplier, args.duration)
+        json_output["items"].append(item)
+
+with open("tests/reports/{}.json".format(test_case), "w") as dump_file:
+    json.dump(json_output, dump_file, indent=2, separators=(',', ': '), sort_keys=True)

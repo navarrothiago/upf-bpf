@@ -104,6 +104,13 @@
   "python.analysis.extraPaths": [
     "${workspaceFolder}/tests/trex/trex_client/interactive",
     "${workspaceFolder}/tests/trex/test_cases/"
+  ],
+  "cSpell.words": [
+    "append",
+    "case",
+    "json",
+    "output",
+    "test"
   ]
 
 }

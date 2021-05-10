@@ -48,12 +48,7 @@ int Controller::createSesssion(json &jRequest, json &jResponse)
 
   apply_action_t_ actions;
   actions.forw = true;
-  // u16 dstPort = 1234;
-  // dstPort = 1234;
-  // struct in_addr src_addr;
-  // struct in_addr ue_ip;
-  // struct in_addr dst_addr;
-
+  
   // TODO navarrothiago - Create a logic to parse the json and only after that create the session, pdr and far.
   seid_t_ seid = jRequest["seid"];
   LOG_INF("Case: create session");

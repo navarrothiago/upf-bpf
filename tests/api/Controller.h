@@ -18,9 +18,6 @@ public:
   virtual ~Controller();
   static int setup(json &jRequest, json &jResponse);
   static int createSesssion(json &jRequest, json &jResponse);
-
-  // private:
-  //   static std::map<std::string, FlowDirection> sMapFlowDirection;
 };
 
 #endif // __CONTROLLER_H__
