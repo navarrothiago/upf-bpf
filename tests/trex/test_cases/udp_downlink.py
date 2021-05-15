@@ -80,7 +80,6 @@ def simple_burst(streams, m, duration):
         # choose rate and start traffic for 10 seconds on 5 mpps
         print("Running " + m + " on ports 0 for {} seconds...".format(duration))
         c.start(ports=[0], mult=m, duration=duration)
-
         run_mpstat(duration/2)
 
         # block until done
@@ -124,16 +123,21 @@ def run_mpstat(duration):
     # print(json.loads(output))
     item["mpstat"] = json.loads(output)
 
+# TODO navarrothiago - create a class ethtool.
+
+
 def run_ethtool_set_rx_queue(number_rx_queue, password):
     print("Setting NIC rx queue size...")
     ifaces = ["enp3s0f0", "enp3s0f1"]
     dicIface = {}
     for iface in ifaces:
         dicIface[iface] = int(number_rx_queue)
-        cmd = 'echo {} | ssh india sudo -S ethtool -L {} combined {}'.format(password, iface, int(number_rx_queue))
+        cmd = 'echo {} | ssh india sudo -S ethtool -L {} combined {}'.format(
+            password, iface, int(number_rx_queue))
         print("Running ethtool... {}".format(cmd))
         os.popen(cmd)
-        cmd = 'echo {} | ssh india sudo -S ethtool -l {} '.format(password, iface)
+        cmd = 'echo {} | ssh india sudo -S ethtool -l {} '.format(
+            password, iface)
         print("Running ethtool... {}".format(cmd))
         print(os.popen(cmd).read())
         # TODO navarrothiago - Check if it is worth to store this value
@@ -142,10 +146,21 @@ def run_ethtool_set_rx_queue(number_rx_queue, password):
     print("Setting NIC rx queue size...DONE")
     print()
 
+
 def setup_test_case(name):
     global current_test
     current_test = name
     print("Setup TestCase: {}".format(name))
+
+# TODO navarrothiago - create a file to parse the report.
+
+
+def get_throughputs(json_output):
+    dict_output = json.load(json_output)
+    array = []
+    for item in dict_output["items"]:
+        array.append(item["throughput"])
+    return np.array(array)
 
 
 # Parse the args.
@@ -169,8 +184,8 @@ parser.add_argument('-f',
                     type=int,
                     default='6',
                     help="The number of flows. It must be equal or greater than 6")
-parser.add_argument("-a", 
-                    "--auto", 
+parser.add_argument("-a",
+                    "--auto",
                     help="Ignore all arguments and run in mode automatic",
                     action="store_true")
 parser.add_argument('-p',
@@ -187,25 +202,37 @@ json_output = {
 current_test = ""
 flow_list = [1000]
 # flow_list = np.geomspace(1, 1000, num=4, dtype=int)
-rx_queue_size_list = np.arange(1, 13, 1)
-rx_queue_size_list = np.geomspace(1, 10, num=2, dtype=int)
+n_rx_queues = np.arange(1, 13, 1)
+# n_rx_queues = np.geomspace(1, 10, num=1, dtype=int)
 
 timestr = time.strftime("%Y%m%d-%H%M%S")
-test_case_name="DownlinkMaxThoughtput"
+test_case_name = "DownlinkMaxThoughtput"
 
 # TODO navarrothiago - the number of flows does not correspond to the what it supposed to be.
 
 for flow in flow_list:
-    for rx_size in rx_queue_size_list:
+    for rx_size in n_rx_queues:
         item = defaultdict(dict)
-        test_case="{}-{}-{}flow-{}rx".format(timestr, test_case_name, flow, rx_size)
+        test_case = "{}-{}-{}flow-{}rx".format(timestr,
+                                               test_case_name, flow, rx_size)
+        # test_case = test_case_name
         item["testCase"] = test_case
         run_ethtool_set_rx_queue(rx_size, args.password)
         setup_test_case("{}".format(test_case))
         s1 = STLStream(packet=create_pkt_flow(args.size, "16.0.0.1",
-                    "16.0.0.254", int(flow), "src"), mode=STLTXCont())
+                                              "16.0.0.254", int(flow), "src"), mode=STLTXCont())
         simple_burst([s1], args.multiplier, args.duration)
         json_output["items"].append(item)
 
-with open("tests/reports/{}.json".format(test_case), "w") as dump_file:
-    json.dump(json_output, dump_file, indent=2, separators=(',', ': '), sort_keys=True)
+reports_path = "tests/reports"
+filename = "{}-{}.json".format(timestr, test_case)
+file_to_open = os.path.join(reports_path, filename)
+with open(file_to_open, "w") as dump_file:
+    json.dump(json_output, dump_file, indent=2,
+              separators=(',', ': '), sort_keys=True)
+
+# Update the last report.
+tmp_link = os.path.join(reports_path, test_case_name + ".tmp")
+target_link = os.path.join(reports_path, test_case_name + ".json")
+os.symlink(filename, tmp_link)
+os.rename(tmp_link, target_link)

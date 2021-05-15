@@ -48,7 +48,7 @@ int Controller::createSesssion(json &jRequest, json &jResponse)
 
   apply_action_t_ actions;
   actions.forw = true;
-  
+
   // TODO navarrothiago - Create a logic to parse the json and only after that create the session, pdr and far.
   seid_t_ seid = jRequest["seid"];
   LOG_INF("Case: create session");
