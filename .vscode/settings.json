@@ -89,7 +89,8 @@
     "codecvt": "cpp",
     "strstream": "cpp",
     "typeindex": "cpp",
-    "csignal": "cpp"
+    "csignal": "cpp",
+    "gtpu.h": "c"
   },
 
   "git.ignoreLimitWarning": true,
@@ -111,6 +112,7 @@
     "json",
     "output",
     "test"
-  ]
+  ],
+  "jupyter.jupyterServerType": "local"
 
 }

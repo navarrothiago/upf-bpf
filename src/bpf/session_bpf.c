@@ -2,8 +2,9 @@
 #include <types.h>
 // clang-format on
 
-#include <bpf_helpers.h>
 #include "xdp_stats_kern.h"
+#include <bpf_helpers.h>
+#include <endian.h>
 #include <linux/bpf.h>
 #include <linux/if_ether.h>
 #include <linux/ip.h>
@@ -13,10 +14,9 @@
 #include <protocols/gtpu.h>
 #include <protocols/ip.h>
 #include <session_bpf_maps.h>
+#include <utils/csum.h>
 #include <utils/logger.h>
 #include <utils/utils.h>
-#include <utils/csum.h>
-#include <endian.h>
 
 #ifndef LOCAL_IP
 // 10.1.3.30
@@ -38,6 +38,26 @@ int xdp_redirect_gtpu(struct xdp_md *p_ctx)
   return XDP_PASS;
 }
 
+/**
+ * @brief Update MAC address
+ *
+ * @param p_ip The IP header which has the destination IP address.
+ * @param [out] p_eth  The eth header with the new mac address.
+ * @return u32 0 (Success), 1 (Fail).
+ */
+static u32 update_dst_mac_address(struct iphdr *p_ip, struct ethhdr *p_eth)
+{
+  void *p_mac_address;
+
+  p_mac_address = bpf_map_lookup_elem(&m_arp_table, &p_ip->daddr);
+  if(!p_mac_address) {
+    bpf_debug("mac not found!!\n");
+    return 1;
+  }
+  memcpy(p_eth->h_dest, p_mac_address, sizeof(p_eth->h_dest));
+  return 0;
+}
+
 static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_far)
 {
   bpf_debug("create_outer_header_gtpu_ipv4");
@@ -50,6 +70,7 @@ static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_fa
 
   // KISS - Lets start using the first PDR (high priority).
   // Resize the header in order to put the GTP/UPD/IP headers.
+  // Adjust space to the left.
   bpf_xdp_adjust_head(p_ctx, (int32_t)-GTP_ENCAPSULATED_SIZE);
 
   // Packet buffer changed, all pointers need to be recomputed
@@ -81,7 +102,6 @@ static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_fa
 
   // TODO navarrothiago -  Check this code
   // https://github.com/atoonk/xdp-tutorial/blob/master/packet-solutions/xdp_prog_kern_03.c#L225-L320
-
 
   // Add the outer IP header
   p_ip->version = 4;
@@ -149,11 +169,21 @@ static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_fa
 
 static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far, enum FlowDirection direction)
 {
+  void *p_data = (void *)(long)p_ctx->data;
+  void *p_data_end = (void *)(long)p_ctx->data_end;
+  struct ethhdr *p_eth = p_data;
+  void *p_mac_address;
+
   u8 dest_interface;
   u16 outer_header_creation;
   // TODO dupl
   // TODO nocp
   // TODO buff
+
+  if((void *)(p_eth + 1) > p_data_end) {
+    bpf_debug("Invalid pointer");
+    return XDP_DROP;
+  }
 
   // Check if it is a forward action.
   if(!p_far) {
@@ -168,16 +198,38 @@ static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far, enum FlowDir
   if(p_far->apply_action.forw) {
     if(dest_interface == INTERFACE_VALUE_CORE) {
       // Redirect to data network.
-      bpf_debug("Destination is to INTERFACE_VALUE_CORE");
+      bpf_debug("Destination is to INTERFACE_VALUE_CORE\n");
       // Check Outer header creation - IPv4 or IPv6
       switch(outer_header_creation) {
       case OUTER_HEADER_CREATION_UDP_IPV4:
-        bpf_debug("OUTER_HEADER_CREATION_UDP_IPV4");
-        // swap_src_dst_mac(p_data);
+        bpf_debug("OUTER_HEADER_CREATION_UDP_IPV4\n");
+        struct ethhdr *p_new_eth = p_data + GTP_ENCAPSULATED_SIZE;
+
+        // Move eth header forward.
+        if((void *)(p_new_eth + 1) > p_data_end) {
+          return 1;
+        }
+        __builtin_memcpy(p_new_eth, p_eth, sizeof(*p_eth));
+
+        // Update destination mac address.
+        struct iphdr *p_ip = (void *)(p_new_eth + 1);
+
+        if((void *)(p_ip + 1) > p_data_end) {
+          return XDP_DROP;
+        }
+
+        if(update_dst_mac_address(p_ip, p_new_eth)) {
+          return XDP_DROP;
+        }
+
+        // Adjust head to the right.
+        bpf_xdp_adjust_head(p_ctx, GTP_ENCAPSULATED_SIZE);
+
         return bpf_redirect_map(&m_redirect_interfaces, direction, 0);
+        bpf_debug("OUTER_HEADER_CREATION_UDP_IPV4 REDIRECT FAILED\n");
         break;
       case OUTER_HEADER_CREATION_UDP_IPV6:
-        bpf_debug("OUTER_HEADER_CREATION_UDP_IPV6");
+        bpf_debug("OUTER_HEADER_CREATION_UDP_IPV6\n");
         // TODO navarrothiago
         break;
       default:
@@ -215,7 +267,7 @@ static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far, enum FlowDir
  * @param p_iph The IP header.
  * @return u8 True if match. False cc.
  */
-static u32 pfcp_pdr_match_pdi_access(pfcp_pdr_t_ *p_pdr, struct iphdr *p_iph, teid_t_ teid)
+static u32 pfcp_pdr_match_pdi_access(struct xdp_md *p_ctx, pfcp_pdr_t_ *p_pdr, struct iphdr *p_iph, teid_t_ teid)
 {
   if(!p_iph) {
     bpf_debug("IP header is NULL!!");
@@ -327,7 +379,7 @@ static u32 pfcp_pdr_lookup_uplink(struct xdp_md *p_ctx)
   u8 *p_iph = (u8 *)p_gtpuh + GTPV1U_MSG_HEADER_MIN_SIZE;
 
   teid = htonl(p_gtpuh->teid);
-  bpf_debug("GTP GPDU teid %d with IPv4 payload received", teid);
+  bpf_debug("GTP GPDU teid %d with IPv4 payload received\n", teid);
 
   p_pdr = bpf_map_lookup_elem(&m_teid_pdr, &teid);
 
@@ -337,8 +389,8 @@ static u32 pfcp_pdr_lookup_uplink(struct xdp_md *p_ctx)
   }
 
   // For each PDR, check parameters.
-  if(pfcp_pdr_match_pdi_access(&p_pdr[i], (struct iphdr *)p_iph, teid) == 0) {
-    bpf_debug("PDR associated with teid %d found! PDR id is %d", teid, p_pdr->pdr_id.rule_id);
+  if(pfcp_pdr_match_pdi_access(p_ctx, &p_pdr[i], (struct iphdr *)p_iph, teid) == 0) {
+    bpf_debug("PDR associated with teid %d found! PDR id is %d\n", teid, p_pdr->pdr_id.rule_id);
 
     // Lets apply the forwarding actions rule.
     p_far = bpf_map_lookup_elem(&m_fars, &p_pdr->far_id.far_id);
@@ -397,7 +449,8 @@ static u32 pfcp_pdr_lookup_downlink(struct xdp_md *p_ctx)
   if(pfcp_pdr_match_pdi_downlink(&p_pdr[i], (struct iphdr *)p_iph) == 0) {
     // Lets apply the forwarding actions rule.
     p_far = bpf_map_lookup_elem(&m_fars, &p_pdr->far_id.far_id);
-    bpf_debug("PDR associated with UP IP %d found! PDR id:%d and FAR id:%d", htonl(p_iph->daddr), p_pdr->pdr_id.rule_id, p_pdr->far_id.far_id);
+    bpf_debug("PDR associated with UP IP %d found! PDR id:%d and FAR id:%d", htonl(p_iph->daddr), p_pdr->pdr_id.rule_id,
+              p_pdr->far_id.far_id);
     return pfcp_far_apply(p_ctx, p_far, DOWNLINK);
   }
 
@@ -408,7 +461,7 @@ static u32 pfcp_pdr_lookup_downlink(struct xdp_md *p_ctx)
 SEC("xdp_uplink_entry_point")
 int uplink_entry_point(struct xdp_md *p_ctx)
 {
-  bpf_debug("XDP SESSION CONTEXT - UPLINK");
+  bpf_debug("XDP SESSION CONTEXT - UPLINK\n");
   u32 action = pfcp_pdr_lookup_uplink(p_ctx);
   return xdp_stats_record_action(p_ctx, action);
 }
@@ -417,7 +470,7 @@ int uplink_entry_point(struct xdp_md *p_ctx)
 SEC("xdp_downlink_entry_point")
 int downlink_entry_point(struct xdp_md *p_ctx)
 {
-  bpf_debug("XDP SESSION CONTEXT - DOWNLINK");
+  bpf_debug("XDP SESSION CONTEXT - DOWNLINK\n");
   u32 action = pfcp_pdr_lookup_downlink(p_ctx);
   return xdp_stats_record_action(p_ctx, action);
 }

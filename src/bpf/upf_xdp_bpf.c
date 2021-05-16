@@ -61,9 +61,9 @@ static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
   }
 
   // Jump to session context.
-  bpf_debug("BPF tail call to %d tunnel", htonl(p_gtpuh->teid));
+  bpf_debug("BPF tail call to %d tunnel\n", htonl(p_gtpuh->teid));
   bpf_tail_call(p_ctx, &m_teid_session, htonl(p_gtpuh->teid));
-  bpf_debug("BPF tail call was not executed! teid %d", htonl(p_gtpuh->teid));
+  bpf_debug("BPF tail call was not executed! teid %d\n", htonl(p_gtpuh->teid));
 
   return XDP_PASS;
 }
@@ -234,4 +234,4 @@ int entry_point(struct xdp_md *p_ctx)
   return action;
 }
 
-// char _license[] SEC("license") = "GPL";
+char _license[] SEC("license") = "GPL";

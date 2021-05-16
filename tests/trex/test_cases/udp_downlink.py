@@ -6,6 +6,7 @@ from unittest import result
 from zipfile import Path
 from trex_stl_lib.api import *
 import numpy as np
+from scapy.contrib.gtp import *
 
 import time
 import json
@@ -29,7 +30,7 @@ def create_gtp_pkt_flow(size, ip_min, ip_max, nflows, field):
     print("{} flow will be generated...".format(nflows))
     base_pkt = Ether()/IP(src="172.20.16.99", dst="192.168.15.12")/UDP(dport=2152) / \
         GTP_U_Header(teid=100) / \
-        IP(src="10.10.10.10", dst="172.20.16.55", version=4)/UDP(dport=1234)
+        IP(src="10.10.10.10", dst="10.1.3.27", version=4)/UDP(dport=1234)
     pad = max(0, size - len(base_pkt)) * 'x'
     return STLPktBuilder(pkt=base_pkt/pad, vm=create_vm(ip_min, ip_max, nflows, field))
 
@@ -109,6 +110,8 @@ def simple_burst(streams, m, duration):
         # print("Rx Mpps            0 --> 1:   {0} Mpps".format(float(stats[1]["rx_pps"])/1000000))
 
         item["throughput"] = float(stats[1]["rx_pps"])/1000000
+        print("")
+        print("Throughput: {} Mpps".format(item["throughput"]))
 
         if (stats[0]["opackets"] > 100):
             passed = True
@@ -194,9 +197,8 @@ parser.add_argument('-d',
                     help="The duration of the transmission in second")
 parser.add_argument('-f',
                     '--flows',
-                    type=int,
-                    default='6',
-                    help="The number of flows. It must be equal or greater than 6")
+                    default='udp',
+                    help="The flows type (i.e. udp or gtp)")
 parser.add_argument("-a",
                     "--auto",
                     help="Ignore all arguments and run in mode automatic",
@@ -220,9 +222,21 @@ n_rx_queues = np.arange(1, 7, 1)
 # n_rx_queues = np.geomspace(1, 10, num=1, dtype=int)
 
 timestr = time.strftime("%Y%m%d-%H%M%S")
-test_case_name = "DownlinkMaxThoughtput"
+
+test_dict = {
+    "udp": {
+        "createFlows": create_udp_pkt_flow,
+        "testCaseName": "DownlinkMaxThoughtput"
+    },
+    "gtp": {
+        "createFlows": create_gtp_pkt_flow,
+        "testCaseName": "UplinkMaxThoughtput"
+    }
+}
 
 # TODO navarrothiago - the number of flows does not correspond to the what it supposed to be.
+
+test_case_name = test_dict[args.flows]["testCaseName"]
 
 for flow in flow_list:
     for rx_size in n_rx_queues:
@@ -233,8 +247,8 @@ for flow in flow_list:
         item["testCase"] = test_case
         run_ethtool_set_rx_queue(rx_size, args.password)
         setup_test_case("{}".format(test_case))
-        s1 = STLStream(packet=create_udp_pkt_flow(args.size, "16.0.0.1",
-                                                  "16.0.0.254", int(flow), "src"), mode=STLTXCont())
+        s1 = STLStream(packet=test_dict[args.flows]["createFlows"](args.size, "16.0.0.1",
+                                                       "16.0.0.254", int(flow), "src"), mode=STLTXCont())
         simple_burst([s1], args.multiplier, args.duration)
         json_output["items"].append(item)
 
