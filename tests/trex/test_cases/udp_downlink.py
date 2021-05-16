@@ -16,11 +16,25 @@ from collections import defaultdict
 item = defaultdict(dict)
 
 
-def create_pkt_flow(size, ip_min, ip_max, nflows, field):
+def create_udp_pkt_flow(size, ip_min, ip_max, nflows, field):
     print("{} flow will be generated...".format(nflows))
     base_pkt = Ether()/IP(src="16.0.0.1", dst="10.1.3.27")/UDP(dport=1234)
     pad = max(0, size - len(base_pkt)) * 'x'
+    return STLPktBuilder(pkt=base_pkt/pad, vm=create_vm(ip_min, ip_max, nflows, field))
 
+# TODO navarrothiago - update packet
+
+
+def create_gtp_pkt_flow(size, ip_min, ip_max, nflows, field):
+    print("{} flow will be generated...".format(nflows))
+    base_pkt = Ether()/IP(src="172.20.16.99", dst="192.168.15.12")/UDP(dport=2152) / \
+        GTP_U_Header(teid=100) / \
+        IP(src="10.10.10.10", dst="172.20.16.55", version=4)/UDP(dport=1234)
+    pad = max(0, size - len(base_pkt)) * 'x'
+    return STLPktBuilder(pkt=base_pkt/pad, vm=create_vm(ip_min, ip_max, nflows, field))
+
+
+def create_vm(ip_min, ip_max, nflows, field):
     vm = STLVM()
 
     # create a tuple var
@@ -32,8 +46,7 @@ def create_pkt_flow(size, ip_min, ip_max, nflows, field):
     vm.fix_chksum()
 
     # vm.write(fv_name="tuple.port", pkt_offset="UDP.sport")
-
-    return STLPktBuilder(pkt=base_pkt/pad, vm=vm)
+    return vm
 
 
 def create_pkt(size):
@@ -202,7 +215,8 @@ json_output = {
 current_test = ""
 flow_list = [1000]
 # flow_list = np.geomspace(1, 1000, num=4, dtype=int)
-n_rx_queues = np.arange(1, 13, 1)
+# n_rx_queues = np.arange(1, 13, 1)
+n_rx_queues = np.arange(1, 7, 1)
 # n_rx_queues = np.geomspace(1, 10, num=1, dtype=int)
 
 timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -219,8 +233,8 @@ for flow in flow_list:
         item["testCase"] = test_case
         run_ethtool_set_rx_queue(rx_size, args.password)
         setup_test_case("{}".format(test_case))
-        s1 = STLStream(packet=create_pkt_flow(args.size, "16.0.0.1",
-                                              "16.0.0.254", int(flow), "src"), mode=STLTXCont())
+        s1 = STLStream(packet=create_udp_pkt_flow(args.size, "16.0.0.1",
+                                                  "16.0.0.254", int(flow), "src"), mode=STLTXCont())
         simple_burst([s1], args.multiplier, args.duration)
         json_output["items"].append(item)
 

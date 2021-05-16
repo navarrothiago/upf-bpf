@@ -1,0 +1,1 @@
+The graphs of the reports will be generated here. Run the `notebook.ipynb`.

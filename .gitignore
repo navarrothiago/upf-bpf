@@ -6,3 +6,4 @@ src/Configuration.h
 tests/trex/v*
 tests/trex/trex_client
 tests/reports/*.json
+*.png
