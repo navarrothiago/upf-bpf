@@ -85,8 +85,8 @@ run-redirect-map-sample: all ## Build all and run BPF XDP redirect sample
 run-control-plane-tests: force-xdp-deload ## Run ControlPlaneTests
 	./tests/scripts/run_test ControlPlaneTests
 
-run-session-manager-tests: force-xdp-deload ## Run SessionManagerTests
-	sudo bash ./tests/scripts/run_test UPFProgramTests
+run-session-manager-tests: force-xdp-deload ## Run SessionManagerTests	
+	sudo -E bash ./tests/scripts/run_test UPFProgramTests
 
 rerun: force-xdp-deload run ## Build all and run BPF XDP UPF
 
@@ -94,7 +94,7 @@ dut-run: ## Run ControlPlaneTests on DUT
 	sudo ./bin/ControlPlaneTests
 
 force-xdp-deload: ## Kill all and force deload XDP programs
-	sudo bash tests/scripts/force_xdp_deload
+	sudo -E bash tests/scripts/force_xdp_deload
 
 trex: ## Install, deploy configuration and run t-rex on remote server
 	tests/scripts/install_trex_remote
@@ -113,6 +113,9 @@ tmux: ## Create a test session using tmux
 
 docker-build: ## Build development image
 	docker/build_docker
+
+docker-build-ubuntu-18.04: ## Build development image
+	docker/build_docker ubuntu:18.04
 
 docker-run: ## Run development container
 	docker/run_docker

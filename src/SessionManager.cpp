@@ -6,7 +6,6 @@
 #include <interfaces/PacketDetectionRules.h>
 #include <interfaces/SessionBpf.h>
 #include <pfcp/pfcp_session.h>
-#include <lib/crc16.h>
 #include <utils/LogDefines.h>
 #include <wrappers/BPFMaps.h>
 

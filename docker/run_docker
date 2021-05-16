@@ -12,7 +12,7 @@ main() {
 		--env-file "${dirname}"/../env.sh \
 		--volume "${dirname}"/../:"${WORKSPACE}" \
 		--privileged \
-		--workdir "${WORKSPACE}" "${IMAGE}":"${VERSION}" \
+		--workdir "${WORKSPACE}" "${IMAGE_TAG}":"${IMAGE_VERSION}" \
 		/bin/bash
 
   exit 0

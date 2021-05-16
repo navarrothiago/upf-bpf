@@ -1,4 +1,5 @@
-FROM ubuntu:20.04
+ARG BASE_DEV_IMAGE=ubuntu:20.04
+FROM $BASE_DEV_IMAGE
 
 ARG UNAME=oai-spgwu
 WORKDIR /tmp/$UNAME
@@ -72,12 +73,11 @@ RUN apt-get update && \
     apt-get install  -y \
     tmux
 
-# It is comment due to ubuntu 20.04 base image.
-# If you use another one, uncomment the lines below.
-# RUN apt-get update && \
-#       apt-get -y install libssl-dev && \
-#       wget -c  https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2.tar.gz -O - | tar -xz && \
-#       cd cmake-3.19.2 && ./bootstrap && make && make install
+# Ubuntu 20.04 already support cmake 3.19.
+RUN if [ $BASE_DEV_IMAGE != "ubuntu:20.04" ];  then apt-get update && \
+      apt-get -y install libssl-dev && \
+      wget -c  https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2.tar.gz -O - | tar -xz && \
+      cd cmake-3.19.2 && ./bootstrap && make -j4 && make install; fi
 
 # Add your local bashrc
 ADD .bashrc /home/$USERNAME/
@@ -112,12 +112,12 @@ ARG JUMP_SERVER_USERNAME
 ARG DUT_SERVER_IP
 ARG TREX_SERVER_IP
 
-RUN ssh-keyscan -p ${JUMP_SERVER_PORT} ${JUMP_SERVER_IP} >> /root/.ssh/known_hosts &&\
+RUN  if [[ -z "$JUMP_SERVER_IP" ]] ; then ssh-keyscan -p ${JUMP_SERVER_PORT} ${JUMP_SERVER_IP} >> /root/.ssh/known_hosts &&\
     ssh ${JUMP_SERVER_USERNAME}@${JUMP_SERVER_IP} -p ${JUMP_SERVER_PORT} ssh-keyscan ${DUT_SERVER_IP} >> /root/.ssh/known_hosts &&\
     ssh ${JUMP_SERVER_USERNAME}@${JUMP_SERVER_IP} -p ${JUMP_SERVER_PORT} ssh-keyscan ${TREX_SERVER_IP} >> /root/.ssh/known_hosts &&\
     ssh-keyscan -p ${JUMP_SERVER_PORT} ${JUMP_SERVER_IP} >> /home/$USERNAME/.ssh/known_hosts &&\
     ssh ${JUMP_SERVER_USERNAME}@${JUMP_SERVER_IP} -p ${JUMP_SERVER_PORT} ssh-keyscan ${DUT_SERVER_IP} >> /home/$USERNAME/.ssh/known_hosts &&\
-    ssh ${JUMP_SERVER_USERNAME}@${JUMP_SERVER_IP} -p ${JUMP_SERVER_PORT} ssh-keyscan ${TREX_SERVER_IP} >> /home/$USERNAME/.ssh/known_hosts
+    ssh ${JUMP_SERVER_USERNAME}@${JUMP_SERVER_IP} -p ${JUMP_SERVER_PORT} ssh-keyscan ${TREX_SERVER_IP} >> /home/$USERNAME/.ssh/known_hosts; fi
 
 # Locales for Yocto
 ENV LANG=en_US.UTF-8
@@ -127,7 +127,8 @@ RUN apt-get install -y locales && \
     update-locale LANG=$LAN
 
 # Install Docker CE CLI
-RUN apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common lsb-release \
+RUN apt-get update \
+    && apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common lsb-release \
     && curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | (OUT=$(apt-key add - 2>&1) || echo $OUT) \
     && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" \
     && apt-get update \
@@ -141,17 +142,16 @@ RUN apt-get update && \
 
 RUN pip3 install ipykernel
 RUN pip3 install matplotlib
-RUN pip3 install paramiko
 RUN pip3 install autopep8
 
 RUN apt-get update && \
     apt-get install  -y \
     rsync
 
-ARG ENV_FILENAME="env.sh"
-ADD ${ENV_FILENAME} ${ENV_FILENAME}
+# TODO: pass as ARG
+RUN echo "ENV_FILE=/workspaces/env.sh" >> /etc/environment
 
 # Omit if you want to keep the default as root.
 # USER $USERNAME
 
-CMD ${ENV_FILENAME} && /bin/bash
+CMD /bin/bash

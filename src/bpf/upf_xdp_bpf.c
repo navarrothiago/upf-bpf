@@ -14,7 +14,6 @@
 #include <protocols/udp.h>
 #include <utils/logger.h>
 #include <utils/utils.h>
-#include <lib/crc16.h>
 
 #ifdef KERNEL_SPACE
 #include <linux/in.h>

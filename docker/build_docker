@@ -7,8 +7,19 @@ main() {
   set -x
 
   local -r context="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  source "${context}"/../env.sh
   local env_file_name=env.sh
+
+  if [[ -f "${context}"/../env.sh ]]; then
+    env_file="${context}"/../env.sh
+  else
+    env_file="${context}"/../.env.sample.sh
+    cp "${env_file}" "${context}"/../"${env_file_name}"
+  fi
+
+  source "${env_file}"
+  local base_dev_image="${1-ubuntu:20.04}"
+
+  echo "Base image "${base_dev_image}""
 
   # Copy configuration files and ssh keys to the docker context folder.
   cp "${GIT_CONFIG}" "${context}"
@@ -17,16 +28,18 @@ main() {
   cp "${SSH_FOLDER}"/"${SSH_CONFIG_FILE}" "${context}"
   cp "${BASH_RC}" "${context}"
   # echo ""${WORKSPACE}"/env.sh" > "${BASH_RC}"
-  cp "${context}"/../env.sh "${context}"
+
+  cp "${env_file}" "${context}"/"${env_file_name}"
 
   # Build dockerfile.
-  docker build --tag="${IMAGE}":"${VERSION}" --rm -f "${context}"/"${DOCKERFILE}" "${context}" \
+  docker build --tag="${IMAGE_TAG}":"${IMAGE_VERSION}" --rm -f "${context}"/"${DOCKERFILE}" "${context}" \
                --build-arg ENV_FILENAME="${env_file_name}" \
                --build-arg DUT_SERVER_IP="${DUT_IP}" \
                --build-arg TREX_SERVER_IP="${TREX_SERVER_IP}" \
                --build-arg JUMP_SERVER_USERNAME="${JUMP_SERVER_USERNAME}" \
                --build-arg JUMP_SERVER_IP="${JUMP_SERVER_IP}" \
-               --build-arg JUMP_SERVER_PORT="${JUMP_SERVER_PORT}"
+               --build-arg JUMP_SERVER_PORT="${JUMP_SERVER_PORT}" \
+               --build-arg BASE_DEV_IMAGE="${base_dev_image}"
 
   # Remove configuration files and ssh keys from the docker context folder.
   rm "${context}"/.gitconfig
@@ -34,7 +47,11 @@ main() {
   rm "${context}"/"${SSH_PUBLIC_KEY_FILE}"
   rm "${context}"/"${SSH_CONFIG_FILE}"
   rm "${context}"/.bashrc
-  rm "${context}"/env.sh
+  rm "${context}"/"${env_file_name}"
+
+  echo
+  echo "Image "${IMAGE_TAG}" was build with base image "${base_dev_image}""
+  echo
 }
 
 main "$@"

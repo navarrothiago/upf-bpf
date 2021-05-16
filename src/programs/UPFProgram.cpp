@@ -34,7 +34,9 @@ void UPFProgram::setup()
     throw std::runtime_error("GTP or UDP interface not defined!");
   }
 
+  LOG_DBG("Link UDP interface to interface {}", mUDPInterface.c_str())
   mpLifeCycle->link("xdp_entry_point", mUDPInterface.c_str());
+  LOG_DBG("Link GTP interface to interface {}", mGTPInterface.c_str())
   mpLifeCycle->link("xdp_entry_point", mGTPInterface.c_str());
 
 }

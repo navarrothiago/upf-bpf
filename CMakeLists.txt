@@ -71,8 +71,8 @@ write_basic_package_version_file(
     "${version_config}" COMPATIBILITY SameMajorVersion
 )
 
-# set(INCLUDE_INSTALL_DIR include/)
-# set(LIB_INSTALL_DIR lib/ )
+set(INCLUDE_INSTALL_DIR include/)
+set(LIB_INSTALL_DIR lib/ )
 # Configure '<PROJECT-NAME>Config.cmake'
 # Use variables:
 #   * TARGETS_EXPORT_NAME

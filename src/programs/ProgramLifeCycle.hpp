@@ -108,8 +108,10 @@ ProgramLifeCycle<BPFSkeletonType>::ProgramLifeCycle(std::function<BPFSkeletonTyp
     , mLoadFunc(loadFunc)
     , mAttachFunc(attachFunc)
     , mDestroyFunc(destroyFunc)
+    , mpSkeleton(NULL)
 {
   LOG_FUNC();
+  // Check if the XDP is driver or skb mode.
   mFlags = Configuration::sIsSocketBufferEnabled ? XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE : XDP_FLAGS_UPDATE_IF_NOEXIST;
 }
 

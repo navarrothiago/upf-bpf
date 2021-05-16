@@ -10,7 +10,7 @@ class OnStateChangeSessionProgramObserver;
 class SessionProgram;
 
 /**
- * @brief This class is used to manager the SessionProgramManager.
+ * @brief This class is used to manager the PFCP Sesssion (eBPF bytecode) in kernel space.
  * 
  */
 class SessionProgramManager
