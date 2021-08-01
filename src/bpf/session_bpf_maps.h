@@ -1,8 +1,8 @@
 #ifndef __SESSION_CONTEXT_MAPS_H__
 #define __SESSION_CONTEXT_MAPS_H__
 
-#include <linux/bpf.h>
-#include <types.h>
+#include <vmlinux.h>
+
 #include <pfcp/pfcp_pdr.h>
 #include <pfcp/pfcp_far.h>
 #include <ie/fteid.h>

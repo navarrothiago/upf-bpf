@@ -1,7 +1,6 @@
 #ifndef __PDR_ID_H__
 #define __PDR_ID_H__
 
-#include <types.h>
 #include <ie/ie_base.h>
 
 //-------------------------------------

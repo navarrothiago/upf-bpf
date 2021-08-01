@@ -4,10 +4,7 @@
 #include <ie/ie_base.h>
 #include <types.h>
 
-#ifdef KERNEL_SPACE
-#include <linux/in.h>
-#include <linux/in6.h>
-#else
+#ifndef KERNEL_SPACE
 #include <netinet/in.h>
 #endif
 

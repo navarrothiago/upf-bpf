@@ -12,14 +12,7 @@
 // FROM - https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/samples/bpf/xdp_redirect_map_kern.c
 
 #define KBUILD_MODNAME "foo"
-#include <types.h>
-#include <linux/bpf.h>
-#include <linux/in.h>
-#include <linux/if_ether.h>
-#include <linux/if_packet.h>
-#include <linux/if_vlan.h>
-#include <linux/ip.h>
-#include <linux/ipv6.h>
+#include <vmlinux.h>
 #include <bpf_helpers.h>
 
 struct bpf_map_def SEC("maps") tx_port = {

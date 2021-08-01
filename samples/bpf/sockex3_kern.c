@@ -4,16 +4,19 @@
  * modify it under the terms of version 2 of the GNU General Public
  * License as published by the Free Software Foundation.
  */
-#include <linux/bpf.h>
-#include <linux/in.h>
-#include <linux/if.h>
-#include <linux/if_ether.h>
-#include <linux/ip.h>
-#include <linux/ipv6.h>
-#include <linux/if_tunnel.h>
-#include <linux/mpls.h>
+#include <types.h>
+#include <if_ether.h>
 #include <bpf_helpers.h>
 #include "bpf_legacy.h"
+// #include <linux/bpf.h>
+// #include <linux/in.h>
+// #include <linux/if.h>
+// #include <linux/if_ether.h>
+// #include <linux/ip.h>
+// #include <linux/ipv6.h>
+// #include <linux/if_tunnel.h>
+// #include <linux/mpls.h>
+
 #define IP_MF		0x2000
 #define IP_OFFSET	0x1FFF
 
@@ -48,10 +51,6 @@ static inline void parse_eth_proto(struct __sk_buff *skb, __u32 proto)
 	case ETH_P_8021AD:
 		bpf_tail_call(skb, &jmp_table, PARSE_VLAN);
 		break;
-	case ETH_P_MPLS_UC:
-	case ETH_P_MPLS_MC:
-		bpf_tail_call(skb, &jmp_table, PARSE_MPLS);
-		break;
 	case ETH_P_IP:
 		bpf_tail_call(skb, &jmp_table, PARSE_IP);
 		break;
@@ -60,11 +59,6 @@ static inline void parse_eth_proto(struct __sk_buff *skb, __u32 proto)
 		break;
 	}
 }
-
-struct vlan_hdr {
-	__be16 h_vlan_TCI;
-	__be16 h_vlan_encapsulated_proto;
-};
 
 struct flow_key_record {
 	__be32 src;
@@ -147,32 +141,6 @@ static __always_inline void parse_ip_proto(struct __sk_buff *skb,
 	int poff;
 
 	switch (ip_proto) {
-	case IPPROTO_GRE: {
-		struct gre_hdr {
-			__be16 flags;
-			__be16 proto;
-		};
-
-		__u32 gre_flags = load_half(skb,
-					    nhoff + offsetof(struct gre_hdr, flags));
-		__u32 gre_proto = load_half(skb,
-					    nhoff + offsetof(struct gre_hdr, proto));
-
-		if (gre_flags & (GRE_VERSION|GRE_ROUTING))
-			break;
-
-		nhoff += 4;
-		if (gre_flags & GRE_CSUM)
-			nhoff += 4;
-		if (gre_flags & GRE_KEY)
-			nhoff += 4;
-		if (gre_flags & GRE_SEQ)
-			nhoff += 4;
-
-		skb->cb[0] = nhoff;
-		parse_eth_proto(skb, gre_proto);
-		break;
-	}
 	case IPPROTO_IPIP:
 		parse_eth_proto(skb, ETH_P_IP);
 		break;
@@ -254,29 +222,6 @@ PROG(PARSE_VLAN)(struct __sk_buff *skb)
 	skb->cb[0] = nhoff;
 
 	parse_eth_proto(skb, proto);
-
-	return 0;
-}
-
-PROG(PARSE_MPLS)(struct __sk_buff *skb)
-{
-	__u32 nhoff, label;
-
-	nhoff = skb->cb[0];
-
-	label = load_word(skb, nhoff);
-	nhoff += sizeof(struct mpls_label);
-	skb->cb[0] = nhoff;
-
-	if (label & MPLS_LS_S_MASK) {
-		__u8 verlen = load_byte(skb, nhoff);
-		if ((verlen & 0xF0) == 4)
-			parse_eth_proto(skb, ETH_P_IP);
-		else
-			parse_eth_proto(skb, ETH_P_IPV6);
-	} else {
-		parse_eth_proto(skb, ETH_P_MPLS_UC);
-	}
 
 	return 0;
 }

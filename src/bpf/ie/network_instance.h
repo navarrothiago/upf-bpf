@@ -1,7 +1,6 @@
 #if !defined(IE_NETWORK_INTANCE_H)
 #define IE_NETWORK_INTANCE_H
 
-#include <types.h>
 #include <ie/ie_base.h>
 
 #define NETWORK_INSTANCE_MAX_SIZE 100

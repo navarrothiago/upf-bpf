@@ -1,23 +1,23 @@
 #ifndef BPF_UTILS_H
-#define BPF_UTILS_H 
+#define BPF_UTILS_H
 
-// Dictionary
-// htons() - host to network short
-// htonl() - host to network long
-// ntohs() - network to host short
-// ntohl() - network to host long
+// // Dictionary
+// // htons() - host to network short
+// // htonl() - host to network long
+// // ntohs() - network to host short
+// // ntohl() - network to host long
 
-#ifndef htons
-#define htons(x) __constant_htons((x))
-#endif
+// #ifndef htons
+// #define htons(x) __constant_htons((x))
+// #endif
 
-#ifndef htonl
-#define htonl(x) __constant_htonl((x))
-#endif
+// #ifndef htonl
+// #define htonl(x) __constant_htonl((x))
+// #endif
 
-#ifndef ntohs
-#define ntohs(x) __constant_ntohs((x))
-#endif
+// #ifndef ntohs
+// #define ntohs(x) __constant_ntohs((x))
+// #endif
 
 static void swap_src_dst_mac(void *data)
 {

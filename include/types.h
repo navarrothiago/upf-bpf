@@ -1,7 +1,12 @@
 #if !defined(TYPES_H)
 #define TYPES_H
 
+
+#ifdef __cplusplus
 #include <linux/types.h>
+#else
+#include <vmlinux.h>
+#endif
 
 typedef __u64 u64;
 typedef __s64 s64;

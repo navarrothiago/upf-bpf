@@ -1,7 +1,6 @@
 #ifndef __APPLY_ACTION_H__
 #define __APPLY_ACTION_H__
 
-#include <types.h>
 #include <ie/ie_base.h>
 
 //-------------------------------------

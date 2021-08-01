@@ -1,12 +1,10 @@
 #define KBUILD_MODNAME upf_xdp_bpf
 
 // clang-format off
-#include <types.h>
+#include <vmlinux.h>
 // clang-format on
 #include <bpf_helpers.h>
 #include <endian.h>
-#include <linux/if_ether.h>
-#include <linux/if_vlan.h>
 #include <upf_xdp_bpf_maps.h>
 #include <protocols/eth.h>
 #include <protocols/gtpu.h>
@@ -14,12 +12,7 @@
 #include <protocols/udp.h>
 #include <utils/logger.h>
 #include <utils/utils.h>
-
-#ifdef KERNEL_SPACE
-#include <linux/in.h>
-#else
-#include <netinet/in.h>
-#endif
+#include <if_ether.h>
 
 /* Defines xdp_stats_map */
 #include "xdp_stats_kern_user.h"
@@ -60,9 +53,9 @@ static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
   }
 
   // Jump to session context.
-  bpf_debug("BPF tail call to %d tunnel\n", htonl(p_gtpuh->teid));
-  bpf_tail_call(p_ctx, &m_teid_session, htonl(p_gtpuh->teid));
-  bpf_debug("BPF tail call was not executed! teid %d\n", htonl(p_gtpuh->teid));
+  bpf_debug("BPF tail call to %d tunnel\n", p_gtpuh->teid);
+  bpf_tail_call(p_ctx, &m_teid_session, p_gtpuh->teid);
+  bpf_debug("BPF tail call was not executed! teid %d\n", p_gtpuh->teid);
 
   return XDP_PASS;
 }
@@ -93,7 +86,7 @@ static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph, u32 dest_ip)
   }
 
   bpf_debug("UDP packet validated");
-  dport = htons(udph->dest);
+  dport = udph->dest;
 
   switch(dport) {
   case GTP_UDP_PORT:
@@ -163,15 +156,6 @@ static u8 ip_inner_check_ipv4(struct xdp_md *p_ctx, struct iphdr *iph)
 }
 
 /**
- * ETHERNET SECTION.
- */
-
-struct vlan_hdr {
-  __be16 h_vlan_TCI;
-  __be16 h_vlan_encapsulated_proto;
-};
-
-/**
  *
  * @brief Parse Ethernet layer 2, extract network layer 3 offset and protocol
  * Call next protocol handler (e.g. ipv4).
@@ -193,7 +177,7 @@ static u32 eth_handle(struct xdp_md *p_ctx, struct ethhdr *ethh)
     return XDP_PASS;
   }
 
-  eth_type = htons(ethh->h_proto);
+  eth_type = ethh->h_proto;
   bpf_debug("Debug: eth_type:0x%x", eth_type);
 
   switch(eth_type) {
@@ -203,7 +187,7 @@ static u32 eth_handle(struct xdp_md *p_ctx, struct ethhdr *ethh)
     vlan_hdr = (void *)ethh + offset;
     offset += sizeof(*vlan_hdr);
     if(!((void *)ethh + offset > p_data_end))
-      eth_type = htons(vlan_hdr->h_vlan_encapsulated_proto);
+      eth_type = vlan_hdr->h_vlan_encapsulated_proto;
     // Enter in next case.
   case ETH_P_IP:
     return ipv4_handle(p_ctx, (struct iphdr *)((void *)ethh + offset));

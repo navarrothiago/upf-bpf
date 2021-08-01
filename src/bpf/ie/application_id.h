@@ -9,7 +9,7 @@
 typedef struct application_id_s
 {
   ie_base_t_ base;
-  // TODO string size is not 10. 
+  // TODO string size is not 10.
   u8 application_id[10];
 } application_id_t_;
 

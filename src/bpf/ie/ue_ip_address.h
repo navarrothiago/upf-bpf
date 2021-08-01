@@ -3,13 +3,6 @@
 
 #include <types.h>
 
-#ifdef KERNEL_SPACE
-#include <linux/in.h>
-#else
-#include <netinet/in.h>
-#endif
-
-
 //-------------------------------------
 // 8.2.62 UE IP Address
 typedef struct ue_ip_address

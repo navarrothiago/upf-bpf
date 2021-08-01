@@ -1,5 +1,6 @@
 // Exemple based on https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/samples/bpf/xdp1_kern.c
-#include <linux/bpf.h>
+// #include <linux/bpf.h>
+#include <vmlinux.h>
 #include <bpf_helpers.h>
 
 // Simple XDP BPF program. Everything packet will be dropped.

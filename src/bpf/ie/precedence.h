@@ -1,7 +1,6 @@
 #ifndef __PRECEDENCE_H__
 #define __PRECEDENCE_H__
 
-#include <types.h>
 #include <ie/ie_base.h>
 
 //-------------------------------------

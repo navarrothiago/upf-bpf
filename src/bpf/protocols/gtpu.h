@@ -1,16 +1,14 @@
 #if !defined(PROTOCOLS_GTP_H)
 #define PROTOCOLS_GTP_H
 
-#include <types.h>
-#include <linux/bpf.h>
-#include <stdint.h>
+#include <vmlinux.h>
 
 #define GTP_ENCAPSULATED_SIZE (sizeof(struct iphdr) +      \
                                 sizeof(struct udphdr) +     \
                                 sizeof(struct gtpuhdr))
 
 #define GTP_UDP_PORT 2152u //!< TS 29 281
-#define GTP_FLAGS 0x30     //!< Version: GTPv1, Protocol Type: GTP, Others: 0 
+#define GTP_FLAGS 0x30     //!< Version: GTPv1, Protocol Type: GTP, Others: 0
 
 // TS 29 281 - Section 6 GTP-U Message Formats
 // Table 6.1-1: Messages in GTP-U

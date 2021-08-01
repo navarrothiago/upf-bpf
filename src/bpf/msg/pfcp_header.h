@@ -1,7 +1,7 @@
 #ifndef __PFCP_HEADER_H__
 #define __PFCP_HEADER_H__
 
-#include <types.h>
+#include <vmlinux.h>
 #include <ie/ie_base.h>
 
 namespace pfcp

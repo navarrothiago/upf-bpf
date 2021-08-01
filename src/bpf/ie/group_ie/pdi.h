@@ -1,7 +1,11 @@
 #if !defined(IE_PDI_H)
 #define IE_PDI_H
 
-#include <types.h>
+#ifdef __cplusplus
+#include <linux/types.h>
+#else
+#include <vmlinux.h>
+#endif
 #include <ie/ie_base.h>
 #include <ie/source_interface.h>
 #include <ie/fteid.h>

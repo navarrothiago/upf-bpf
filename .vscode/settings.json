@@ -90,7 +90,19 @@
     "strstream": "cpp",
     "typeindex": "cpp",
     "csignal": "cpp",
-    "gtpu.h": "c"
+    "gtpu.h": "c",
+    "bpf_helpers.h": "c",
+    "types.h": "c",
+    "bpf.h": "c",
+    "utils.h": "c",
+    "if_ether.h": "c",
+    "vmlinux.h": "c",
+    "version.h": "c",
+    "signal.h": "c",
+    "resource.h": "c",
+    "if_link.h": "c",
+    "far_id.h": "c",
+    "ie_base.h": "c"
   },
 
   "git.ignoreLimitWarning": true,

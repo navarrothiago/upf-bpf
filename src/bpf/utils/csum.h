@@ -14,15 +14,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 #ifndef __CSUM_H__
 #define __CSUM_H__
 
-#include <linux/ip.h>
-#include <linux/bpf.h>
-#include <types.h>
+#include <vmlinux.h>
 #include <errno.h>
 #include <linux/version.h>
 

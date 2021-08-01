@@ -6,7 +6,7 @@
 #ifndef __XDP_STATS_KERN_USER_H
 #define __XDP_STATS_KERN_USER_H
 
-#include <linux/bpf.h>
+#include <types.h>
 
 /* This is the data record stored in the map */
 struct datarec {

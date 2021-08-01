@@ -1,5 +1,5 @@
 // Example based on https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/samples/bpf/xdp1_user.c
-#include <linux/bpf.h>
+// #include <linux/bpf.h>
 #include <linux/if_link.h>
 #include <errno.h>
 #include <signal.h>
@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <sys/resource.h>
 
+#include <bpf/bpf.h>
 #include <bpf/libbpf.h>
 
 static int ifindex;

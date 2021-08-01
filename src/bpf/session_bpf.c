@@ -5,10 +5,6 @@
 #include "xdp_stats_kern.h"
 #include <bpf_helpers.h>
 #include <endian.h>
-#include <linux/bpf.h>
-#include <linux/if_ether.h>
-#include <linux/ip.h>
-#include <linux/udp.h>
 #include <pfcp/pfcp_far.h>
 #include <pfcp/pfcp_pdr.h>
 #include <protocols/gtpu.h>
@@ -107,7 +103,7 @@ static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_fa
   p_ip->version = 4;
   p_ip->ihl = 5; // No options
   p_ip->tos = 0;
-  p_ip->tot_len = htons(ntohs(p_inner_ip->tot_len) + GTP_ENCAPSULATED_SIZE);
+  p_ip->tot_len = (p_inner_ip->tot_len) + GTP_ENCAPSULATED_SIZE;
   p_ip->id = 0;            // No fragmentation
   p_ip->frag_off = 0x0040; // Don't fragment; Fragment offset = 0
   p_ip->ttl = 64;
@@ -122,9 +118,9 @@ static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_fa
     return XDP_DROP;
   }
 
-  p_udp->source = htons(GTP_UDP_PORT);
-  p_udp->dest = htons(p_far->forwarding_parameters.outer_header_creation.port_number);
-  p_udp->len = htons(ntohs(p_inner_ip->tot_len) + sizeof(*p_udp) + sizeof(struct gtpuhdr));
+  p_udp->source = GTP_UDP_PORT;
+  p_udp->dest = p_far->forwarding_parameters.outer_header_creation.port_number;
+  p_udp->len = p_inner_ip->tot_len + sizeof(*p_udp) + sizeof(struct gtpuhdr);
   p_udp->check = 0;
 
   bpf_debug("Destination MAC:%x:%x:%x\n", p_eth->h_dest[0], p_eth->h_dest[1], p_eth->h_dest[2]);
@@ -378,7 +374,7 @@ static u32 pfcp_pdr_lookup_uplink(struct xdp_md *p_ctx)
   // We have already assumed that the packet is a GPDU.
   u8 *p_iph = (u8 *)p_gtpuh + GTPV1U_MSG_HEADER_MIN_SIZE;
 
-  teid = htonl(p_gtpuh->teid);
+  teid = p_gtpuh->teid;
   bpf_debug("GTP GPDU teid %d with IPv4 payload received\n", teid);
 
   p_pdr = bpf_map_lookup_elem(&m_teid_pdr, &teid);
@@ -449,8 +445,7 @@ static u32 pfcp_pdr_lookup_downlink(struct xdp_md *p_ctx)
   if(pfcp_pdr_match_pdi_downlink(&p_pdr[i], (struct iphdr *)p_iph) == 0) {
     // Lets apply the forwarding actions rule.
     p_far = bpf_map_lookup_elem(&m_fars, &p_pdr->far_id.far_id);
-    bpf_debug("PDR associated with UP IP %d found! PDR id:%d and FAR id:%d", htonl(p_iph->daddr), p_pdr->pdr_id.rule_id,
-              p_pdr->far_id.far_id);
+    bpf_debug("PDR associated with UP IP %d found! PDR id:%d and FAR id:%d", p_iph->daddr, p_pdr->pdr_id.rule_id, p_pdr->far_id.far_id);
     return pfcp_far_apply(p_ctx, p_far, DOWNLINK);
   }
 

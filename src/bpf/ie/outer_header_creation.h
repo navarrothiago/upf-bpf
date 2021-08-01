@@ -2,13 +2,11 @@
 #define __OUTER_HEADER_CREATION_H__
 
 #include <ie/ie_base.h>
-#include <linux/in6.h>
 #include <types.h>
 
-#ifdef KERNEL_SPACE
-#include <linux/in.h>
-#else
+#ifndef KERNEL_SPACE
 #include <netinet/in.h>
+#include <linux/in6.h>
 #endif
 
 enum outer_header_creation_description_value_e {

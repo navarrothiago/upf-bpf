@@ -1,7 +1,6 @@
 #ifndef __QER_ID_H__
 #define __QER_ID_H__
 
-#include <types.h>
 #include <ie/ie_base.h>
 
 //-------------------------------------
