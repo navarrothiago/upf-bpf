@@ -83,6 +83,12 @@ std::shared_ptr<BPFMap> UPFProgram::getUeIpSessionMap() const
   return mpUeIpSessionMap;
 }
 
+std::shared_ptr<BPFMap> UPFProgram::getNextProgRuleMap() const
+{
+  LOG_FUNC();
+  return mpNextProgRuleMap;
+}
+
 void UPFProgram::initializeMaps()
 {
   LOG_FUNC();
@@ -92,4 +98,5 @@ void UPFProgram::initializeMaps()
   // Warning - The name of the map must be the same of the BPF program.
   mpTeidSessionMap = std::make_shared<BPFMap>(mpMaps->getMap("m_teid_session"));
   mpUeIpSessionMap = std::make_shared<BPFMap>(mpMaps->getMap("m_ueip_session"));
+  mpNextProgRuleMap = std::make_shared<BPFMap>(mpMaps->getMap("m_next_rule_prog_index"));
 }

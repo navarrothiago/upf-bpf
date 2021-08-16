@@ -106,7 +106,7 @@ TEST_F(SessionManagerTests, managePDR)
   // Check if FAR_ID was updated.
   EXPECT_TRUE(mpSessionManager->lookupPDR(pSession->getSeid(), pPdr->getPdrId().rule_id)->getFarId().far_id != pPdr->getFarId().far_id);
   // Remove old PDR. Tryin to remove TEID which does not exists. So it will fail when remove from the program map.
-  EXPECT_ANY_THROW(mpSessionManager->removePDR(pSession->getSeid(), pPdr)); 
+  EXPECT_ANY_THROW(mpSessionManager->removePDR(pSession->getSeid(), pPdr));
   // Remove new PDR. TEID is updated and there is a PDR ID.
   EXPECT_NO_THROW(mpSessionManager->removePDR(pSession->getSeid(), pPdrUpdated));
 
@@ -126,7 +126,7 @@ TEST_F(SessionManagerTests, managePDR)
   //   EXPECT_NO_THROW(mpSessionManager->addPDR(pSession->getSeid(), pPdr));
   // }
 
-  // // FIXME navarrothiago - 
+  // // FIXME navarrothiago -
   // EXPECT_ANY_THROW(mpSessionManager->addPDR(pSession->getSeid(), pPdr));
 
   EXPECT_NO_THROW(mpSessionManager->removeSession(pSession->getSeid()));

@@ -32,6 +32,7 @@
     "streetsidesoftware.code-spell-checker",
     "streetsidesoftware.code-spell-checker-portuguese",
     "shan.code-settings-sync",
+    "editorconfig.editorconfig",
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

@@ -1,5 +1,6 @@
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/toolchain.cmake)
 add_subdirectory(bpf)
+add_subdirectory(oai)
 
 set(GTP_INTERFACE $ENV{GTP_INTERFACE})
 set(UDP_INTERFACE $ENV{UDP_INTERFACE})
@@ -22,6 +23,7 @@ add_library(upf_xdp STATIC
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../extern/libbpf/src)
 target_link_libraries(upf_xdp
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../extern/libbpf/src/libbpf.a
+  PUBLIC oai
   PRIVATE spdlog::spdlog
   PRIVATE elf
   PRIVATE z

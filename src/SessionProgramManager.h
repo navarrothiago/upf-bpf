@@ -4,14 +4,16 @@
 #include <stdint.h>
 #include <memory>
 #include <map>
+#include <pfcp_far.hpp>
 
 class BPFMap;
 class OnStateChangeSessionProgramObserver;
 class SessionProgram;
+class FARProgram;
 
 /**
  * @brief This class is used to manager the PFCP Sesssion (eBPF bytecode) in kernel space.
- * 
+ *
  */
 class SessionProgramManager
 {
@@ -30,7 +32,7 @@ public:
 
   /**
    * @brief Set the Programs Map object.
-   * 
+   *
    * @param pProgramsMaps  The programs wrapper for BPF map.
    */
   void setTeidSessionMap(std::shared_ptr<BPFMap> pProgramsMaps);
@@ -44,36 +46,37 @@ public:
   void create(uint32_t seid);
   /**
    * @brief Remove program session context.
-   * 
+   *
    * @param seid The session identifier.
    */
   void remove(uint32_t seid);
   /**
    * @brief Remove all programs.
-   * 
+   *
    */
   void removeAll();
   /**
    * @brief Set the On New Session Observer object.
-   * 
+   *
    * @param pObserver The observer which will be notify when a SessionProgram is created.
    */
   void setOnNewSessionObserver(OnStateChangeSessionProgramObserver *pObserver);
   /**
    * @brief Find the Session Program object.
-   * 
+   *
    * @param seid The session identifier.
    * @return std::shared_ptr<SessionProgram> The program, which represents the session.
    */
   std::shared_ptr<SessionProgram> findSessionProgram(uint32_t seid);
 
+  void create(uint32_t teid, uint8_t sourceInterface, uint32_t ueIpAddress, std::shared_ptr<pfcp::pfcp_far> pFar);
 private:
   /**
    * @brief Construct a new Session Program Manager object.
-   * 
+   *
    */
   SessionProgramManager();
-  
+
   // The program eBPF map.
   std::shared_ptr<BPFMap> mpTeidSessionMap;
 
@@ -85,6 +88,9 @@ private:
 
   // The Maps to store the instance of the programs.
   std::map<uint32_t, std::shared_ptr<SessionProgram>> mSessionProgramMap;
+
+  // The Maps to store the instance of the FARs programs.
+  std::map<uint32_t, std::shared_ptr<FARProgram>> mFARProgramMap;
 };
 
 #endif // __SESSIONPROGRAMMANAGER_H__

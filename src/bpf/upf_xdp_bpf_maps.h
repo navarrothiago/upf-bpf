@@ -6,13 +6,16 @@
 #include <pfcp/pfcp_session.h>
 #include <linux/bpf.h>
 #include <stdint.h>
+#include <ie/teid.h>
+#include <next_prog_rule_map.h>
+#include <next_prog_rule_key.h>
 
 #define MAX_LENGTH 10
 
 // Maps TEID to SessionProgram
 struct bpf_map_def SEC("maps") m_teid_session = {
   .type        = BPF_MAP_TYPE_PROG_ARRAY,           //!< Must have the key and value with 4 bytes
-	.key_size    = sizeof(teid_t_),                   //!< program identifier. 
+	.key_size    = sizeof(teid_t_),                   //!< program identifier.
   .value_size  = sizeof(s32),                       //!< program which represents the session.
   // TODO navarrothiago - check how the management works. The size should be equal
   // to the maximum number of sessions.
@@ -22,7 +25,7 @@ struct bpf_map_def SEC("maps") m_teid_session = {
 // FIXME navarrothiago - select a primary key. We could use a hash valeu of the IP as a key.
 struct bpf_map_def SEC("maps") m_ueip_session = {
 	.type        = BPF_MAP_TYPE_PROG_ARRAY,           //!< Must have the key and value with 4 bytes
-	.key_size    = sizeof(u32),                       //!< program identifier. 
+	.key_size    = sizeof(u32),                       //!< program identifier.
 	.value_size  = sizeof(s32),                       //!< program which represents the session.
   // TODO navarrothiago - check how the management works. The size should be equal
   // to the maximum number of sessions.
@@ -41,5 +44,12 @@ struct bpf_map_def SEC("maps") m_ue_ip_pdr = {
 // 	.value_size  = sizeof(u32), // number of allocated PDR in teid
 // 	.max_entries = 100000,
 // };
+
+struct bpf_map_def SEC("maps") m_next_rule_prog_index = {
+    .type = BPF_MAP_TYPE_HASH,
+    .key_size = sizeof(struct next_rule_prog_index_key),
+    .value_size = sizeof(u32),
+    .max_entries = 10,
+};
 
 #endif // __MAPS_H__

@@ -73,7 +73,12 @@ public:
    * @return std::shared_ptr<BPFMap> The UE IP to fd map.
    */
   std::shared_ptr<BPFMap> getUeIpSessionMap() const;
-
+  /**
+   * @brief Get the NextProgRule Map object.
+   *
+   * @return std::shared_ptr<BPFMap> The NextProgRule to fd map.
+   */
+  std::shared_ptr<BPFMap> getNextProgRuleMap() const;
 
 private:
   /**
@@ -94,6 +99,9 @@ private:
 
   // The program eBPF map.
   std::shared_ptr<BPFMap> mpUeIpSessionMap;
+
+  // The program eBPF map.
+  std::shared_ptr<BPFMap> mpNextProgRuleMap;
 
   // The BPF lifecycle program.
   std::unique_ptr<UPFProgramLifeCycle> mpLifeCycle;

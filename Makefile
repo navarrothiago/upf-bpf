@@ -126,3 +126,9 @@ copy-control-plane-test: ## Copy to remote server ControlPlaneTest binary
 deploy-package: ## Deploy package (bin, lib, scripts) on the DUT server
 	# ssh "${TREX_CLIENT_SSH}" pkill "${API_PROGRAM_NAME}"
 	rsync -av package/ india:~/package
+
+bpf: ## Compile bpf code
+	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
+  cmake --build build --target upf_xdp_bpf --parallel && \
+  cmake --build build --target session_bpf --parallel && \
+  cmake --build build --target far_bpf --parallel 
