@@ -51,6 +51,12 @@ public:
    */
   int getDownlinkFileDescriptor() const;
   /**
+   * @brief Get PDR maps reference.
+   *
+   * @return std::shared_ptr<BPFMap> The PDR map reference.
+   */
+  std::shared_ptr<BPFMap> getPDRMap() const;
+  /**
    * @brief Get the FAR Map object.
    *
    * @return std::shared_ptr<BPFMap> The FAR map.

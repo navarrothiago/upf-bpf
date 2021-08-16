@@ -1,0 +1,208 @@
+cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
+  cmake --build build --target install --parallel
+-- CMAKE={x86_64}
+-- Using googletest via add_subdirectory.
+-- these are my objects: $<TARGET_OBJECTS:xdp_hello_world_bpf>
+-- these are my objects: $<TARGET_OBJECTS:xdp_redirect_map_kern>
+-- these are my objects: $<TARGET_OBJECTS:sockex3_kern>
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /workspaces/build
+make[1]: Entering directory '/workspaces/build'
+make[2]: Entering directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+make[3]: Leaving directory '/workspaces/build'
+make[3]: Leaving directory '/workspaces/build'
+make[3]: Leaving directory '/workspaces/build'
+make[3]: Leaving directory '/workspaces/build'
+make[3]: Leaving directory '/workspaces/build'
+make[3]: Leaving directory '/workspaces/build'
+Scanning dependencies of target oai
+make[3]: Leaving directory '/workspaces/build'
+[  1%] Built target sockex3_kern
+make[3]: Leaving directory '/workspaces/build'
+[  5%] Built target gtest
+[ 10%] Built target far_bpf
+[ 12%] Built target session_bpf
+make[3]: Entering directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+[ 16%] Built target upf_xdp_bpf
+make[3]: Leaving directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+[ 18%] Building CXX object src/oai/CMakeFiles/oai.dir/pfcp/pfcp_pdr.cpp.o
+[ 20%] Building CXX object src/oai/CMakeFiles/oai.dir/pfcp/pfcp_session.cpp.o
+make[3]: Leaving directory '/workspaces/build'
+[ 25%] Built target xdp_redirect_map_kern
+[ 25%] Built target 3GPP_COMMON_TYPES
+make[3]: Entering directory '/workspaces/build'
+make[3]: Leaving directory '/workspaces/build'
+[ 27%] Building CXX object src/oai/CMakeFiles/oai.dir/pfcp/pfcp_far.cpp.o
+[ 29%] Built target xdp_hello_world_bpf
+make[3]: Leaving directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+[ 30%] Built target upf_xdp_bpf_all
+[ 32%] Built target sockex3
+make[3]: Leaving directory '/workspaces/build'
+[ 36%] Built target xdp_redirect_map
+make[3]: Entering directory '/workspaces/build'
+[ 40%] Built target xdp_hello_world
+make[3]: Leaving directory '/workspaces/build'
+[ 61%] Built target upf_xdp
+make[3]: Entering directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+make[3]: Entering directory '/workspaces/build'
+make[3]: Leaving directory '/workspaces/build'
+make[3]: Leaving directory '/workspaces/build'
+make[3]: Leaving directory '/workspaces/build'
+[ 74%] Built target UPFProgramTests
+[ 85%] Built target ControlPlaneTests
+[ 98%] Built target api
+[100%] Linking CXX static library liboai.a
+make[3]: Leaving directory '/workspaces/build'
+[100%] Built target oai
+make[2]: Leaving directory '/workspaces/build'
+Install the project...
+-- Install configuration: "Debug"
+-- Up-to-date: /workspaces/package/lib/cmake/UpfBpf/UpfBpfConfig.cmake
+-- Up-to-date: /workspaces/package/lib/cmake/UpfBpf/UpfBpfConfigVersion.cmake
+-- Up-to-date: /workspaces/package/lib/cmake/UpfBpf/UpfBpfTargets.cmake
+-- Installing: /workspaces/package/lib/cmake/UpfBpf/UpfBpfTargets-debug.cmake
+-- Up-to-date: /workspaces/package/./Makefile
+-- Up-to-date: /workspaces/package/bin/UPFProgramTests
+-- Up-to-date: /workspaces/package/bin/ControlPlaneTests
+-- Up-to-date: /workspaces/package/tests/scripts
+-- Up-to-date: /workspaces/package/tests/scripts/deploy_package
+-- Up-to-date: /workspaces/package/tests/scripts/install_trex
+-- Up-to-date: /workspaces/package/tests/scripts/config_veth_pair
+-- Up-to-date: /workspaces/package/tests/scripts/run_test
+-- Up-to-date: /workspaces/package/tests/scripts/install_trex_remote
+-- Up-to-date: /workspaces/package/tests/scripts/force_xdp_deload
+-- Up-to-date: /workspaces/package/tests/scripts/run_sample
+-- Up-to-date: /workspaces/package/tests/scripts/start_session
+-- Up-to-date: /workspaces/package/tests/scripts/deploy_trex_config
+-- Up-to-date: /workspaces/package/tests/scripts/run_trex_server
+-- Up-to-date: /workspaces/package/tests/scripts/run_trex_test_case
+-- Up-to-date: /workspaces/package/bin/api
+-- Up-to-date: /workspaces/package/lib/libupf_xdp.a
+-- Up-to-date: /workspaces/package/include
+-- Up-to-date: /workspaces/package/include/observer
+-- Up-to-date: /workspaces/package/include/observer/OnStateChangeSessionProgramObserver.h
+-- Up-to-date: /workspaces/package/include/Configuration.h
+-- Up-to-date: /workspaces/package/include/SessionManager.h
+-- Up-to-date: /workspaces/package/include/bpf
+-- Up-to-date: /workspaces/package/include/bpf/upf_xdp_bpf_maps.h
+-- Up-to-date: /workspaces/package/include/bpf/session_bpf_maps.h
+-- Up-to-date: /workspaces/package/include/bpf/protocols
+-- Up-to-date: /workspaces/package/include/bpf/protocols/gtpu.h
+-- Up-to-date: /workspaces/package/include/bpf/protocols/ip.h
+-- Up-to-date: /workspaces/package/include/bpf/protocols/eth.h
+-- Up-to-date: /workspaces/package/include/bpf/protocols/udp.h
+-- Up-to-date: /workspaces/package/include/bpf/xdp_stats_kern_user.h
+-- Up-to-date: /workspaces/package/include/bpf/xdp_stats_kern.h
+-- Up-to-date: /workspaces/package/include/bpf/msg
+-- Up-to-date: /workspaces/package/include/bpf/msg/pfcp_header.h
+-- Up-to-date: /workspaces/package/include/bpf/pfcp
+-- Up-to-date: /workspaces/package/include/bpf/pfcp/pfcp_pdrs.h
+-- Up-to-date: /workspaces/package/include/bpf/pfcp/pfcp_session.h
+-- Up-to-date: /workspaces/package/include/bpf/pfcp/pfcp_pdr.h
+-- Up-to-date: /workspaces/package/include/bpf/pfcp/pfcp_far.h
+-- Up-to-date: /workspaces/package/include/bpf/utils
+-- Up-to-date: /workspaces/package/include/bpf/utils/logger.h
+-- Up-to-date: /workspaces/package/include/bpf/utils/utils.h
+-- Up-to-date: /workspaces/package/include/bpf/utils/csum.h
+-- Up-to-date: /workspaces/package/include/bpf/lib
+-- Up-to-date: /workspaces/package/include/bpf/lib/crc16.h
+-- Up-to-date: /workspaces/package/include/bpf/ie
+-- Up-to-date: /workspaces/package/include/bpf/ie/precedence.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/network_instance.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/header_enrichment.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/outer_header_removal.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/pdr_id.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/teid.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/framed_routing.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/transport_level_marking.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/redirect_information.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/fseid.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/framed_route.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/destination_interface.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/framed_ipv6_routing.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/source_interface.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/ue_ip_address.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/ethernet_pdu_session_information.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/bar_id.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/outer_header_creation.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/traffic_endpoint_id.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/urr_id.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/activate_predefined_rules.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/proxing.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/apply_action.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/sdf_filter.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/group_ie
+-- Up-to-date: /workspaces/package/include/bpf/ie/group_ie/forwarding_parameters.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/group_ie/create_far.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/group_ie/pdi.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/group_ie/duplicating_parameters.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/group_ie/create_pdr.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/qfi.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/qer_id.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/fteid.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/far_id.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/fowarding_policy.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/application_id.h
+-- Up-to-date: /workspaces/package/include/bpf/ie/ie_base.h
+-- Up-to-date: /workspaces/package/include/bpf/next_prog_rule_map.h
+-- Up-to-date: /workspaces/package/include/bpf/far_maps.h
+-- Up-to-date: /workspaces/package/include/UserPlaneComponent.h
+-- Up-to-date: /workspaces/package/include/oai
+-- Up-to-date: /workspaces/package/include/oai/pfcp
+-- Up-to-date: /workspaces/package/include/oai/common
+-- Up-to-date: /workspaces/package/include/oai/common/3gpp_24.008.h
+-- Up-to-date: /workspaces/package/include/oai/common/rfc_1332.h
+-- Up-to-date: /workspaces/package/include/oai/common/3gpp_29.244.h
+-- Up-to-date: /workspaces/package/include/oai/common/3gpp_29.274.h
+-- Up-to-date: /workspaces/package/include/oai/common/3gpp_23.003.h
+-- Up-to-date: /workspaces/package/include/oai/common/utils
+-- Up-to-date: /workspaces/package/include/oai/common/utils/epc.h
+-- Up-to-date: /workspaces/package/include/oai/common/3gpp_29.510.h
+-- Up-to-date: /workspaces/package/include/oai/common/3gpp_commons.h
+-- Up-to-date: /workspaces/package/include/oai/common/3gpp_29.500.h
+-- Up-to-date: /workspaces/package/include/oai/common/common_defs.h
+-- Up-to-date: /workspaces/package/include/oai/common/rfc_1877.h
+-- Up-to-date: /workspaces/package/include/oai/common/common_root_types.h
+-- Up-to-date: /workspaces/package/include/oai/common/3gpp_29.281.h
+-- Up-to-date: /workspaces/package/include/pfcp
+-- Up-to-date: /workspaces/package/include/pfcp/Session.h
+-- Up-to-date: /workspaces/package/include/pfcp/ForwardingActionRule.h
+-- Up-to-date: /workspaces/package/include/pfcp/PacketDetectionRule.h
+-- Up-to-date: /workspaces/package/include/pfcp/PacketDetectionInformation.h
+-- Up-to-date: /workspaces/package/include/interfaces
+-- Up-to-date: /workspaces/package/include/interfaces/RulesUtilities.h
+-- Up-to-date: /workspaces/package/include/interfaces/PacketDetectionRules.h
+-- Up-to-date: /workspaces/package/include/interfaces/SessionBpf.h
+-- Up-to-date: /workspaces/package/include/interfaces/ForwardingActionRules.h
+-- Up-to-date: /workspaces/package/include/programs
+-- Up-to-date: /workspaces/package/include/programs/FARProgram.h
+-- Up-to-date: /workspaces/package/include/programs/SessionProgram.h
+-- Up-to-date: /workspaces/package/include/programs/UPFProgram.h
+-- Up-to-date: /workspaces/package/include/utils
+-- Up-to-date: /workspaces/package/include/utils/Util.h
+-- Up-to-date: /workspaces/package/include/utils/LoggerBase.h
+-- Up-to-date: /workspaces/package/include/utils/Logger.h
+-- Up-to-date: /workspaces/package/include/utils/LogDefines.h
+-- Up-to-date: /workspaces/package/include/wrappers
+-- Up-to-date: /workspaces/package/include/wrappers/BPFMaps.h
+-- Up-to-date: /workspaces/package/include/SignalHandler.h
+-- Up-to-date: /workspaces/package/include/skel
+-- Up-to-date: /workspaces/package/include/skel/far_bpf_skel.h
+-- Up-to-date: /workspaces/package/include/skel/upf_xdp_bpf_skel.h
+-- Up-to-date: /workspaces/package/include/skel/session_bpf_skel.h
+-- Up-to-date: /workspaces/package/include/SessionProgramManager.h
+make[1]: Leaving directory '/workspaces/build'

@@ -13,6 +13,11 @@
 #include <vector>
 #include <wrappers/BPFMap.hpp>
 
+#include <msg_pfcp.hpp>
+#include "3gpp_29.244.hpp"
+#include <pfcp_session.hpp>
+#include <unordered_map>
+
 class BPFMap;
 class ForwardingActionRules;
 class PacketDetectionRules;
@@ -121,6 +126,15 @@ public:
    * @param pPdr The PDR to be removed.
    */
   void removePDR(uint64_t seid, std::shared_ptr<PacketDetectionRules> pPdr);
+
+  void handleSessionEstablishmentRequest(std::shared_ptr<pfcp::pfcp_session_establishment_request> pRequest);
+  // bool get_pfcp_session_by_cp_fseid(const pfcp::fseid_t& fseid, std::shared_ptr<pfcp::pfcp_session>& session) const;
+  // std::unordered_map<pfcp::fseid_t, std::shared_ptr<pfcp::pfcp_session>> cp_fseid2pfcp_sessions;
+  // folly::AtomicHashMap<uint64_t, std::shared_ptr<pfcp::pfcp_session>> up_seid2pfcp_sessions;
+
+  void createBPFSession(std::shared_ptr<pfcp::pfcp_session> pSession);
+  std::unordered_map<uint64_t, std::shared_ptr<pfcp::pfcp_session>> mSeidToSession;
+  static bool comparePDR(const std::shared_ptr<pfcp::pfcp_pdr>& first, const std::shared_ptr<pfcp::pfcp_pdr>& second);
 
 private:
   /**

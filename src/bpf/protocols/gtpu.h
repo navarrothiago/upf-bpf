@@ -59,6 +59,6 @@ struct gtpuhdr
   /*The options start here. */
 } __attribute__((packed));
 
-static u32 gtp_handle(struct xdp_md *ctx, struct gtpuhdr *gtpuh);
+static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, u32 dest_ip);
 
 #endif // PROTOCOLS_GTP_H

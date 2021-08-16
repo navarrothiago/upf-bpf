@@ -14,7 +14,7 @@ class SessionProgram;
  * @brief User Plane component class to abstract the BPF Service Function Chain for mobile core network.
  *
  */
-class UserPlaneComponent : public OnStateChangeSessionProgramObserver 
+class UserPlaneComponent : public OnStateChangeSessionProgramObserver
 {
 public:
   /**
@@ -33,8 +33,8 @@ public:
    * Used to setup all the program.
    *
    * @param pRulesUtilities
-   * @param gtpInterface 
-   * @param udpInterface 
+   * @param gtpInterface
+   * @param udpInterface
    */
   void setup(std::shared_ptr<RulesUtilities> pRulesUtilities, const std::string& gtpInterface, const std::string& udpInterface);
   /**
@@ -63,13 +63,13 @@ public:
   std::shared_ptr<UPFProgram> getUPFProgram() const;
   /**
    * @brief Get the GTP interface.
-   * 
+   *
    * @return std::string The GTP interface.
    */
   std::string getGTPInterface() const;
   /**
    * @brief Get UDP interface.
-   * 
+   *
    * @return std::string The UDP interface.
    */
   std::string getUDPInterface() const;

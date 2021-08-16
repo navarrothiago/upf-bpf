@@ -5,15 +5,17 @@
 // clang-format on
 #include <bpf_helpers.h>
 #include <endian.h>
+#include <lib/crc16.h>
 #include <linux/if_ether.h>
 #include <linux/if_vlan.h>
-#include <upf_xdp_bpf_maps.h>
 #include <protocols/eth.h>
 #include <protocols/gtpu.h>
 #include <protocols/ip.h>
 #include <protocols/udp.h>
+#include <upf_xdp_bpf_maps.h>
 #include <utils/logger.h>
 #include <utils/utils.h>
+#include <next_prog_rule_key.h>
 
 #ifdef KERNEL_SPACE
 #include <linux/in.h>
@@ -22,10 +24,18 @@
 #endif
 
 /* Defines xdp_stats_map */
-#include "xdp_stats_kern_user.h"
 #include "xdp_stats_kern.h"
+#include "xdp_stats_kern_user.h"
 
-
+static u32 tail_call_next_prog(struct xdp_md *p_ctx, teid_t_ teid, u8 source_value, u32 ipv4_address){
+  struct next_rule_prog_index_key map_key;
+  u32 index_prog;
+  map_key.teid = teid;
+  map_key.source_value = INTERFACE_VALUE_CORE;
+  map_key.ipv4_address = ipv4_address;
+  index_prog = bpf_map_lookup_elem(&m_next_rule_prog_index, &map_key);
+  bpf_tail_call(p_ctx, &m_next_rule_prog, index_prog);
+}
 /**
  * GTP SECTION.
  */
@@ -37,7 +47,7 @@
  * @param p_gtpuh The GTP header.
  * @return u32 The XDP action.
  */
-static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
+static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, u32 dest_ip)
 {
   void *p_data_end = (void *)(long)p_ctx->data_end;
 
@@ -64,6 +74,7 @@ static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
   bpf_tail_call(p_ctx, &m_teid_session, htonl(p_gtpuh->teid));
   bpf_debug("BPF tail call was not executed! teid %d\n", htonl(p_gtpuh->teid));
 
+  tail_call_next_prog(p_ctx, p_gtpuh->teid, INTERFACE_VALUE_ACCESS, dest_ip);
   return XDP_PASS;
 }
 
@@ -81,6 +92,8 @@ static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh)
 static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph, u32 dest_ip)
 {
   void *p_data_end = (void *)(long)p_ctx->data_end;
+  struct next_rule_prog_index_key map_key;
+  u32 index_prog;
   u32 dport;
 
   // Apply hash function due to limitation of size of the program map.
@@ -97,12 +110,15 @@ static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph, u32 dest_ip)
 
   switch(dport) {
   case GTP_UDP_PORT:
-    return gtp_handle(p_ctx, (struct gtpuhdr *)(udph + 1));
+    return gtp_handle(p_ctx, (struct gtpuhdr *)(udph + 1), dest_ip);
   default:
     bpf_debug("BPF tail call to 0x%x address %d key", dest_ip, key);
     // TODO navarrothiago - Assuming there is a map one-to-one IP-Session
     bpf_tail_call(p_ctx, &m_ueip_session, key);
     bpf_debug("BPF tail call was not executed!");
+
+    tail_call_next_prog(p_ctx, 0, INTERFACE_VALUE_CORE, dest_ip);
+
     return XDP_PASS;
   }
 }
