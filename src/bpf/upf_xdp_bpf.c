@@ -27,15 +27,15 @@
 #include "xdp_stats_kern.h"
 #include "xdp_stats_kern_user.h"
 
-static u32 tail_call_next_prog(struct xdp_md *p_ctx, teid_t_ teid, u8 source_value, u32 ipv4_address){
-  struct next_rule_prog_index_key map_key;
-  u32 index_prog;
-  map_key.teid = teid;
-  map_key.source_value = INTERFACE_VALUE_CORE;
-  map_key.ipv4_address = ipv4_address;
-  index_prog = bpf_map_lookup_elem(&m_next_rule_prog_index, &map_key);
-  bpf_tail_call(p_ctx, &m_next_rule_prog, index_prog);
-}
+// static u32 tail_call_next_prog(struct xdp_md *p_ctx, teid_t_ teid, u8 source_value, u32 ipv4_address){
+//   struct next_rule_prog_index_key map_key;
+//   u32 index_prog;
+//   map_key.teid = teid;
+//   map_key.source_value = INTERFACE_VALUE_CORE;
+//   map_key.ipv4_address = ipv4_address;
+//   index_prog = bpf_map_lookup_elem(&m_next_rule_prog_index, &map_key);
+//   bpf_tail_call(p_ctx, &m_next_rule_prog, index_prog);
+// }
 /**
  * GTP SECTION.
  */
@@ -74,7 +74,7 @@ static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, u32 dest_ip
   bpf_tail_call(p_ctx, &m_teid_session, htonl(p_gtpuh->teid));
   bpf_debug("BPF tail call was not executed! teid %d\n", htonl(p_gtpuh->teid));
 
-  tail_call_next_prog(p_ctx, p_gtpuh->teid, INTERFACE_VALUE_ACCESS, dest_ip);
+  // tail_call_next_prog(p_ctx, p_gtpuh->teid, INTERFACE_VALUE_ACCESS, dest_ip);
   return XDP_PASS;
 }
 
@@ -117,7 +117,7 @@ static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph, u32 dest_ip)
     bpf_tail_call(p_ctx, &m_ueip_session, key);
     bpf_debug("BPF tail call was not executed!");
 
-    tail_call_next_prog(p_ctx, 0, INTERFACE_VALUE_CORE, dest_ip);
+    // tail_call_next_prog(p_ctx, 0, INTERFACE_VALUE_CORE, dest_ip);
 
     return XDP_PASS;
   }

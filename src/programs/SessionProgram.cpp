@@ -12,7 +12,7 @@ SessionProgram::SessionProgram(const std::string& gtpInterface, const std::strin
   : mGTPInterface(gtpInterface), mUDPInterface(udpInterface)
 {
   LOG_FUNC();
-  mpLifeCycle = std::make_unique<SessionProgramLifeCycle>(session_bpf_c__open, session_bpf_c__load, session_bpf_c__attach, session_bpf_c__destroy);
+  mpLifeCycle = std::make_shared<SessionProgramLifeCycle>(session_bpf_c__open, session_bpf_c__load, session_bpf_c__attach, session_bpf_c__destroy);
 }
 
 SessionProgram::~SessionProgram()
@@ -94,7 +94,7 @@ void SessionProgram::initializeMaps()
 {
   LOG_FUNC();
   // Store all maps available in the program.
-  mpMaps = std::make_unique<BPFMaps>(mpLifeCycle->getBPFSkeleton()->skeleton);
+  mpMaps = std::make_shared<BPFMaps>(mpLifeCycle->getBPFSkeleton()->skeleton);
 
   // Warning - The name of the map must be the same of the BPF program.
   // Initialize maps.

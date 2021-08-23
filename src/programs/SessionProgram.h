@@ -125,7 +125,7 @@ private:
   std::shared_ptr<BPFMap> mpArpTableMap;
 
   // The BPF lifecycle program.
-  std::unique_ptr<SessionProgramLifeCycle> mpLifeCycle;
+  std::shared_ptr<SessionProgramLifeCycle> mpLifeCycle;
 
   // The GTP interface.
   std::string mGTPInterface;

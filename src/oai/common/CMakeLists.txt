@@ -18,6 +18,7 @@
 # For more information about the OpenAirInterface (OAI) Software Alliance:
 #      contact@openairinterface.org
 ################################################################################
+add_subdirectory(utils)
 set(ITTI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/itti)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/itti)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -26,6 +27,15 @@ include_directories(${SRC_TOP_DIR}/../build/ext/spdlog/include)
 
 add_library(3GPP_COMMON_TYPES STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/logger.cpp
+)
+
+install(
+    TARGETS 3GPP_COMMON_TYPES
+    EXPORT "${TARGETS_EXPORT_NAME}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
 

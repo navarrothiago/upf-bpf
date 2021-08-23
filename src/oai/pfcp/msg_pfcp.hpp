@@ -26,6 +26,11 @@
   \email: lionel.gauthier@eurecom.fr
 */
 
+// TODO navarrothiago - Fix hidden overloaded virtual function
+// 'pfcp::pfcp_ies_container::get' declared here: different number of parameters
+// (1 vs 2)
+#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+
 #ifndef MSG_PFCP_HPP_INCLUDED_
 #define MSG_PFCP_HPP_INCLUDED_
 
