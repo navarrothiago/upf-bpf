@@ -6,6 +6,11 @@ add_library(oai STATIC
   pfcp/pfcp_session.cpp
 )
 
+target_link_libraries(oai
+  PUBLIC 3GPP_COMMON_TYPES
+  PUBLIC CN_UTILS
+)
+
 target_include_directories(oai PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/common
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/common/utils

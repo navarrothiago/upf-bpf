@@ -1,9 +1,8 @@
 #ifndef __NEXT_PROG_RULE_KEY_H__
 #define __NEXT_PROG_RULE_KEY_H__
 
-
-#include <types.h>
 #include <ie/teid.h>
+#include <types.h>
 
 struct next_rule_prog_index_key {
   teid_t_ teid;

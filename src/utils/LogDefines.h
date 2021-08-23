@@ -1,7 +1,7 @@
 #ifndef __LOGDEFINES_H__
 #define __LOGDEFINES_H__
 
-#include <utils/Logger.h>
+#include "Logger.h"
 #include <spdlog/spdlog.h>
 #include <string>
 

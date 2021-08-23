@@ -259,7 +259,7 @@ static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far, enum FlowDir
 }
 
 SEC("xdp_far")
-int downlink_entry_point(struct xdp_md *p_ctx)
+int far_entry_point(struct xdp_md *p_ctx)
 {
   pfcp_far_t_ *p_far;
   u32 key = 0;

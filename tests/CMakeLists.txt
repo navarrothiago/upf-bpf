@@ -12,10 +12,10 @@ set_target_properties(gtest_main PROPERTIES FOLDER extern)
 set_target_properties(gmock PROPERTIES FOLDER extern)
 set_target_properties(gmock_main PROPERTIES FOLDER extern)
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/src)
-include_directories(${CMAKE_SOURCE_DIR}/src/bpf)
-include_directories(${CMAKE_SOURCE_DIR}/build/src/skel)
+# include_directories(${CMAKE_SOURCE_DIR}/include)
+# include_directories(${CMAKE_SOURCE_DIR}/src)
+# include_directories(${CMAKE_SOURCE_DIR}/src/bpf)
+# include_directories(${CMAKE_SOURCE_DIR}/build/src/skel)
 include_directories(${CMAKE_SOURCE_DIR}/tests)
 
 add_executable(UPFProgramTests
@@ -39,6 +39,8 @@ target_link_libraries(UPFProgramTests
   asan
   gtest
   upf_xdp
+  upfutils
+  oai
   spdlog::spdlog
 )
 

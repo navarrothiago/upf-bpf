@@ -119,6 +119,9 @@ template <class BPFSkeletonType>
 ProgramLifeCycle<BPFSkeletonType>::~ProgramLifeCycle()
 {
   LOG_FUNC();
+  // if(mpSkeleton != NULL) {
+  //   delete mpSkeleton;
+  // }
 }
 
 template <class BPFSkeletonType>

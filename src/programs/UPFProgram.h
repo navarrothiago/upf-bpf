@@ -79,6 +79,12 @@ public:
    * @return std::shared_ptr<BPFMap> The NextProgRule to fd map.
    */
   std::shared_ptr<BPFMap> getNextProgRuleMap() const;
+  /**
+   * @brief Get the NextProgRuleIndex Map object.
+   *
+   * @return std::shared_ptr<BPFMap> The pdi to index map.
+   */
+  std::shared_ptr<BPFMap> getNextProgRuleIndexMap() const;
 
 private:
   /**
@@ -100,11 +106,14 @@ private:
   // The program eBPF map.
   std::shared_ptr<BPFMap> mpUeIpSessionMap;
 
-  // The program eBPF map.
+  // The pdi key to program index map.
+  std::shared_ptr<BPFMap> mpNextProgRuleIndexMap;
+
+  // The next prog rule map.
   std::shared_ptr<BPFMap> mpNextProgRuleMap;
 
   // The BPF lifecycle program.
-  std::unique_ptr<UPFProgramLifeCycle> mpLifeCycle;
+  std::shared_ptr<UPFProgramLifeCycle> mpLifeCycle;
 
   // The GTP interface.
   std::string mGTPInterface;

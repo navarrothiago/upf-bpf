@@ -1,6 +1,7 @@
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/toolchain.cmake)
 add_subdirectory(bpf)
 add_subdirectory(oai)
+add_subdirectory(utils)
 
 set(GTP_INTERFACE $ENV{GTP_INTERFACE})
 set(UDP_INTERFACE $ENV{UDP_INTERFACE})
@@ -12,18 +13,23 @@ add_library(upf_xdp STATIC
   SignalHandler.cpp
   SessionProgramManager.cpp
   SessionManager.cpp
+  SessionPrograms.cpp
   programs/UPFProgram.cpp
   programs/SessionProgram.cpp
+  programs/FARProgram.cpp
+  programs/BPFProgram.cpp
   wrappers/BPFMaps.cpp
   wrappers/BPFMap.cpp
-  utils/Logger.cpp
-  utils/Util.cpp
+  # utils/Logger.cpp
+  # utils/Util.cpp
+  # utils/NextProgRuleKey.cpp
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../extern/libbpf/src)
 target_link_libraries(upf_xdp
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../extern/libbpf/src/libbpf.a
   PUBLIC oai
+  PUBLIC upfutils
   PRIVATE spdlog::spdlog
   PRIVATE elf
   PRIVATE z

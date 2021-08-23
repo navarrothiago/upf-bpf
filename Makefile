@@ -1,4 +1,6 @@
 SHELL := /bin/bash
+GTP_INTERFACE?=$(GTP_INTERFACE)
+UDP_INTERFACE?=$(UDP_INTERFACE)
 
 .PHONY: help
 
@@ -14,7 +16,7 @@ all: ## Build all
 	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
   cmake --build build --target all --parallel && \
   cmake --build build --target copy_bpf_program  --parallel && \
-  cmake --build build --target copy_samples_objs --parallel 
+  cmake --build build --target copy_samples_objs --parallel
 
 install: ## Install package
 	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
@@ -40,7 +42,7 @@ clean: ## Clean all build files
 clean-all: clean ## Clean all build and dependencies
 	cd extern/libbpf/src && \
 	make clean
-	rm -Rf extern/spdlog/build 
+	rm -Rf extern/spdlog/build
 	rm -Rf extern/cpp-httplib/build
 	rm -Rf extern/json/build
 
@@ -85,8 +87,8 @@ run-redirect-map-sample: all ## Build all and run BPF XDP redirect sample
 run-control-plane-tests: force-xdp-deload ## Run ControlPlaneTests
 	./tests/scripts/run_test ControlPlaneTests
 
-run-session-manager-tests: force-xdp-deload ## Run SessionManagerTests	
-	sudo -E bash ./tests/scripts/run_test UPFProgramTests
+run-session-manager-tests: force-xdp-deload ## Run SessionManagerTests
+	sudo -E bash ./tests/scripts/run_test UPFProgramTests $(GTP_INTERFACE) $(UDP_INTERFACE)
 
 rerun: force-xdp-deload run ## Build all and run BPF XDP UPF
 
@@ -94,7 +96,7 @@ dut-run: ## Run ControlPlaneTests on DUT
 	sudo ./bin/ControlPlaneTests
 
 force-xdp-deload: ## Kill all and force deload XDP programs
-	sudo -E bash tests/scripts/force_xdp_deload
+	sudo -E bash tests/scripts/force_xdp_deload $(GTP_INTERFACE) $(UDP_INTERFACE)
 
 trex: ## Install, deploy configuration and run t-rex on remote server
 	tests/scripts/install_trex_remote
@@ -131,4 +133,4 @@ bpf: ## Compile bpf code
 	cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_INSTALL_PREFIX="`pwd`/package" && \
   cmake --build build --target upf_xdp_bpf --parallel && \
   cmake --build build --target session_bpf --parallel && \
-  cmake --build build --target far_bpf --parallel 
+  cmake --build build --target far_bpf --parallel

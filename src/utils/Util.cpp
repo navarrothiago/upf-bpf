@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <stdlib.h>
-#include <utils/LogDefines.h>
+#include "LogDefines.h"
 #include <sstream>
 #include <iostream>
 
@@ -34,3 +34,4 @@ struct in_addr Util::convertIpToInet(std::string ipAddress){
   }
   return inetIpAddress;
 }
+

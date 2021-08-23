@@ -12,7 +12,7 @@ UPFProgram::UPFProgram(const std::string& gtpInterface, const std::string& udpIn
   : mGTPInterface(gtpInterface), mUDPInterface(udpInterface)
 {
   LOG_FUNC();
-  mpLifeCycle = std::make_unique<UPFProgramLifeCycle>(upf_xdp_bpf_c__open, upf_xdp_bpf_c__load, upf_xdp_bpf_c__attach, upf_xdp_bpf_c__destroy);
+  mpLifeCycle = std::make_shared<UPFProgramLifeCycle>(upf_xdp_bpf_c__open, upf_xdp_bpf_c__load, upf_xdp_bpf_c__attach, upf_xdp_bpf_c__destroy);
 }
 
 UPFProgram::~UPFProgram()
@@ -89,14 +89,21 @@ std::shared_ptr<BPFMap> UPFProgram::getNextProgRuleMap() const
   return mpNextProgRuleMap;
 }
 
+std::shared_ptr<BPFMap> UPFProgram::getNextProgRuleIndexMap() const
+{
+  LOG_FUNC();
+  return mpNextProgRuleIndexMap;
+}
+
 void UPFProgram::initializeMaps()
 {
   LOG_FUNC();
   // Store all maps available in the program.
-  mpMaps = std::make_unique<BPFMaps>(mpLifeCycle->getBPFSkeleton()->skeleton);
+  mpMaps = std::make_shared<BPFMaps>(mpLifeCycle->getBPFSkeleton()->skeleton);
 
   // Warning - The name of the map must be the same of the BPF program.
   mpTeidSessionMap = std::make_shared<BPFMap>(mpMaps->getMap("m_teid_session"));
   mpUeIpSessionMap = std::make_shared<BPFMap>(mpMaps->getMap("m_ueip_session"));
-  mpNextProgRuleMap = std::make_shared<BPFMap>(mpMaps->getMap("m_next_rule_prog_index"));
+  mpNextProgRuleMap = std::make_shared<BPFMap>(mpMaps->getMap("m_next_rule_prog"));
+  mpNextProgRuleIndexMap = std::make_shared<BPFMap>(mpMaps->getMap("m_next_rule_prog_index"));
 }

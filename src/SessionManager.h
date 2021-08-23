@@ -133,6 +133,7 @@ public:
   // folly::AtomicHashMap<uint64_t, std::shared_ptr<pfcp::pfcp_session>> up_seid2pfcp_sessions;
 
   void createBPFSession(std::shared_ptr<pfcp::pfcp_session> pSession);
+  void removeBPFSession(uint64_t seid);
   std::unordered_map<uint64_t, std::shared_ptr<pfcp::pfcp_session>> mSeidToSession;
   static bool comparePDR(const std::shared_ptr<pfcp::pfcp_pdr>& first, const std::shared_ptr<pfcp::pfcp_pdr>& second);
 

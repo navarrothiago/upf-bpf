@@ -9,7 +9,7 @@ BPFMap::BPFMap(struct bpf_map *pBPFMap, std::string name)
   // LOG_DBG("{} map was initialize", mName);
 }
 
-BPFMap::~BPFMap() 
+BPFMap::~BPFMap()
 {
   // Do not put LOG_FUNC() here.
   // LOG_DBG("{} map was destroyed", mName);

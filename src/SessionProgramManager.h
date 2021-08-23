@@ -5,14 +5,17 @@
 #include <memory>
 #include <map>
 #include <pfcp_far.hpp>
+#include <array>
 
 class BPFMap;
 class OnStateChangeSessionProgramObserver;
 class SessionProgram;
+class SessionPrograms;
 class FARProgram;
 
 /**
  * @brief This class is used to manager the PFCP Sesssion (eBPF bytecode) in kernel space.
+ * It store all the BPFProgram that was loaded on the datapath.
  *
  */
 class SessionProgramManager
@@ -69,13 +72,15 @@ public:
    */
   std::shared_ptr<SessionProgram> findSessionProgram(uint32_t seid);
 
-  void create(uint32_t teid, uint8_t sourceInterface, uint32_t ueIpAddress, std::shared_ptr<pfcp::pfcp_far> pFar);
+  void createPipeline(uint32_t seid, uint32_t teid, uint8_t sourceInterface, uint32_t ueIpAddress, std::shared_ptr<pfcp::pfcp_far> pFar);
+  void removePipeline(uint32_t seid);
 private:
   /**
    * @brief Construct a new Session Program Manager object.
    *
    */
   SessionProgramManager();
+  int32_t getEmptySlot();
 
   // The program eBPF map.
   std::shared_ptr<BPFMap> mpTeidSessionMap;
@@ -90,7 +95,12 @@ private:
   std::map<uint32_t, std::shared_ptr<SessionProgram>> mSessionProgramMap;
 
   // The Maps to store the instance of the FARs programs.
-  std::map<uint32_t, std::shared_ptr<FARProgram>> mFARProgramMap;
+  // std::map<uint32_t, std::shared_ptr<FARProgram>> mFARProgramMap;
+
+  // The Maps to store the PFCP session deployed in datapath.
+  std::map<uint32_t, std::shared_ptr<SessionPrograms>> mSessionProgramsMap;
+
+  std::array<int64_t, 10> mProgramArray;
 };
 
 #endif // __SESSIONPROGRAMMANAGER_H__

@@ -9,6 +9,7 @@
 #include <signal.h> // signals
 #include <far_bpf_skel.h>
 #include <wrappers/BPFMap.hpp>
+#include <BPFProgram.h>
 
 class BPFMaps;
 class BPFMap;
@@ -20,14 +21,14 @@ using FARProgramLifeCycle = ProgramLifeCycle<far_bpf_c>;
 /**
  * @brief Singleton class to abrastract the UPF bpf program.
  */
-class FARProgram
+class FARProgram : public BPFProgram
 {
 public:
   /**
    * @brief Construct a new FARProgram object.
    *
    */
-  explicit FARProgram(const std::string& gtpInterface, const std::string& udpInterface);
+  explicit FARProgram();
   /**
    * @brief Destroy the FARProgram object
    */
@@ -67,7 +68,14 @@ public:
    * @return std::shared_ptr<BPFMap> The TEID to fd map.
    */
   std::shared_ptr<BPFMap> getFARMap() const;
+  /**
+   * @brief Get the Egress Interface Map object.
+   *
+   * @return std::shared_ptr<BPFMap> The egress interface map.
+   */
+  std::shared_ptr<BPFMap> getEgressInterfaceMap() const;
 
+  int getFd() const;
 private:
   /**
    * @brief Initialize BPF wrappers maps.
@@ -86,7 +94,10 @@ private:
   std::shared_ptr<BPFMap> mpFARMap;
 
   // The BPF lifecycle program.
-  std::unique_ptr<FARProgramLifeCycle> mpLifeCycle;
+  std::shared_ptr<FARProgramLifeCycle> mpLifeCycle;
+
+  // The egress interface map.
+  std::shared_ptr<BPFMap> mpEgressInterfaceMap;
 };
 
 #endif // __FARPROGRAM_H__

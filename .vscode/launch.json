@@ -5,15 +5,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "ControlPlaneTests",
+      "name": "UT",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/tests/ControlPlaneTests",
+      "program": "${workspaceFolder}/build/tests/UPFProgramTests",
       "args": [
-        "veth0",
-        "veth1"
+        "${env:GTP_INTERFACE}",
+        "${env:UDP_INTERFACE}"
       ],
-      // "program": "${workspaceFolder}/build/tests/UPFProgramTests",
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build/tests",
       "environment": [],
@@ -29,14 +28,15 @@
       ],
     },
     {
-      "name": "UT",
+      "name": "ControlPlaneTests",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/tests/UPFProgramTests",
+      "program": "${workspaceFolder}/build/tests/ControlPlaneTests",
       "args": [
         "veth0",
         "veth1"
       ],
+      // "program": "${workspaceFolder}/build/tests/UPFProgramTests",
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build/tests",
       "environment": [],
