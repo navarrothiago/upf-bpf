@@ -68,18 +68,8 @@ int Controller::createSesssion(json &jRequest, json &jResponse)
     auto pPdr = createOaiPDR(element["pdrId"], element["farId"], element["pdi"]["teid"],
                           sMapInterface[element["pdi"]["sourceInterface"]],
                           Util::convertIpToInet(std::string(element["pdi"]["ueIPAddress"])),
-                          sMapOuterHeader[element["outerHeaderRemoval"]], 0);
+                          sMapOuterHeader[element["outerHeaderRemoval"]], element["precedence"]);
     LOG_INF("Case: add PDR");
-    pPdr->precedence.first = true;
-    if(sMapInterface[element["pdi"]["sourceInterface"]] == INTERFACE_VALUE_CORE){
-      LOG_WARN("FIXME - PRECEDENCE IS HARDCODED");
-      LOG_WARN("FIXME - ASSIGN 0 TO DL PDR");
-      pPdr->precedence.second.precedence = 0;
-    }else{
-      LOG_WARN("FIXME - PRECEDENCE IS HARDCODED");
-      LOG_WARN("FIXME - ASSIGN 1 TO UL PDR");
-      pPdr->precedence.second.precedence = 1;
-    }
     pSession->create(*pPdr, cause, offending_ie.offending_ie, allocated_fteid);
     // spSessionManager->addPDR(pSession->getSeid(), pPdr);
   }
