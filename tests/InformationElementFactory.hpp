@@ -57,6 +57,8 @@ std::shared_ptr<pfcp::create_pdr> createOaiPDR(u16 pdrId, u32 farId, u32 teid, u
   pPdr->pdi.first = true;
   pPdr->pdi.second.local_fteid.first = true;
   pPdr->pdi.second.local_fteid.second.teid = teid;
+  // TODO navarrothiago - Today, the management is done by control plane. The OAI was commeted.
+  // Check the create method in the pfcp_session file.
   pPdr->pdi.second.local_fteid.second.ch = true;
   // pPdr->pdi.second.local_fteid.second.chid = true;
   pPdr->pdi.first = true;
