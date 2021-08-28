@@ -8,7 +8,7 @@
 // 8.2.26 Apply Action
 typedef struct apply_action_s
 {
-  ie_base_t_ base;
+  // ie_base_t_ base;
   u8 spare : 3;
   u8 dupl : 1;
   u8 nocp : 1;

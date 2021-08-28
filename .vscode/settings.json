@@ -91,12 +91,14 @@
     "typeindex": "cpp",
     "csignal": "cpp",
     "gtpu.h": "c",
-    "charconv": "cpp",
+    "fteid.h": "c",
+    "scoped_allocator": "cpp",
+    "next_prog_rule_map.h": "c",
     "csetjmp": "cpp",
+    "charconv": "cpp",
     "cuchar": "cpp",
-    "scoped_allocator": "cpp"
+    "xdp_stats_kern_user.h": "c"
   },
-
   "git.ignoreLimitWarning": true,
   "python.autoComplete.extraPaths": [
     "${workspaceFolder}/tests/trex/trex_client/interactive"
@@ -105,6 +107,12 @@
   "cSpell.enabled": true,
   "search.exclude": {
     "**/extern/**": true,
+    "**/package/**": true,
+    "**/build/**": true
+  },
+  "files.exclude": {
+    "**/package/**": true,
+    "**/build/**": true
   },
   "python.analysis.extraPaths": [
     "${workspaceFolder}/tests/trex/trex_client/interactive",
@@ -118,5 +126,4 @@
     "test"
   ],
   "jupyter.jupyterServerType": "local"
-
 }

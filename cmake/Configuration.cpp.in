@@ -6,6 +6,8 @@
 #include <string>
 #include <utils/LogDefines.h>
 
+// Values get from enviroment variable GTP_INTERFACE and UDP_INTERFACE
+// Consider to update these variables with you want to update the default values.
 std::string Configuration::sGTPInterface = "@GTP_INTERFACE@";
 std::string Configuration::sUDPInterface = "@UDP_INTERFACE@";
 unsigned char Configuration::sIsSocketBufferEnabled = @SOCKET_BUFFER_ENABLED@;

@@ -72,6 +72,12 @@ int FARProgram::getFd() const
   return bpf_program__fd(mpLifeCycle->getBPFSkeleton()->progs.far_entry_point);
 }
 
+std::shared_ptr<BPFMap> FARProgram::getArpTableMap() const
+{
+  LOG_FUNC();
+  return mpArpTableMap;
+}
+
 void FARProgram::initializeMaps()
 {
   LOG_FUNC();
@@ -80,5 +86,6 @@ void FARProgram::initializeMaps()
 
   // Warning - The name of the map must be the same of the BPF program.
   mpFARMap = std::make_shared<BPFMap>(mpMaps->getMap("m_far"));
+  mpArpTableMap = std::make_shared<BPFMap>(mpMaps->getMap("m_arp_table"));
   mpEgressInterfaceMap = std::make_shared<BPFMap>(mpMaps->getMap("m_redirect_interfaces"));
 }

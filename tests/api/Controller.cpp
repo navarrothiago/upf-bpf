@@ -8,9 +8,11 @@
 #include <linux/bpf.h>
 #include <netinet/ether.h>
 #include <programs/SessionProgram.h>
+#include <SessionPrograms.h>
 #include <utils/LogDefines.h>
-#include <utils/Util.h>
+// #include <utils/Util.h>
 #include <wrappers/BPFMap.hpp>
+#include <pfcp_session.hpp>
 
 static std::shared_ptr<SessionManager> spSessionManager;
 static std::map<std::string, FlowDirection> sMapFlowDirection = {{"downlink", DOWNLINK}, {"uplink", UPLINK}};
@@ -52,29 +54,52 @@ int Controller::createSesssion(json &jRequest, json &jResponse)
   // TODO navarrothiago - Create a logic to parse the json and only after that create the session, pdr and far.
   seid_t_ seid = jRequest["seid"];
   LOG_INF("Case: create session");
-  auto pSession = createSession(seid);
-  spSessionManager->createSession(pSession);
+  // auto pSession = createSession(seid);
+  std::shared_ptr<pfcp::pfcp_session> pSession = std::make_shared<pfcp::pfcp_session>();
+  pSession->seid = seid;
+
+  pfcp::offending_ie_t offending_ie = {};
+  pfcp::fteid_t allocated_fteid;
+  pfcp::cause_t cause = {pfcp::CAUSE_VALUE_REQUEST_ACCEPTED};
+  // spSessionManager->createSession(pSession);
 
   for(const auto &element : jRequest["pdrs"]) {
-    auto pPdr = createPDR(element["pdrId"], element["farId"], element["pdi"]["teid"],
+
+    auto pPdr = createOaiPDR(element["pdrId"], element["farId"], element["pdi"]["teid"],
                           sMapInterface[element["pdi"]["sourceInterface"]],
                           Util::convertIpToInet(std::string(element["pdi"]["ueIPAddress"])),
-                          sMapOuterHeader[element["outerHeaderRemoval"]]);
+                          sMapOuterHeader[element["outerHeaderRemoval"]], 0);
     LOG_INF("Case: add PDR");
-    spSessionManager->addPDR(pSession->getSeid(), pPdr);
+    pPdr->precedence.first = true;
+    if(sMapInterface[element["pdi"]["sourceInterface"]] == INTERFACE_VALUE_CORE){
+      LOG_WARN("FIXME - PRECEDENCE IS HARDCODED");
+      LOG_WARN("FIXME - ASSIGN 0 TO DL PDR");
+      pPdr->precedence.second.precedence = 0;
+    }else{
+      LOG_WARN("FIXME - PRECEDENCE IS HARDCODED");
+      LOG_WARN("FIXME - ASSIGN 1 TO UL PDR");
+      pPdr->precedence.second.precedence = 1;
+    }
+    pSession->create(*pPdr, cause, offending_ie.offending_ie, allocated_fteid);
+    // spSessionManager->addPDR(pSession->getSeid(), pPdr);
   }
 
   for(const auto &element : jRequest["fars"]) {
-    auto pFar = createFAR(
+    auto pFar = createOaiFAR(
         element["farId"], actions, sMapInterface[element["forwardingParameters"]["destinationInterface"]],
         sMapOuterHeader[element["forwardingParameters"]["outerHeaderCreation"]["outerHeaderCreationDescription"]],
         Util::convertIpToInet(std::string(element["forwardingParameters"]["outerHeaderCreation"]["ipv4Address"])),
         element["forwardingParameters"]["outerHeaderCreation"]["portNumber"]);
     LOG_INF("Case: add FAR");
-    spSessionManager->addFAR(pSession->getSeid(), pFar);
+    LOG_WARN("FIXME - FORWARD ACTION IS ENABLE - HARDCODED");
+    pFar->apply_action.first = true;
+    pFar->apply_action.second.forw = true;
+    pSession->create(*pFar, cause, offending_ie.offending_ie);
+    // spSessionManager->addFAR(pSession->getSeid(), pFar);
   }
+  spSessionManager->createBPFSession(pSession);
   LOG_INF("Case: update ARP Table");
-  auto pSessionProgram = SessionProgramManager::getInstance().findSessionProgram(seid);
+  auto pSessionPrograms = SessionProgramManager::getInstance().findSessionPrograms(seid);
 
   std::map<std::string, std::string> arpTable;
   for(const auto &element : jRequest["arpTable"]) {
@@ -92,7 +117,8 @@ int Controller::createSesssion(json &jRequest, json &jResponse)
     auto ip = static_cast<uint32_t>(ip_addr.s_addr);
     // auto pMacAddress = Util::getInstance().stringToMac(element["mac"]).data();
     auto pMacAddress = ether_aton(std::string(element["mac"]).c_str());
-    pSessionProgram->getArpTableMap()->update(ip, pMacAddress->ether_addr_octet, BPF_ANY);
+    // pSessionProgram->getArpTableMap()->update(ip, pMacAddress->ether_addr_octet, BPF_ANY);
+    pSessionPrograms->getFARProgram()->getArpTableMap()->update(ip, pMacAddress->ether_addr_octet, BPF_ANY);
   }
   return 200;
 }

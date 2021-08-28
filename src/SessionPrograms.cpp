@@ -18,3 +18,9 @@ struct next_rule_prog_index_key SessionPrograms::getKey() const
   LOG_FUNC();
   return mKey;
 }
+
+std::shared_ptr<FARProgram> SessionPrograms::getFARProgram() const
+{
+  LOG_FUNC();
+  return mpFARProgram;
+}

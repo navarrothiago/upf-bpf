@@ -18,7 +18,7 @@
 //  TODO navarrothiago - encapsulate in order file.
 // Custom format for next_rule_prog_index_key.
 
-std::ostream &operator<<(std::ostream &Str, next_rule_prog_index_key const &v)
+std::ostream &operator<<(std::ostream &Str, struct next_rule_prog_index_key const &v)
 {
   Str << "teid: " << v.teid << " source_interface: " << v.source_value << "ip: ", v.ipv4_address;
   return Str;
@@ -48,6 +48,9 @@ void SessionProgramManager::createPipeline(uint32_t seid, uint32_t teid, uint8_t
 {
   LOG_FUNC();
   struct next_rule_prog_index_key key = {.teid = teid, .source_value = sourceInterface, .ipv4_address = ueIpAddress};
+  u32 id;
+  s32 fd;
+  LOG_DBG("teid: {}, source interface: {}, ue ip: {}", teid, sourceInterface, ueIpAddress);
 
   LOG_DBG("Instantiate a new FARProgram");
   // Instantiate a new FARProgram
@@ -56,11 +59,16 @@ void SessionProgramManager::createPipeline(uint32_t seid, uint32_t teid, uint8_t
 
   LOG_DBG("Store FARProgram index in the UPFProgram");
   auto pUPFProgram = UserPlaneComponent::getInstance().getUPFProgram();
-  auto id = pFARProgram->getId();
-  auto fd = pFARProgram->getFd();
-  pUPFProgram->getNextProgRuleIndexMap()->update(key, id, BPF_ANY);
+  id = pFARProgram->getId();
+  fd = pFARProgram->getFd();
+
+  // TODO navarrothiago - This line got me crazy. If you uncomment it, the test does not pass.
+  // WHY????????????????????
+
+  // LOG_DBG("id {} and fd {}", id, fd);
 
   // TODO navarrothiago - get the nextProgRule index from a pool of values.
+  pUPFProgram->getNextProgRuleIndexMap()->update(key, id, BPF_ANY);
   pUPFProgram->getNextProgRuleMap()->update(id, fd, BPF_ANY);
 
   LOG_DBG("Store FAR in the FAR program");
@@ -77,9 +85,16 @@ void SessionProgramManager::createPipeline(uint32_t seid, uint32_t teid, uint8_t
                      //  Fwd - port
                      .forwarding_parameters.outer_header_creation.port_number =
                          pFar->forwarding_parameters.second.outer_header_creation.second.port_number,
+                     //  Fwd - creation interface
+                     .forwarding_parameters.outer_header_creation.outer_header_creation_description =
+                         pFar->forwarding_parameters.second.outer_header_creation.second.outer_header_creation_description,
                      // Fwd - ipv4
                      .forwarding_parameters.outer_header_creation.ipv4_address.s_addr =
                          pFar->forwarding_parameters.second.outer_header_creation.second.ipv4_address.s_addr};
+
+  // Fwd - actions
+  memcpy(&far.apply_action, &pFar->apply_action, sizeof(apply_action_t_));
+
   pFARProgram->getFARMap()->update(index, far, BPF_ANY);
 
   // Map the pipeline deployed to the seid. The seid will be used to detroyed it.
@@ -93,14 +108,13 @@ void SessionProgramManager::removePipeline(uint32_t seid)
   LOG_DBG("Remove FARProgram index from UPFProgram map");
   auto it = mSessionProgramsMap.find(seid);
   if(it == mSessionProgramsMap.end()){
-    LOG_WARN("Trying to remove inexistente session: id {} !!", seid);
-    return;
+    LOG_ERROR("The session {} does not exist. Cannot be removed", seid);
+    throw std::runtime_error("The session does not exist. Cannot be removed");
   }
 
   LOG_DBG("Delete the SessionPrograms object. It will release the pipeline");
   // The key represent the pointer to the pipeline related to the session.
   auto key = it->second->getKey();
-  // it->second->
   it->second.reset();
   mSessionProgramsMap.erase(seid);
 
@@ -183,6 +197,18 @@ std::shared_ptr<SessionProgram> SessionProgramManager::findSessionProgram(uint32
   }
 
   return pSessionProgram;
+}
+std::shared_ptr<SessionPrograms> SessionProgramManager::findSessionPrograms(uint32_t seid)
+{
+  LOG_FUNC();
+  std::shared_ptr<SessionPrograms> pSessionPrograms;
+
+  auto it = mSessionProgramsMap.find(seid);
+  if(it != mSessionProgramsMap.end()) {
+    pSessionPrograms = it->second;
+  }
+
+  return pSessionPrograms;
 }
 
 SessionProgramManager::SessionProgramManager()

@@ -1,3 +1,6 @@
+#ifndef __UTIL_H__
+#define __UTIL_H__
+
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -18,3 +21,5 @@ public:
   static struct in_addr convertIpToInet(std::string ipAddress);
 private:
 };
+
+#endif // __UTIL_H__

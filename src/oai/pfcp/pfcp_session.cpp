@@ -207,21 +207,21 @@ bool pfcp_session::create(
       return false;
     }
     const pfcp::fteid_t& local_fteid = pdi.local_fteid.second;
-    allocated_fteid                  = {};
-    if (local_fteid.ch) {
+    // allocated_fteid                  = {};
+    // if (local_fteid.ch) {
       // TODO if (local_fteid.choose_id) {
       // allocated_fteid = pfcp_switch_inst->generate_fteid_s1u();
-    } else {
-      cause.cause_value = CAUSE_VALUE_REQUEST_REJECTED;
-      Logger::spgwu_sx().info(
-          "Do not support IE FTEID managed by CP entity! Rejecting "
-          "PFCP_XXX_REQUEST");
-      return false;
-    }
+    // } else {
+    //   cause.cause_value = CAUSE_VALUE_REQUEST_REJECTED;
+    //   Logger::spgwu_sx().info(
+    //       "Do not support IE FTEID managed by CP entity! Rejecting "
+    //       "PFCP_XXX_REQUEST");
+    //   return false;
+    // }
     pfcp_pdr* pdr = new pfcp_pdr(cr_pdr);
-    if (local_fteid.ch) {
-      pdr->pdi.second.set(allocated_fteid);
-    }
+    // if (local_fteid.ch) {
+    //   pdr->pdi.second.set(allocated_fteid);
+    // }
 
     std::shared_ptr<pfcp_pdr> spdr = std::shared_ptr<pfcp_pdr>(pdr);
     // if (pfcp_switch_inst->create_packet_in_access(

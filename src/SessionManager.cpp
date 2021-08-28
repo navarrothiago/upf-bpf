@@ -63,7 +63,7 @@ void SessionManager::createBPFSession(std::shared_ptr<pfcp::pfcp_session> pSessi
   if(!(pdrHighPriority->get(pdi) && pdi.get(fteid) && pdi.get(sourceInterface) && pdi.get(ueIpAddress))) {
     throw std::runtime_error("No fields available");
   }
-  LOG_DBG("PDI extracted from PDR %d", pdrHighPriority->pdr_id.rule_id);
+  LOG_DBG("PDI extracted from PDR {}", pdrHighPriority->pdr_id.rule_id);
 
   // pUPFProgram->getNextProgRuleMap()->update(&next_rule_prog_index_key)
   LOG_DBG("Extract FAR from the highest priority PDR");
@@ -83,6 +83,10 @@ void SessionManager::createBPFSession(std::shared_ptr<pfcp::pfcp_session> pSessi
 void SessionManager::removeBPFSession(uint64_t seid)
 {
   LOG_FUNC();
+  if(mSeidToSession.find(seid) == mSeidToSession.end()){
+    LOG_ERROR("The session {} does not exist. Cannot be removed", seid);
+    throw std::runtime_error("The session does not exist. Cannot be removed");
+  }
   SessionProgramManager::getInstance().removePipeline(seid);
   LOG_DBG("Session {} has been removed", seid);
 }
