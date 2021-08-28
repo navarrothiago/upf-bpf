@@ -37,19 +37,13 @@ struct bpf_map_def SEC("maps") m_ue_ip_pdr = {
     .value_size = sizeof(u32),                      //!< PDR
     .max_entries = 100000,
 };
-// //  Downlink maps.
-// struct bpf_map_def SEC("maps") m_ue_ip_pdrs_counter = {
-// 	.type        = BPF_MAP_TYPE_HASH,
-// 	.key_size    = sizeof(teid_t_), // teid
-// 	.value_size  = sizeof(u32), // number of allocated PDR in teid
-// 	.max_entries = 100000,
-// };
-
 struct bpf_map_def SEC("maps") m_next_rule_prog_index = {
     .type = BPF_MAP_TYPE_HASH,
     .key_size = sizeof(struct next_rule_prog_index_key),
     .value_size = sizeof(u32),
     .max_entries = 10,
 };
+
+BPF_ANNOTATE_KV_PAIR(m_next_rule_prog_index, struct next_rule_prog_index_key, u32);
 
 #endif // __MAPS_H__

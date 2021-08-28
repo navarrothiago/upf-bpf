@@ -17,6 +17,8 @@ target_link_libraries(api
   PRIVATE upf_xdp
   asan
   spdlog::spdlog
+  upfutils
+  oai
 )
 
 install(

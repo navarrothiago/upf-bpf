@@ -97,6 +97,7 @@ int BPFMap::update(KeyType &key, ValueType &value, int flags)
     throw std::runtime_error("The BPF map cannot be updated");
   }else{
     LOG_DBG("The key {} was updated at {} map!", key, mName);
+    LOG_DBG("The key was updated at {} map!", mName);
   }
   return updateReturn;
 }

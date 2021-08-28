@@ -27,4 +27,8 @@ struct bpf_map_def SEC("maps") m_arp_table = {
 	.value_size  = 6, // MAC address
 	.max_entries = 2,
 };
+
+BPF_ANNOTATE_KV_PAIR(m_far, u8, pfcp_far_t_);
+BPF_ANNOTATE_KV_PAIR(m_redirect_interfaces, u32, u32);
+// BPF_ANNOTATE_KV_PAIR(m_arp_table, u32, ??);
 #endif // __FAR_MAPS_H__

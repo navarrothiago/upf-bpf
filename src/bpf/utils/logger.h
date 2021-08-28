@@ -1,3 +1,5 @@
+// based on https://github.com/netoptimizer/prototype-kernel/blob/master/kernel/samples/bpf/bpf_tail_calls01_kern.c
+
 #ifndef __LOGGER_H__
 #define __LOGGER_H__
 
@@ -7,8 +9,6 @@
 #ifdef  DEBUG
 /* Only use this for debug output. Notice output from bpf_trace_printk()
  * end-up in /sys/kernel/debug/tracing/trace_pipe
- *
- * TODO navarrothiago Insert "[Debug] " tag in define.
  */
 #define bpf_debug(fmt, ...)						\
 		({							\

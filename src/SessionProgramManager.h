@@ -74,6 +74,7 @@ public:
 
   void createPipeline(uint32_t seid, uint32_t teid, uint8_t sourceInterface, uint32_t ueIpAddress, std::shared_ptr<pfcp::pfcp_far> pFar);
   void removePipeline(uint32_t seid);
+  std::shared_ptr<SessionPrograms> findSessionPrograms(uint32_t seid);
 private:
   /**
    * @brief Construct a new Session Program Manager object.

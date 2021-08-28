@@ -27,15 +27,26 @@
 #include "xdp_stats_kern.h"
 #include "xdp_stats_kern_user.h"
 
-// static u32 tail_call_next_prog(struct xdp_md *p_ctx, teid_t_ teid, u8 source_value, u32 ipv4_address){
-//   struct next_rule_prog_index_key map_key;
-//   u32 index_prog;
-//   map_key.teid = teid;
-//   map_key.source_value = INTERFACE_VALUE_CORE;
-//   map_key.ipv4_address = ipv4_address;
-//   index_prog = bpf_map_lookup_elem(&m_next_rule_prog_index, &map_key);
-//   bpf_tail_call(p_ctx, &m_next_rule_prog, index_prog);
-// }
+static u32 tail_call_next_prog(struct xdp_md *p_ctx, teid_t_ teid, u8 source_value, u32 ipv4_address)
+{
+  struct next_rule_prog_index_key map_key;
+  u32 *index_prog;
+
+  __builtin_memset(&map_key, 0, sizeof(struct next_rule_prog_index_key));
+
+  map_key.teid = teid;
+  map_key.source_value = INTERFACE_VALUE_CORE;
+  map_key.ipv4_address = ipv4_address;
+  bpf_debug("map key teid: %d, source: %d, ip: %d \n", teid, INTERFACE_VALUE_CORE, ipv4_address);
+  index_prog = bpf_map_lookup_elem(&m_next_rule_prog_index, &map_key);
+
+  if(index_prog){
+    bpf_debug("BPF tail call to %d key\n", *index_prog);
+    bpf_tail_call(p_ctx, &m_next_rule_prog, *index_prog);
+    bpf_debug("BPF tail call was not executed!\n");
+  }
+  return 0;
+}
 /**
  * GTP SECTION.
  */
@@ -70,11 +81,9 @@ static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, u32 dest_ip
   }
 
   // Jump to session context.
-  bpf_debug("BPF tail call to %d tunnel\n", htonl(p_gtpuh->teid));
-  bpf_tail_call(p_ctx, &m_teid_session, htonl(p_gtpuh->teid));
+  tail_call_next_prog(p_ctx, p_gtpuh->teid, INTERFACE_VALUE_ACCESS, dest_ip);
   bpf_debug("BPF tail call was not executed! teid %d\n", htonl(p_gtpuh->teid));
 
-  // tail_call_next_prog(p_ctx, p_gtpuh->teid, INTERFACE_VALUE_ACCESS, dest_ip);
   return XDP_PASS;
 }
 
@@ -96,9 +105,6 @@ static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph, u32 dest_ip)
   u32 index_prog;
   u32 dport;
 
-  // Apply hash function due to limitation of size of the program map.
-  uint32_t key = (uint32_t)((dest_ip * 0x80008001) >> 16);
-
   /* Hint: +1 is sizeof(struct udphdr) */
   if((void *)udph + sizeof(*udph) > p_data_end) {
     bpf_debug("Invalid UDP packet");
@@ -112,12 +118,7 @@ static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph, u32 dest_ip)
   case GTP_UDP_PORT:
     return gtp_handle(p_ctx, (struct gtpuhdr *)(udph + 1), dest_ip);
   default:
-    bpf_debug("BPF tail call to 0x%x address %d key", dest_ip, key);
-    // TODO navarrothiago - Assuming there is a map one-to-one IP-Session
-    bpf_tail_call(p_ctx, &m_ueip_session, key);
-    bpf_debug("BPF tail call was not executed!");
-
-    // tail_call_next_prog(p_ctx, 0, INTERFACE_VALUE_CORE, dest_ip);
+    tail_call_next_prog(p_ctx, 0, INTERFACE_VALUE_CORE, dest_ip);
 
     return XDP_PASS;
   }
