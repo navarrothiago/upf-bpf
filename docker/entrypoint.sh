@@ -24,3 +24,5 @@ if [ $USERNAME != "root" ]; then
     cp /root/.ssh/known_hosts /home/$USERNAME/.ssh/known_hosts
     chown -R $USERNAME:$USERNAME /home/$USERNAME/.ssh
 fi
+
+exec $@
