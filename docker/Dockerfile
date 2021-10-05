@@ -75,5 +75,5 @@ RUN echo "ENV_FILE=/workspaces/env.sh" >> /etc/environment
 
 COPY entrypoint.sh /entrypoint.sh
 
-CMD /bin/bash
+CMD ["/bin/bash"]
 ENTRYPOINT ["/entrypoint.sh"]
