@@ -83,6 +83,14 @@ Test
 
 ## First Steps
 
+First of all, make sure you have installed [git-lfs](https://git-lfs.github.com/). The LFS repository is used to store the `bpftool` binary.
+
+After dowloaded and installed it, clone this repository:
+
+```
+git clone https://github.com/navarrothiago/upf-bpf.git
+```
+
 The project use a docker container to build the UPF library. The command below will provision the docker image with all the project dependencies.
 
 ```
