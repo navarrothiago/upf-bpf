@@ -127,7 +127,7 @@ The `package` folder is create with the headers, library and some binaries for t
 ```
 package
 ├── bin       # Contains binaries for testing
-├── include   # Contains headers 
+├── include   # Contains headers
 ├── lib       # Contains libupf_xdp.a library
 └── tests     # Contains scripts for testing
 ```
@@ -135,6 +135,10 @@ package
 ## How to test the software
 
 The instructions here is still missing. If you need to know how to test, contact me. For your information, there are UTs for Session Management layers. Also, you can check the video [Performance Evaluation with UPF eBPF/XDP Library for 5G Core Network](https://www.youtube.com/watch?v=6KYFDMJJH2o) to see the performance evaluation (deprecated).
+
+## :rocket: Benchmark
+
+Check the [Jupyter notebook](notebook.ipynb).
 
 ## Tree
 

@@ -1,0 +1,730 @@
+{
+  "items": [
+    {
+      "ethtool": {
+        "enp3s0f0": 1,
+        "enp3s0f1": 1
+      },
+      "loss": 0.007381786048423194,
+      "mpstat": {
+        "sysstat": {
+          "hosts": [
+            {
+              "date": "10/19/2021",
+              "machine": "x86_64",
+              "nodename": "india",
+              "number-of-cpus": 12,
+              "release": "5.4.0-88-generic",
+              "statistics": [
+                {
+                  "cpu-load": [
+                    {
+                      "cpu": "all",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 77.69,
+                      "iowait": 0.4,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 21.75,
+                      "steal": 0.0,
+                      "sys": 0.1,
+                      "usr": 0.07
+                    },
+                    {
+                      "cpu": "0",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 69.58,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 30.22,
+                      "steal": 0.0,
+                      "sys": 0.2,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "1",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 0.0,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 100.0,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "2",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 97.41,
+                      "iowait": 2.19,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.4,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "3",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 100.0,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.0,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "4",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 99.4,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.0,
+                      "steal": 0.0,
+                      "sys": 0.4,
+                      "usr": 0.2
+                    },
+                    {
+                      "cpu": "5",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 99.6,
+                      "iowait": 0.2,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.0,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.2
+                    }
+                  ],
+                  "timestamp": "12:14:25 AM"
+                }
+              ],
+              "sysname": "Linux"
+            }
+          ]
+        }
+      },
+      "testCase": "20211019-001341-UplinkMaxThoughtput-1000flow-1rx",
+      "throughput": 3.28090925
+    },
+    {
+      "ethtool": {
+        "enp3s0f0": 2,
+        "enp3s0f1": 2
+      },
+      "loss": 0.0061460615867986795,
+      "mpstat": {
+        "sysstat": {
+          "hosts": [
+            {
+              "date": "10/19/2021",
+              "machine": "x86_64",
+              "nodename": "india",
+              "number-of-cpus": 12,
+              "release": "5.4.0-88-generic",
+              "statistics": [
+                {
+                  "cpu-load": [
+                    {
+                      "cpu": "all",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 70.61,
+                      "iowait": 0.33,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 28.86,
+                      "steal": 0.0,
+                      "sys": 0.13,
+                      "usr": 0.07
+                    },
+                    {
+                      "cpu": "0",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 0.0,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 100.0,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "1",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 27.09,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 72.91,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "2",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 98.4,
+                      "iowait": 1.4,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.2,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "3",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 99.6,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.0,
+                      "steal": 0.0,
+                      "sys": 0.2,
+                      "usr": 0.2
+                    },
+                    {
+                      "cpu": "4",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 99.2,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.0,
+                      "steal": 0.0,
+                      "sys": 0.6,
+                      "usr": 0.2
+                    },
+                    {
+                      "cpu": "5",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 99.4,
+                      "iowait": 0.6,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.0,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    }
+                  ],
+                  "timestamp": "12:15:10 AM"
+                }
+              ],
+              "sysname": "Linux"
+            }
+          ]
+        }
+      },
+      "testCase": "20211019-001341-UplinkMaxThoughtput-1000flow-2rx",
+      "throughput": 4.729407
+    },
+    {
+      "ethtool": {
+        "enp3s0f0": 3,
+        "enp3s0f1": 3
+      },
+      "loss": 0.012606016905764919,
+      "mpstat": {
+        "sysstat": {
+          "hosts": [
+            {
+              "date": "10/19/2021",
+              "machine": "x86_64",
+              "nodename": "india",
+              "number-of-cpus": 12,
+              "release": "5.4.0-88-generic",
+              "statistics": [
+                {
+                  "cpu-load": [
+                    {
+                      "cpu": "all",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 59.88,
+                      "iowait": 0.36,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 39.5,
+                      "steal": 0.0,
+                      "sys": 0.11,
+                      "usr": 0.14
+                    },
+                    {
+                      "cpu": "0",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 0.0,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 99.8,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.2
+                    },
+                    {
+                      "cpu": "1",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 8.71,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 90.91,
+                      "steal": 0.0,
+                      "sys": 0.38,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "2",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 29.06,
+                      "iowait": 0.2,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 70.54,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.2
+                    },
+                    {
+                      "cpu": "3",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 99.8,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.0,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.2
+                    },
+                    {
+                      "cpu": "4",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 98.2,
+                      "iowait": 1.8,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.0,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "5",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 99.4,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.0,
+                      "steal": 0.0,
+                      "sys": 0.4,
+                      "usr": 0.2
+                    }
+                  ],
+                  "timestamp": "12:15:56 AM"
+                }
+              ],
+              "sysname": "Linux"
+            }
+          ]
+        }
+      },
+      "testCase": "20211019-001341-UplinkMaxThoughtput-1000flow-3rx",
+      "throughput": 7.082323
+    },
+    {
+      "ethtool": {
+        "enp3s0f0": 4,
+        "enp3s0f1": 4
+      },
+      "loss": 0.0009217438547569303,
+      "mpstat": {
+        "sysstat": {
+          "hosts": [
+            {
+              "date": "10/19/2021",
+              "machine": "x86_64",
+              "nodename": "india",
+              "number-of-cpus": 12,
+              "release": "5.4.0-88-generic",
+              "statistics": [
+                {
+                  "cpu-load": [
+                    {
+                      "cpu": "all",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 62.0,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 37.63,
+                      "steal": 0.0,
+                      "sys": 0.33,
+                      "usr": 0.04
+                    },
+                    {
+                      "cpu": "0",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 64.15,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 35.85,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "1",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 4.86,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 93.92,
+                      "steal": 0.0,
+                      "sys": 1.22,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "2",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 43.56,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 56.44,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "3",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 42.89,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 56.92,
+                      "steal": 0.0,
+                      "sys": 0.2,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "4",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 100.0,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.0,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "5",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 99.2,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.0,
+                      "steal": 0.0,
+                      "sys": 0.6,
+                      "usr": 0.2
+                    }
+                  ],
+                  "timestamp": "12:16:43 AM"
+                }
+              ],
+              "sysname": "Linux"
+            }
+          ]
+        }
+      },
+      "testCase": "20211019-001341-UplinkMaxThoughtput-1000flow-4rx",
+      "throughput": 7.37786
+    },
+    {
+      "ethtool": {
+        "enp3s0f0": 5,
+        "enp3s0f1": 5
+      },
+      "loss": 0.007172944524884156,
+      "mpstat": {
+        "sysstat": {
+          "hosts": [
+            {
+              "date": "10/19/2021",
+              "machine": "x86_64",
+              "nodename": "india",
+              "number-of-cpus": 12,
+              "release": "5.4.0-88-generic",
+              "statistics": [
+                {
+                  "cpu-load": [
+                    {
+                      "cpu": "all",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 49.17,
+                      "iowait": 0.09,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 50.44,
+                      "steal": 0.0,
+                      "sys": 0.22,
+                      "usr": 0.09
+                    },
+                    {
+                      "cpu": "0",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 65.62,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 34.38,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "1",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 3.46,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 96.05,
+                      "steal": 0.0,
+                      "sys": 0.49,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "2",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 38.93,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 59.54,
+                      "steal": 0.0,
+                      "sys": 1.15,
+                      "usr": 0.38
+                    },
+                    {
+                      "cpu": "3",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 43.77,
+                      "iowait": 0.39,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 55.64,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.19
+                    },
+                    {
+                      "cpu": "4",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 43.2,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 56.8,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "5",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 100.0,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 0.0,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    }
+                  ],
+                  "timestamp": "12:17:28 AM"
+                }
+              ],
+              "sysname": "Linux"
+            }
+          ]
+        }
+      },
+      "testCase": "20211019-001341-UplinkMaxThoughtput-1000flow-5rx",
+      "throughput": 9.218286
+    },
+    {
+      "ethtool": {
+        "enp3s0f0": 6,
+        "enp3s0f1": 6
+      },
+      "loss": 0.006596803575891964,
+      "mpstat": {
+        "sysstat": {
+          "hosts": [
+            {
+              "date": "10/19/2021",
+              "machine": "x86_64",
+              "nodename": "india",
+              "number-of-cpus": 12,
+              "release": "5.4.0-88-generic",
+              "statistics": [
+                {
+                  "cpu-load": [
+                    {
+                      "cpu": "all",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 34.38,
+                      "iowait": 0.15,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 65.08,
+                      "steal": 0.0,
+                      "sys": 0.23,
+                      "usr": 0.15
+                    },
+                    {
+                      "cpu": "0",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 68.06,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 28.47,
+                      "steal": 0.0,
+                      "sys": 2.08,
+                      "usr": 1.39
+                    },
+                    {
+                      "cpu": "1",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 10.0,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 89.57,
+                      "steal": 0.0,
+                      "sys": 0.43,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "2",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 8.79,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 90.8,
+                      "steal": 0.0,
+                      "sys": 0.2,
+                      "usr": 0.2
+                    },
+                    {
+                      "cpu": "3",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 46.95,
+                      "iowait": 0.81,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 52.03,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.2
+                    },
+                    {
+                      "cpu": "4",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 45.6,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 54.4,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    },
+                    {
+                      "cpu": "5",
+                      "gnice": 0.0,
+                      "guest": 0.0,
+                      "idle": 48.48,
+                      "iowait": 0.0,
+                      "irq": 0.0,
+                      "nice": 0.0,
+                      "soft": 51.52,
+                      "steal": 0.0,
+                      "sys": 0.0,
+                      "usr": 0.0
+                    }
+                  ],
+                  "timestamp": "12:18:14 AM"
+                }
+              ],
+              "sysname": "Linux"
+            }
+          ]
+        }
+      },
+      "testCase": "20211019-001341-UplinkMaxThoughtput-1000flow-6rx",
+      "throughput": 11.158036
+    }
+  ]
+}
