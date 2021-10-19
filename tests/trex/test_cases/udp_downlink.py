@@ -110,6 +110,7 @@ def simple_burst(streams, m, duration):
         # print("Rx Mpps            0 --> 1:   {0} Mpps".format(float(stats[1]["rx_pps"])/1000000))
 
         item["throughput"] = float(stats[1]["rx_pps"])/1000000
+        item["loss"] = float(stats[0]["opackets"] - stats[1]["ipackets"])/stats[0]["opackets"]
         print("")
         print("Throughput: {} Mpps".format(item["throughput"]))
 
@@ -238,19 +239,32 @@ test_dict = {
 
 test_case_name = test_dict[args.flows]["testCaseName"]
 
+
+
 for flow in flow_list:
     for rx_size in n_rx_queues:
         item = defaultdict(dict)
-        test_case = "{}-{}-{}flow-{}rx".format(timestr,
-                                               test_case_name, flow, rx_size)
-        # test_case = test_case_name
-        item["testCase"] = test_case
         run_ethtool_set_rx_queue(rx_size, args.password)
-        setup_test_case("{}".format(test_case))
-        s1 = STLStream(packet=test_dict[args.flows]["createFlows"](args.size, "16.0.0.1",
-                                                       "16.0.0.254", int(flow), "src"), mode=STLTXCont())
-        simple_burst([s1], args.multiplier, args.duration)
-        json_output["items"].append(item)
+        for i in {0, 1}: 
+            tx_data_rate=0
+            if i == 0:
+                print("Executing with max throughput in order to find the saturation.")
+                print("The packet loss and CPU load will increase!!")
+                tx_data_rate=args.multiplier
+            else:
+                print("Executing with the target throughput in order to avoiding packet loss")
+                print("The packet loss and CPU load will be fine now!!")
+                tx_data_rate=str(item["throughput"]) + "mpps"
+            test_case = "{}-{}-{}flow-{}rx".format(timestr, test_case_name, flow, rx_size)
+            # test_case = test_case_name
+            item["testCase"] = test_case
+            setup_test_case("{}".format(test_case))
+            s1 = STLStream(packet=test_dict[args.flows]["createFlows"](args.size, "16.0.0.1",
+                                                        "16.0.0.254", int(flow), "src"), mode=STLTXCont())
+            simple_burst([s1], tx_data_rate, args.duration)
+
+            if i != 0:
+                json_output["items"].append(item)
 
 reports_path = "tests/reports"
 filename = "{}-{}.json".format(timestr, test_case)
