@@ -134,7 +134,14 @@ package
 
 ## How to test the software
 
-The instructions here is still missing. If you need to know how to test, contact me. For your information, there are UTs for Session Management layers. Also, you can check the video [Performance Evaluation with UPF eBPF/XDP Library for 5G Core Network](https://www.youtube.com/watch?v=6KYFDMJJH2o) to see the performance evaluation (deprecated).
+The instructions here is still missing. If you need to know how to test, contact me. There is a lot of script that make the deployment and configuration easier. As you can see in [[.env.sample.sh](.env.sample.sh), there are variables to configure the jump server, trex version, GTP and UDP interfaces (downlink and uplink), etc. Besides, there are UTs for Session Management layers. You can execute with (inside the container).
+
+```
+make config-veth-pair
+make build-tests
+make run-session-manager-tests
+```
+If you face any problem, feel free to open an issue or contact me. 
 
 ## :rocket: Benchmark
 
@@ -157,6 +164,8 @@ The flows are generate using [Trex Field Engine](https://trex-tgn.cisco.com/trex
 
 <img src="img/screenshot-tmux.png" alt="drawing" width="600"/>
 
+> :memo: The tmux session is available [here](tests/scripts/start_session). There are still some parameters hardcoded. Feel free to change according to your need. If you need any help, open and issue or contact me. PR are welcome!! 
+
 Downlink | Uplink
 ---|---
 <img src="tests/reports/img/Downlink Max Throughput.svg" alt="drawing" width="500"/>| <img src="tests/reports/img/Uplink Max Throughput.svg" alt="drawing" width="500"/>
@@ -165,8 +174,6 @@ Downlink | Uplink
 Check the [Jupyter notebook](notebook.ipynb) to how the graphics are generated.
 
 > :memo: For more graphics, check [this](tests/reports/img) folder.
-
-
 
 ## Tree
 
@@ -192,7 +199,9 @@ If you faced the problem below, create a symbolic from `libc.a -> liblibc.a`
 
 ## Contribute
 
-If you think this could be better, **please open an issue or start a discussion**.
+If you think this could be better, **please open an issue or start a discussion**.  
+
+PRs ARE WELCOME :+1:!! 
 
 ## Contact
 
