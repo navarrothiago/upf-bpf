@@ -138,7 +138,35 @@ The instructions here is still missing. If you need to know how to test, contact
 
 ## :rocket: Benchmark
 
-Check the [Jupyter notebook](notebook.ipynb).
+Test environment:
+
+<img src="img/setup-performance-evaluation.svg" alt="drawing" width="500"/>
+
+Step:
+1. Run Trex Traffic Generator
+1. Run HTTP API + upf-bpf
+1. Configure interfaces (/configure)
+1. Create PFCP Session context (/createSession)
+1. Generate the traffic (pkt size = 64B) 
+1. Collects metrics (CPU load, ipackets, opacket, throughput)
+
+> :memo: Postman files are available: [Uplink](tests/api/requests_body/gtp-postman-colletion.json) and [Downlink](tests/api/requests_body/udp-postman-colletion.json). You will find the json message used by the tests.
+
+The flows are generate using [Trex Field Engine](https://trex-tgn.cisco.com/trex/doc/cp_stl_docs/api/field_engine.html). Check the implementation [here](tests/trex/test_cases/run.py).
+
+
+<img src="img/screenshot-tmux.png" alt="drawing" width="600"/>
+
+Downlink | Uplink
+---|---
+<img src="tests/reports/img/Downlink Max Throughput.svg" alt="drawing" width="500"/>| <img src="tests/reports/img/Uplink Max Throughput.svg" alt="drawing" width="500"/>
+<img src="tests/reports/img/Downlink Max ThroughputLoad per Core - 6 Rx Queue.svg" alt="drawing" width="500"/>| <img src="tests/reports/img/Uplink Max ThroughputLoad per Core - 6 Rx Queue.svg" alt="drawing" width="500"/>
+
+Check the [Jupyter notebook](notebook.ipynb) to how the graphics are generated.
+
+> :memo: For more graphics, check [this](tests/reports/img) folder.
+
+
 
 ## Tree
 

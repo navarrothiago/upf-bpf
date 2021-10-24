@@ -89,7 +89,7 @@ void SessionManager::addPDR(uint64_t seid, std::shared_ptr<PacketDetectionRules>
     throw std::runtime_error("Source interface not supported");
   }
 
-  // TODO navarrothiago - Check if it make sense, because we have a UL and DL PDR.
+  // TODO navarrothiago - REMOVED IT.
   pSessionProgram->getPDRMap()->update(pdr.pdr_id.rule_id, pdr, BPF_ANY);
 }
 

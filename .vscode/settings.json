@@ -90,7 +90,11 @@
     "strstream": "cpp",
     "typeindex": "cpp",
     "csignal": "cpp",
-    "gtpu.h": "c"
+    "gtpu.h": "c",
+    "charconv": "cpp",
+    "csetjmp": "cpp",
+    "cuchar": "cpp",
+    "scoped_allocator": "cpp"
   },
 
   "git.ignoreLimitWarning": true,

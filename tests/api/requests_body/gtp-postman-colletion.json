@@ -1,0 +1,96 @@
+{
+	"info": {
+		"_postman_id": "88c048a5-db33-4523-a1ce-4be71282b681",
+		"name": "eBPF Remote GTP",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Configuration",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"udpInterface\": \"enp3s0f1\",\n  \"gtpInterface\": \"enp3s0f0\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:1234/configure",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "1234",
+					"path": [
+						"configure"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Session",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"seid\": 1,\n  \"pdrs\": [\n    {\n      \"pdrId\": 20,\n      \"farId\": 200,\n      \"outerHeaderRemoval\": \"OUTER_HEADER_REMOVAL_UDP_IPV4\",\n      \"pdi\": {\n        \"teid\": 100,\n        \"sourceInterface\": \"INTERFACE_VALUE_CORE\",\n        \"ueIPAddress\": \"10.1.3.27\"\n      }\n    },\n    {\n      \"pdrId\": 10,\n      \"farId\": 100,\n      \"outerHeaderRemoval\": \"OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4\",\n      \"pdi\": {\n        \"teid\": 100,\n        \"sourceInterface\": \"INTERFACE_VALUE_ACCESS\",\n        \"ueIPAddress\": \"10.1.3.27\"\n      }\n    }\n  ],\n  \"fars\": [\n    {\n      \"farId\": 200,\n      \"forwardingParameters\": {\n        \"outerHeaderCreation\": {\n          \"outerHeaderCreationDescription\": \"OUTER_HEADER_CREATION_GTPU_UDP_IPV4\",\n          \"ipv4Address\": \"10.1.3.27\",\n          \"portNumber\": 1234\n        },\n        \"destinationInterface\": \"INTERFACE_VALUE_ACCESS\"\n      }\n    },\n    {\n      \"farId\": 100,\n      \"forwardingParameters\": {\n        \"outerHeaderCreation\": {\n          \"outerHeaderCreationDescription\": \"OUTER_HEADER_CREATION_UDP_IPV4\",\n          \"ipv4Address\": \"10.1.3.27\",\n          \"portNumber\": 1234\n        },\n        \"destinationInterface\": \"INTERFACE_VALUE_CORE\"\n      }\n    }\n  ],\n  \"arpTable\": [\n    {\n      \"ip\": \"10.1.2.27\",\n      \"mac\": \"90:e2:ba:27:fd:3c\"\n    },\n    {\n      \"ip\": \"10.1.3.27\",\n      \"mac\": \"90:e2:ba:27:fd:3d\"\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "http://localhost:1234/createSession",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "1234",
+					"path": [
+						"createSession"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Connection",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:1234/hi",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "1234",
+					"path": [
+						"hi"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
