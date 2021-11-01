@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+generate_env_file() {
+  echo -n "" > ${ENV_FILE}
+  while read line; do
+    var="$(echo "${line}" | cut -d "=" -f1)"
+    value="$(echo "${line}" | cut -d "=" -f2-)"
+    echo "${var}=$(eval echo ${!var} )" >> ${ENV_FILE}
+  done < <(cat ${BASEDIRNAME}/env.sh | sed '/^#/d;/^$/d')
+}
+
 main() {
 
   set -o errexit
@@ -8,12 +17,26 @@ main() {
   local -r dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   source "${dirname}"/../env.sh
 
-	docker run -it --rm \
-		--env-file "${dirname}"/../env.sh \
-		--volume "${dirname}"/../:"${WORKSPACE}" \
-		--privileged \
-		--workdir "${WORKSPACE}" "${IMAGE_TAG}":"${IMAGE_VERSION}" \
-		/bin/bash
+  #Exporting variables to be used on compose file
+  export BASEDIRNAME="$(cd "${dirname}/../" && pwd)"
+  export IMAGE="${IMAGE_TAG}:${IMAGE_VERSION}"
+  export ENV_FILE="${BASEDIRNAME}/docker/env.temp"
+  export WORKSPACE="${WORKSPACE}"
+  export VOLUME="${BASEDIRNAME}:${WORKSPACE}"
+  export SSH_PRIV_KEY="${SSH_FOLDER}/${SSH_PRIVATE_KEY_FILE}"
+  export SSH_PUBL_KEY="${SSH_FOLDER}/${SSH_PUBLIC_KEY_FILE}"
+  export SSH_CONF_FILE="${SSH_FOLDER}/${SSH_CONFIG_FILE}"
+  export BASH_RC_FILE="${BASH_RC}"
+  export GIT_CONFIG_FILE="${GIT_CONFIG}"
+
+  #Generating temporary env file for the service context in compose
+  generate_env_file
+
+  #Running the Container from service upf-bpf
+  docker-compose -f "${dirname}"/"${DOCKERCOMPOSEFILE}" run upf-bpf
+
+  #Removing temporary generated env file
+  rm -f "${BASEDIRNAME}/docker/env.temp"
 
   exit 0
 }

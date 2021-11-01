@@ -12,6 +12,7 @@ USERNAME=oai-spgwu
 IMAGE_TAG=upee
 IMAGE_VERSION=v1.0
 DOCKERFILE=Dockerfile
+DOCKERCOMPOSEFILE=docker-compose.yml
 SSH_FOLDER=~/.ssh
 SSH_PUBLIC_KEY_FILE=id_rsa.pub
 SSH_PRIVATE_KEY_FILE=id_rsa
