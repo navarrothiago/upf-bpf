@@ -21,14 +21,7 @@ main() {
 
   echo "Base image "${base_dev_image}""
 
-  # Copy configuration files and ssh keys to the docker context folder.
-  cp "${GIT_CONFIG}" "${context}"
-  cp "${SSH_FOLDER}"/"${SSH_PRIVATE_KEY_FILE}" "${context}"
-  cp "${SSH_FOLDER}"/"${SSH_PUBLIC_KEY_FILE}" "${context}"
-  cp "${SSH_FOLDER}"/"${SSH_CONFIG_FILE}" "${context}"
-  cp "${BASH_RC}" "${context}"
-  # echo ""${WORKSPACE}"/env.sh" > "${BASH_RC}"
-
+  #Copy env file to the context
   cp "${env_file}" "${context}"/"${env_file_name}"
 
   # Build dockerfile.
@@ -41,12 +34,7 @@ main() {
                --build-arg JUMP_SERVER_PORT="${JUMP_SERVER_PORT}" \
                --build-arg BASE_DEV_IMAGE="${base_dev_image}"
 
-  # Remove configuration files and ssh keys from the docker context folder.
-  rm "${context}"/.gitconfig
-  rm "${context}"/"${SSH_PRIVATE_KEY_FILE}"
-  rm "${context}"/"${SSH_PUBLIC_KEY_FILE}"
-  rm "${context}"/"${SSH_CONFIG_FILE}"
-  rm "${context}"/.bashrc
+  # Remove env file from the context
   rm "${context}"/"${env_file_name}"
 
   echo

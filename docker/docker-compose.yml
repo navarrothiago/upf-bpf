@@ -1,0 +1,30 @@
+version: "3.6"
+
+services:
+  upf-bpf:
+    image: ${IMAGE}
+    env_file: ${ENV_FILE}
+    secrets:
+      - SSH_PRIV_KEY
+      - SSH_PUBL_KEY
+      - SSH_CONF_FILE
+      - BASH_RC_FILE
+      - GIT_CONFIG_FILE
+    privileged: true
+    working_dir: ${WORKSPACE}
+    #stdin_open: true
+    #tty: true
+    volumes:
+      - ${VOLUME}
+
+secrets:
+  SSH_PRIV_KEY:
+    file: ${SSH_PRIV_KEY}
+  SSH_PUBL_KEY:
+    file: ${SSH_PUBL_KEY}
+  SSH_CONF_FILE:
+    file: ${SSH_CONF_FILE}
+  BASH_RC_FILE:
+    file: ${BASH_RC_FILE}
+  GIT_CONFIG_FILE:
+    file: ${GIT_CONFIG_FILE}
