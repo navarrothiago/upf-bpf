@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+CleanUp() {
+  if [ -e "${ENV_FILE}" ]; then rm -f "${ENV_FILE}"; fi
+}
+
 generate_env_file() {
   echo -n "" > ${ENV_FILE}
   while read line; do
@@ -9,7 +14,6 @@ generate_env_file() {
 }
 
 main() {
-
   set -o errexit
   set -o pipefail
   set -o nounset
@@ -36,7 +40,8 @@ main() {
   docker-compose -f "${dirname}"/"${DOCKERCOMPOSEFILE}" run upf-bpf
 
   #Removing temporary generated env file
-  rm -f "${BASEDIRNAME}/docker/env.temp"
+  trap CleanUp EXIT
+  trap exit EXIT
 
   exit 0
 }
