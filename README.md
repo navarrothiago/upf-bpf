@@ -91,6 +91,8 @@ After dowloaded and installed it, clone this repository:
 git clone https://github.com/navarrothiago/upf-bpf.git
 ```
 
+After cloning the repository, configure your [env.sh](env.sh) file (on the repository root folder) to match your dev or test environment, using the [.env.sample.sh](.env.sample.sh) file as a template
+
 The project use a docker container to build the UPF library. The command below will provision the docker image with all the project dependencies.
 
 > :memo: You'll need the Docker Container Runtime package and the Docker Compose utility to set up the dev or test environment
@@ -134,7 +136,7 @@ package
 
 ## How to test the software
 
-The instructions here is still missing. If you need to know how to test, contact me. There is a lot of script that make the deployment and configuration easier. As you can see in [[.env.sample.sh](.env.sample.sh), there are variables to configure the jump server, trex version, GTP and UDP interfaces (downlink and uplink), etc. Besides, there are UTs for Session Management layers. You can execute with (inside the container).
+The instructions here is still missing. If you need to know how to test, contact me. There is a lot of script that make the deployment and configuration easier. As you can see in [.env.sample.sh](.env.sample.sh), there are variables to configure the jump server, trex version, GTP and UDP interfaces (downlink and uplink), etc. Besides, there are UTs for Session Management layers. You can execute with (inside the container).
 
 ```
 make config-veth-pair
