@@ -92,6 +92,7 @@ git clone https://github.com/navarrothiago/upf-bpf.git
 ```
 
 The project use a docker container to build the UPF library. The command below will provision the docker image with all the project dependencies.
+
 > :memo: You'll need the Docker Container Runtime package and the Docker Compose utility to set up the dev or test environment
 
 ```
