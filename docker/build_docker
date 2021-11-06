@@ -21,21 +21,9 @@ main() {
 
   echo "Base image "${base_dev_image}""
 
-  #Copy env file to the context
-  cp "${env_file}" "${context}"/"${env_file_name}"
-
-  # Build dockerfile.
+  # build the image from dockerfile.
   docker build --tag="${IMAGE_TAG}":"${IMAGE_VERSION}" --rm -f "${context}"/"${DOCKERFILE}" "${context}" \
-               --build-arg ENV_FILENAME="${env_file_name}" \
-               --build-arg DUT_SERVER_IP="${DUT_IP}" \
-               --build-arg TREX_SERVER_IP="${TREX_SERVER_IP}" \
-               --build-arg JUMP_SERVER_USERNAME="${JUMP_SERVER_USERNAME}" \
-               --build-arg JUMP_SERVER_IP="${JUMP_SERVER_IP}" \
-               --build-arg JUMP_SERVER_PORT="${JUMP_SERVER_PORT}" \
                --build-arg BASE_DEV_IMAGE="${base_dev_image}"
-
-  # Remove env file from the context
-  rm "${context}"/"${env_file_name}"
 
   echo
   echo "Image "${IMAGE_TAG}" was build with base image "${base_dev_image}""
