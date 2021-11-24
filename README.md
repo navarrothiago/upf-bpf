@@ -248,5 +248,6 @@ CPU with 6 cores."
 ## References
 
 - [Paper - An In-Kernel Solution Based on XDP for 5G UPF: Design, Prototype and Performance Evaluation](docs/Paper___An_In_Kernel_Solution_Based_on_XDP__Design__Prototype_and_Performance_Evaluation.pdf)
-- [Author M.Sc. Qualification](https://docs.google.com/presentation/d/1Q24M4Ce8TPPhiM305_Oxs0iQFmmukKwSKdlNcJ0T2uo/edit#slide=id.gc2b6cd2cb2_0_92)
-- [Performance Evaluation with UPF eBPF/XDP Library for 5G Core Network](https://www.youtube.com/watch?v=6KYFDMJJH2o)
+- [Video - Project Overview](https://youtu.be/Av_k_fZKCfM)
+- [Slides - Project Overview](https://docs.google.com/presentation/d/1osOheCFV3c3wn4hDbo5R3coL8nDeaxjVb7D33QT41jw/edit?usp=sharing)
+- [Video - Performance Evaluation with UPF eBPF/XDP Library for 5G Core Network](https://www.youtube.com/watch?v=6KYFDMJJH2o)
