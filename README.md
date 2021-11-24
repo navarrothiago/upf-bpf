@@ -143,7 +143,7 @@ make config-veth-pair
 make build-tests
 make run-session-manager-tests
 ```
-If you face any problem, feel free to open an issue or contact me. 
+If you face any problem, feel free to open an issue or contact me.
 
 ## :rocket: Benchmark
 
@@ -156,7 +156,7 @@ Step:
 1. Run HTTP API + upf-bpf
 1. Configure interfaces (/configure)
 1. Create PFCP Session context (/createSession)
-1. Generate the traffic (pkt size = 64B) 
+1. Generate the traffic (pkt size = 64B)
 1. Collects metrics (CPU load, ipackets, opacket, throughput)
 
 > :memo: Postman files are available: [Uplink](tests/api/requests_body/gtp-postman-colletion.json) and [Downlink](tests/api/requests_body/udp-postman-colletion.json). You will find the json message used by the tests.
@@ -166,7 +166,7 @@ The flows are generate using [Trex Field Engine](https://trex-tgn.cisco.com/trex
 
 <img src="img/screenshot-tmux.png" alt="drawing" width="600"/>
 
-> :memo: The tmux session is available [here](tests/scripts/start_session). There are still some parameters hardcoded. Feel free to change according to your need. If you need any help, open and issue or contact me. PR are welcome!! 
+> :memo: The tmux session is available [here](tests/scripts/start_session). There are still some parameters hardcoded. Feel free to change according to your need. If you need any help, open and issue or contact me. PR are welcome!!
 
 Downlink | Uplink
 ---|---
@@ -201,9 +201,42 @@ If you faced the problem below, create a symbolic from `libc.a -> liblibc.a`
 
 ## Contribute
 
-If you think this could be better, **please open an issue or start a discussion**.  
+If you think this could be better, **please open an issue or start a discussion**.
 
-PRs ARE WELCOME :+1:!! 
+PRs ARE WELCOME :+1:!!
+
+## BibTeX
+
+```
+@INPROCEEDINGS{Amar2110:Kernel,
+AUTHOR="Thiago Arruda Navarro do Amaral and Raphael {Vicente Rosa} and David Moura
+and Christian {Esteve Rothenberg}",
+TITLE="An {In-Kernel} Solution Based on {XDP} for {5G} {UPF:} Design, Prototype
+and Performance Evaluation",
+BOOKTITLE="2021 1st Joint International Workshop on Network Programmability and
+Automation (NetPA 2021)",
+ADDRESS="Izmir, Turkey, Turkey",
+DAYS=24,
+MONTH=oct,
+YEAR=2021,
+KEYWORDS="5G; XDP; UPF",
+ABSTRACT="The edge computing infrastructure can scale from datacenters to single
+device. The well-known technology for fast packet processing is DPDK, which
+has outstanding performance regarding the throughput and latency. However,
+there are some drawbacks when the usage is done in the edge: (i) the
+polling mechanism for packet processing keeps the CPU exclusively occupied
+even if there is no traffic, leading to wasted resources; and (ii) DPDK
+interface becomes unavailable for the applications inside the host, so the
+integration between a non-DPDK application and a DPDK application becomes a
+hard task. In this paper, we propose an open-source in-kernel 5G UPF
+solution based on 3GPP Release 16 to be deployed in a restrictive
+environment like MEC, where MEC host and UPF are collocated with the Base
+Station, sharing the same computational and network resources. The solution
+leverages the eBPF/XDP, a novel Linux kernel technology for fast packet
+processing. We show it can scale and achieve 10 Mpps using only 60\% of the
+CPU with 6 cores."
+}
+```
 
 ## Contact
 
@@ -214,5 +247,6 @@ PRs ARE WELCOME :+1:!!
 
 ## References
 
+- [Paper - An In-Kernel Solution Based on XDP for 5G UPF: Design, Prototype and Performance Evaluation](docs/Paper___An_In_Kernel_Solution_Based_on_XDP__Design__Prototype_and_Performance_Evaluation.pdf)
 - [Author M.Sc. Qualification](https://docs.google.com/presentation/d/1Q24M4Ce8TPPhiM305_Oxs0iQFmmukKwSKdlNcJ0T2uo/edit#slide=id.gc2b6cd2cb2_0_92)
 - [Performance Evaluation with UPF eBPF/XDP Library for 5G Core Network](https://www.youtube.com/watch?v=6KYFDMJJH2o)
