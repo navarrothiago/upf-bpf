@@ -56,7 +56,7 @@ The logical data model between PFCP Session and IEs is shown in the image below.
 
 <img src="img/up-ebpf-xdp-ies.svg" alt="drawing" width="600"/>
 
-## Future Work
+## :construction: Future Work
 
 - QER (QoS Enforcement Rule)
 - CO-RE
@@ -70,14 +70,14 @@ Core
 - spdlog
 - clang >= version 3.4.0
 - llvm >= version 3.7.1
-- kernel-headers => version 5.3
+- kernel-headers => version 5.4
 - cmake >= 3.16
 
 Test
-- scapy v2.4.3
-- gtest
-- sysstat
 - trex v2.86
+- sysstat (mpstat)
+- ethtool
+- gtest
 
 ## First Steps
 
@@ -122,7 +122,7 @@ The library is built and installed with
 make install
 ```
 
-The `package` folder is create with the headers, library and some binaries for testing.
+The `package` folder is created with the headers, library and some binaries for testing.
 
 ```
 package
@@ -134,7 +134,15 @@ package
 
 ## How to Test
 
-The test is based on RFC2544-like measurements. The testbed is composed of two servers: Trex Traffic Generator and HTTP API (upf-bpf). Both machines have Ubuntu 20.04.02 LTS installed with Linux kernel v5.4.0-72-generic. One machine is used to generate user traffic with TRex Traffic Generator and the other is the DUT (Device Under Test) where the upf-bpf is deployed. The setup is shown below.
+The test is based on RFC2544-like measurements. The testbed is composed of two servers: Trex Traffic Generator and HTTP API + upf-bpf.
+
+Requirements:
+
+- Both machines with Ubuntu 20.04.02 LTS installed with Linux kernel v5.4.0-72-generic. One machine is used to generate user traffic with TRex Traffic Generator and the other is the DUT (Device Under Test) where the upf-bpf is deployed.
+- Both machine contains two NICs
+  - For the Trex traffic generator, both NICs drivers must support DPDK. Check out the [Table 5 - Supported NICs](https://trex-tgn.cisco.com/trex/doc/trex_manual.html#_download_and_installation)
+  - For DUT, both NICs drivers must support XDP. Check out [here](https://github.com/iovisor/bcc/blob/master/docs/kernel-versions.md#xdp).
+
 
 Test environment:
 
@@ -157,17 +165,38 @@ Steps:
 1. Generate the GTP/UDP flows (pkt size = 64B)
 1. Collects metrics (CPU load, packet loss, throughput)
 
-> :memo: Postman files are available: [Uplink](tests/api/requests_body/gtp-postman-colletion.json) and [Downlink](tests/api/requests_body/udp-postman-colletion.json). You will find the JSON messages used in step 3 and 4.
+For step 1, see the [trex manual](https://trex-tgn.cisco.com/trex/doc/trex_manual.html)
 
-The flows are generated using [Trex Field Engine](https://trex-tgn.cisco.com/trex/doc/cp_stl_docs/api/field_engine.html). Check the implementation in the [run.py](tests/trex/test_cases/run.py) script. This script automates the steps 5, 6 and 7. It also generates a report with the metrics.
+For step 2, run HTTP API + upf-bpf with:
+```
+sudo ./bin/api 10.1.1.27 80
+```
+
+For steps 3 and 4, there are Postman files are available: [Uplink](tests/api/requests_body/gtp-postman-colletion.json) and [Downlink](tests/api/requests_body/udp-postman-colletion.json). Check the JSON message for each step.
+
+For steps 5, 6 and 7, it was implemented a Python [script](https://github.com/navarrothiago/upf-bpf/blob/c1250469a101a10c4b7ac38503a6edda6c5ca1f1/tests/trex/test_cases/run.py) to automate the process. The script executes the test case varying the number of the rx queue. In the end, a report is generated based on JSON format with all the metrics (i.e throughput and CPU load) for each execution. The flows leverage the [Trex Field Engine](https://trex-tgn.cisco.com/trex/doc/cp_stl_docs/api/field_engine.html) to generate the flows. You can also generate the flow manually in the Trex Traffic Generator server.
+
+In order to execute the script, run the following command inside the docker container:
+```
+export PYTHONPATH='/workspaces/tests/trex/trex_client/interactive/'
+
+# example to generate GTP flow with 12mpps of throughput.
+./tests/trex/test_cases/run.py -m 12mpps -p <password_trex_server> -f gtp
+# example to generate UDP flow with 100% of throughput.
+./tests/trex/test_cases/run.py -m 100% -p <password_trex_server> -f udp
+```
+
+> :memo: The `env.sh` file must be configured properly in order to have a successful execution.
+
+There is a tmux session script available [here](tests/scripts/start_session) that were developed to a specific scenario. Some parameters are hardcoded. Feel free to change according to your needs. If you need any help, open an issue or contact me. PR are welcome!!
 
 <img src="img/screenshot-tmux.png" alt="drawing" width="600"/>
 
-> :memo: The tmux session is available [here](tests/scripts/start_session). There are still some parameters hardcoded. Feel free to change according to your needs. If you need any help, open an issue or contact me. PR are welcome!!
-
 > :warning: Some scripts were developed to work in one environment. As you can see in [.env.sample.sh](.env.sample.sh), there are variables to configure the jump server, trex version, GTP and UDP interfaces (downlink and uplink), etc. **You might face some problems when trying to execute some of them, because they were not exhaustive tests in other environments.**
 
-There are also UTs for Session Management layers. You can execute with (inside the container).
+### UTs
+
+Some UTs were developed for the Session Management layer. You can execute inside the container:
 
 ```
 make config-veth-pair
@@ -177,6 +206,10 @@ make run-session-manager-tests
 If you face any problem, feel free to open an issue or contact me.
 
 ## :rocket: Benchmark
+
+Setup: Intel(R) Xeon(R) CPU E5-2620 v2 @ 2.10GHz, 32GiB of the DRAM, 15M of L3 cache, 6 cores (hyper-threading disabled), dual-port 82599ES 10-Gigabit SFI/SFP+ NIC. Both machines have Ubuntu 20.04.02 LTS installed with Linux kernel v5.4.0-72-generic.
+
+> Disable the hyper-threading with `echo off > /sys/devices/system/cpu/smt/control`
 
 Downlink | Uplink
 ---|---
@@ -189,19 +222,16 @@ Check the [Jupyter notebook](notebook.ipynb) to see how the graphics are generat
 
 ## Tree
 
-The directory structure was created based on this [notes](https://blogs.oracle.com/linux/notes-on-bpf-4).
-
 ```
 ├── build: Generated build directory.
 ├── cmake: Cmake files configuration directory
-├── CMakeLists.txt: Cmake file
 ├── extern: Submodule repositories
 ├── include: Include files
-├── LICENSE: File license
-├── Makefile: Encapsulate cmake calls for build, run samples, clean, etc
-├── README.md: Readme file
 ├── samples: Samples like XDP BPF hello world
-└── src: Source files directory
+├── src: Source files directory
+├── tests: UTs, HTTP API srcs, scripts for testing, trex installation
+├── Makefile: Encapsulate cmake calls for build, run samples, clean, etc
+└── README.md: Readme file
 ```
 
 ## TRex
@@ -213,9 +243,9 @@ If you faced the problem below, create a symbolic from `libc.a -> liblibc.a`
 
 If you think this could be better, **please open an issue or start a discussion**.
 
-PRs ARE WELCOME :+1:!!
+PRs ARE WELCOME :+1:
 
-## BibTeX
+## :star: BibTeX
 
 ```
 @INPROCEEDINGS{Amar2110:Kernel,
@@ -248,14 +278,14 @@ CPU with 6 cores."
 }
 ```
 
-## Contact
+## :notebook: Contacts
 
 - [Discord Server](https://discord.gg/TtdUvnA4nq)
 - Mail: <navarro (dot) ime (at) gmail [dot] com>
 - GitHub: [@navarrothiago](https://github.com/navarrothiago/)
 - Twitter: [@navarr0thiag0](https://twitter.com/navarr0thiag0)
 
-## References
+## :information_source: References
 
 - [Paper - An In-Kernel Solution Based on XDP for 5G UPF: Design, Prototype and Performance Evaluation](docs/Paper___An_In_Kernel_Solution_Based_on_XDP__Design__Prototype_and_Performance_Evaluation.pdf)
 - [Video - Project Overview](https://youtu.be/Av_k_fZKCfM)
