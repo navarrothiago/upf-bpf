@@ -1,6 +1,6 @@
 # 5G UPF using eBPF/XDP
 
-An open source C++ library powered by eBPF/XDP for user plane in mobile core network (5G/LTE).
+An open source C++ library powered by eBPF/XDP for user plane in the mobile core network (5G/LTE).
 
 The key pillars of this project are:
 
@@ -30,7 +30,7 @@ The high level design is shown in figure below.
 
 <img src="img/up-ebpf-xdp-high-level.svg" alt="drawing" width="500"/>
 
-The library has a component, called `PFCP Sesssion Manager`, which is a C++ API responsible to manage PFCP (Packet Forwarding Control Protocol) sessions. For each session, there is an eBPF program that represents the PFCP context in the fast path. These programs are managed by `eBPF Program Manager` component. The fast path is composed by three main function: parser, traffic classifier and traffic forwarder. The image below shows this in more detail.
+The library has a component, called `PFCP Session Manager`, which is a C++ API responsible for managing PFCP (Packet Forwarding Control Protocol) sessions. For each session, there is an eBPF program that represents the PFCP context in the fast path. These programs are managed by the `eBPF Program Manager` component. The fast path is composed of three main functions: parser, traffic classifier and traffic forwarder. The image below shows this in more detail.
 
 <img src="img/up-ebpf-xdp-high-level2.svg" alt="drawing" width="500"/>
 
@@ -40,7 +40,7 @@ A low-level design (Datapath Layer) is shown below.
 
 ## Features
 
-As described in 3GPP TS 29.244, the Information Elements (IEs) are part of the PFCP context. The PFCP context is created by sending PFCP Session Establishment Request message. The main features supported in this project are:
+As described in 3GPP TS 29.244, the Information Elements (IEs) are part of the PFCP context. The PFCP context is created by sending a PFCP Session Establishment Request message. The main features supported in this project are:
 
 Management Layer - CRUD
 - PFCP Session
@@ -50,19 +50,17 @@ Management Layer - CRUD
 Fast Datapath Layer
 - UDP and GTP parse
 - Traffic classification based on PDR
-- Traffic fowarding based on FAR
+- Traffic forwarding based on FAR
 
 The logical data model between PFCP Session and IEs is shown in the image below. For more detail, see 3GPP TS 29.244 version 16.5.0 Release 16.
 
 <img src="img/up-ebpf-xdp-ies.svg" alt="drawing" width="600"/>
 
-### WIP
+## Future Work
 
-Management Layer - CRUD
 - QER (QoS Enforcement Rule)
-
-Fast Datapath Layer
-- Policy Enforcement based on QER
+- CO-RE
+- PoC with OpenAirInterface
 
 ## Main Dependencies
 
@@ -85,7 +83,7 @@ Test
 
 First of all, make sure you have installed [git-lfs](https://git-lfs.github.com/). The LFS repository is used to store the `bpftool` binary.
 
-After dowloaded and installed it, clone this repository:
+After downloaded and installed it, clone this repository:
 
 ```
 git clone https://github.com/navarrothiago/upf-bpf.git
@@ -93,7 +91,7 @@ git clone https://github.com/navarrothiago/upf-bpf.git
 
 After cloning the repository, configure your [env.sh](env.sh) file (on the repository root folder) to match your dev or test environment, using the [.env.sample.sh](.env.sample.sh) file as a template
 
-The project use a docker container to build the UPF library. The command below will provision the docker image with all the project dependencies.
+The project uses a docker container to build the UPF library. The command below will provision the docker image with all the project dependencies.
 
 > :memo: You'll need the Docker Container Runtime package and the Docker Compose utility to set up the dev or test environment
 
@@ -134,9 +132,42 @@ package
 └── tests     # Contains scripts for testing
 ```
 
-## How to test the software
+## How to Test
 
-The instructions here is still missing. If you need to know how to test, contact me. There is a lot of script that make the deployment and configuration easier. As you can see in [.env.sample.sh](.env.sample.sh), there are variables to configure the jump server, trex version, GTP and UDP interfaces (downlink and uplink), etc. Besides, there are UTs for Session Management layers. You can execute with (inside the container).
+The test is based on RFC2544-like measurements. The testbed is composed of two servers: Trex Traffic Generator and HTTP API (upf-bpf). Both machines have Ubuntu 20.04.02 LTS installed with Linux kernel v5.4.0-72-generic. One machine is used to generate user traffic with TRex Traffic Generator and the other is the DUT (Device Under Test) where the upf-bpf is deployed. The setup is shown below.
+
+Test environment:
+
+<img src="img/setup-performance-evaluation.svg" alt="drawing" width="500"/>
+
+### Setup Trex Traffic Generator Server
+
+This machine must have installed the Trex traffic generator. You can check the [trex manual](https://trex-tgn.cisco.com/trex/doc/trex_manual.html) or you can based on the scripts that are called when `make trex` is executed (unstable).
+
+### Setup HTTP API + upf-bpf Server
+
+After running `make install` inside the docker container, copy the application `./package/bin/api` to the DUT machine. **Your host must have kernel >= v5.4**.
+
+Steps:
+1. Run Trex Traffic Generator
+1. Run HTTP API + upf-bpf
+1. Configure interfaces (/configure)
+1. Create PFCP Session context (/createSession)
+1. Configure the number of Rx queue in DUT
+1. Generate the GTP/UDP flows (pkt size = 64B)
+1. Collects metrics (CPU load, packet loss, throughput)
+
+> :memo: Postman files are available: [Uplink](tests/api/requests_body/gtp-postman-colletion.json) and [Downlink](tests/api/requests_body/udp-postman-colletion.json). You will find the JSON messages used in step 3 and 4.
+
+The flows are generated using [Trex Field Engine](https://trex-tgn.cisco.com/trex/doc/cp_stl_docs/api/field_engine.html). Check the implementation in the [run.py](tests/trex/test_cases/run.py) script. This script automates the steps 5, 6 and 7. It also generates a report with the metrics.
+
+<img src="img/screenshot-tmux.png" alt="drawing" width="600"/>
+
+> :memo: The tmux session is available [here](tests/scripts/start_session). There are still some parameters hardcoded. Feel free to change according to your needs. If you need any help, open an issue or contact me. PR are welcome!!
+
+> :warning: Some scripts were developed to work in one environment. As you can see in [.env.sample.sh](.env.sample.sh), there are variables to configure the jump server, trex version, GTP and UDP interfaces (downlink and uplink), etc. **You might face some problems when trying to execute some of them, because they were not exhaustive tests in other environments.**
+
+There are also UTs for Session Management layers. You can execute with (inside the container).
 
 ```
 make config-veth-pair
@@ -147,33 +178,12 @@ If you face any problem, feel free to open an issue or contact me.
 
 ## :rocket: Benchmark
 
-Test environment:
-
-<img src="img/setup-performance-evaluation.svg" alt="drawing" width="500"/>
-
-Step:
-1. Run Trex Traffic Generator
-1. Run HTTP API + upf-bpf
-1. Configure interfaces (/configure)
-1. Create PFCP Session context (/createSession)
-1. Generate the traffic (pkt size = 64B)
-1. Collects metrics (CPU load, ipackets, opacket, throughput)
-
-> :memo: Postman files are available: [Uplink](tests/api/requests_body/gtp-postman-colletion.json) and [Downlink](tests/api/requests_body/udp-postman-colletion.json). You will find the json message used by the tests.
-
-The flows are generate using [Trex Field Engine](https://trex-tgn.cisco.com/trex/doc/cp_stl_docs/api/field_engine.html). Check the implementation [here](tests/trex/test_cases/run.py).
-
-
-<img src="img/screenshot-tmux.png" alt="drawing" width="600"/>
-
-> :memo: The tmux session is available [here](tests/scripts/start_session). There are still some parameters hardcoded. Feel free to change according to your need. If you need any help, open and issue or contact me. PR are welcome!!
-
 Downlink | Uplink
 ---|---
 <img src="tests/reports/img/Downlink Max Throughput.svg" alt="drawing" width="500"/>| <img src="tests/reports/img/Uplink Max Throughput.svg" alt="drawing" width="500"/>
 <img src="tests/reports/img/Downlink Max ThroughputLoad per Core - 6 Rx Queue.svg" alt="drawing" width="500"/>| <img src="tests/reports/img/Uplink Max ThroughputLoad per Core - 6 Rx Queue.svg" alt="drawing" width="500"/>
 
-Check the [Jupyter notebook](notebook.ipynb) to how the graphics are generated.
+Check the [Jupyter notebook](notebook.ipynb) to see how the graphics are generated.
 
 > :memo: For more graphics, check [this](tests/reports/img) folder.
 
