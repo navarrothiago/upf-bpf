@@ -234,10 +234,18 @@ Check the [Jupyter notebook](notebook.ipynb) to see how the graphics are generat
 └── README.md: Readme file
 ```
 
-## TRex
+## Trex Traffic Generator
 
-If you faced the problem below, create a symbolic from `libc.a -> liblibc.a`
-`No such file or directory: b'liblibc.a'`
+If you faced `FileNotFoundError: [Errno 2] No such file or directory: b'liblibc.a'` when executing trex, for instance:
+```
+ cd tests/scripts/../trex/v2.87; sudo ./trex-console --port 1235 --async_port 1236
+```
+Create a symbolic from `libc.a -> liblibc.a` (Manjaro)
+
+```
+sudo ln -s -f /usr/lib64/libc.a /usr/lib64/liblibc.a
+```
+
 
 ## Contribute
 
