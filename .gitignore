@@ -8,3 +8,4 @@ tests/trex/trex_client
 tests/reports/*.json
 *.png
 env.sh
+env

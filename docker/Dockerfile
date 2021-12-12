@@ -27,9 +27,6 @@ RUN   LATEST_COMPOSE_VERSION=$(curl -sSL "https://api.github.com/repos/docker/co
       && curl -sSL "https://github.com/docker/compose/releases/download/${LATEST_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
       && chmod +x /usr/local/bin/docker-compose
 
-#Installing python dependencies
-RUN pip3 install ipykernel matplotlib autopep8
-
 # Ubuntu 20.04 already support cmake 3.19.
 RUN if [ $BASE_DEV_IMAGE != "ubuntu:20.04" ];  then \
       wget -c  https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2.tar.gz -O - | tar -xz && \

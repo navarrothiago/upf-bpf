@@ -220,6 +220,26 @@ Check the [Jupyter notebook](notebook.ipynb) to see how the graphics are generat
 
 > :memo: For more graphics, check [this](tests/reports/img) folder.
 
+### Jupyter Notebook
+
+There are already avaliable the data collected during the uplink (GTP decapsulation) and downlink (GTP encapsulation) e2e testing:
+
+- [Uplink - GTP Decapsulation Report](tests/reports/UplinkMaxThoughtput.json)
+- [Downlink - GTP Encapsulation Report](tests/reports/DownlinkMaxThoughtput.json)
+
+ Firtly, you need to install the python dependencies:
+
+```
+# create our virtual environment
+python3 -m venv env
+# activate our virtual environment
+source env/bin/activate
+# install dependencies
+pip3 install -r requirements.txt
+```
+
+Now, you can execute [notebook](notebook.ipynb) using Jupyter.
+
 ## Tree
 
 ```
@@ -254,6 +274,8 @@ If you think this could be better, **please open an issue or start a discussion*
 PRs ARE WELCOME :+1:
 
 ## :star: BibTeX
+
+The paper is available [here](docs/Paper___An_In_Kernel_Solution_Based_on_XDP__Design__Prototype_and_Performance_Evaluation.pdf).
 
 ```
 @INPROCEEDINGS{Amar2110:Kernel,
