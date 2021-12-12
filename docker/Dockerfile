@@ -40,9 +40,6 @@ RUN echo "$LANG UTF-8" > /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales && \
     update-locale LANG=$LAN
 
-# TODO: pass as ARG
-RUN echo "ENV_FILE=/workspaces/env.sh" >> /etc/environment
-
 # Copy Entrypoint Script to Container
 COPY entrypoint.sh /entrypoint.sh
 
