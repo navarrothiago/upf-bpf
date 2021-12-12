@@ -2,6 +2,7 @@ version: "3.6"
 
 services:
   upf-bpf:
+    network_mode: host
     image: ${IMAGE}
     env_file: ${ENV_FILE}
     secrets:
