@@ -94,15 +94,9 @@ void UserPlaneComponent::setup(std::shared_ptr<RulesUtilities> pRulesUtilities, 
   SignalHandler::getInstance().enable();
   mpUPFProgram->setup();
 
-  // Set program map in SesssionProgramManager.
-  SessionProgramManager::getInstance().setTeidSessionMap(mpUPFProgram->getTeidSessionMap());
-  
   // Pass maps to sessionManager.
   mpSessionManager = std::make_shared<SessionManager>();
 
-  // Set this observer in SessionProgramManager.
-  // Now It will receive notification when a SessionProgram is created.
-  SessionProgramManager::getInstance().setOnNewSessionObserver(this);
 }
 
 void UserPlaneComponent::tearDown()
