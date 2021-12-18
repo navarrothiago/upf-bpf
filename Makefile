@@ -1,6 +1,7 @@
 SHELL := /bin/bash
 GTP_INTERFACE?=$(GTP_INTERFACE)
 UDP_INTERFACE?=$(UDP_INTERFACE)
+GNUMAKEFLAGS=--no-print-directory
 
 .PHONY: help
 
