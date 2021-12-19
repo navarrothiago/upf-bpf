@@ -65,7 +65,7 @@ int Controller::createSesssion(json &jRequest, json &jResponse)
 
   for(const auto &element : jRequest["pdrs"]) {
 
-    auto pPdr = createOaiPDR(element["pdrId"], element["farId"], element["pdi"]["teid"],
+    auto pPdr = createOaiPDR(element["pdrId"], element["farId"], htonl(element["pdi"]["teid"]),
                           sMapInterface[element["pdi"]["sourceInterface"]],
                           Util::convertIpToInet(std::string(element["pdi"]["ueIPAddress"])),
                           sMapOuterHeader[element["outerHeaderRemoval"]], element["precedence"]);
@@ -76,7 +76,8 @@ int Controller::createSesssion(json &jRequest, json &jResponse)
 
   for(const auto &element : jRequest["fars"]) {
     auto pFar = createOaiFAR(
-        element["farId"], actions, sMapInterface[element["forwardingParameters"]["destinationInterface"]],
+        element["farId"],
+        actions, sMapInterface[element["forwardingParameters"]["destinationInterface"]],
         sMapOuterHeader[element["forwardingParameters"]["outerHeaderCreation"]["outerHeaderCreationDescription"]],
         Util::convertIpToInet(std::string(element["forwardingParameters"]["outerHeaderCreation"]["ipv4Address"])),
         element["forwardingParameters"]["outerHeaderCreation"]["portNumber"]);

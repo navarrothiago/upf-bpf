@@ -7,7 +7,7 @@ class STLS1(object):
         return STLStream(
             packet =
                     STLPktBuilder(
-                        pkt = Ether()/IP(src="172.20.16.99",dst="192.168.15.12")/
+                        pkt = Ether()/IP(src="10.1.3.27",dst="192.168.15.12")/
                                 UDP(dport=2152)/GTP_U_Header(teid=100)/IP(src="10.10.10.10",dst="10.1.3.27",version=4)/UDP()/Raw('x'*20)
                     ),
             mode = STLTXCont())

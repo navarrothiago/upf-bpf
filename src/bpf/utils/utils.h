@@ -1,11 +1,12 @@
 #ifndef BPF_UTILS_H
-#define BPF_UTILS_H 
+#define BPF_UTILS_H
 
 // Dictionary
 // htons() - host to network short
 // htonl() - host to network long
 // ntohs() - network to host short
 // ntohl() - network to host long
+// If not defined -> "failed to find BTF for extern"
 
 #ifndef htons
 #define htons(x) __constant_htons((x))
@@ -17,6 +18,10 @@
 
 #ifndef ntohs
 #define ntohs(x) __constant_ntohs((x))
+#endif
+
+#ifndef ntohl
+#define ntohl(x) __constant_ntohl((x))
 #endif
 
 static void swap_src_dst_mac(void *data)

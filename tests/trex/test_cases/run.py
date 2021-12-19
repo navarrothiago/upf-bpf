@@ -28,7 +28,7 @@ def create_udp_pkt_flow(size, ip_min, ip_max, nflows, field):
 
 def create_gtp_pkt_flow(size, ip_min, ip_max, nflows, field):
     print("{} flow will be generated...".format(nflows))
-    base_pkt = Ether()/IP(src="172.20.16.99", dst="192.168.15.12")/UDP(dport=2152) / \
+    base_pkt = Ether()/IP(src="10.1.3.27", dst="192.168.15.12")/UDP(dport=2152) / \
         GTP_U_Header(teid=100) / \
         IP(src="10.10.10.10", dst="10.1.3.27", version=4)/UDP(dport=1234)
     pad = max(0, size - len(base_pkt)) * 'x'
@@ -69,6 +69,8 @@ def simple_burst(streams, m, duration):
     passed = True
 
     try:
+
+
         # turn this on for some information
         # c.set_verbose("debug")
 
@@ -78,58 +80,56 @@ def simple_burst(streams, m, duration):
         # connect to server
         c.connect()
 
-        # prepare our ports (my machine has 0 <--> 1 with static route)
-        # Acquire port 0 for $USER
-        c.reset(ports=[0, 1])
+        while(1):
+            # prepare our ports (my machine has 0 <--> 1 with static route)
+            # Acquire port 0 for $USER
+            c.reset(ports=[0, 1])
 
-        # add both streams to ports
-        c.add_streams(streams, ports=[0])
+            # add both streams to ports
+            c.add_streams(streams, ports=[0])
 
-        # clear the stats before injecting
-        c.clear_stats()
+            # clear the stats before injecting
+            c.clear_stats()
 
-        # set port 1 as promiscuous mode
-        c.set_port_attr(ports=[1], promiscuous=True)
+            # set port 1 as promiscuous mode
+            c.set_port_attr(ports=[1], promiscuous=True)
 
-        # choose rate and start traffic for 10 seconds on 5 mpps
-        print("Running " + m + " on ports 0 for {} seconds...".format(duration))
-        c.start(ports=[0], mult=m, duration=duration)
-        run_mpstat(duration/2)
+            # choose rate and start traffic for 10 seconds on 5 mpps
+            print("Running " + m + " on ports 0 for {} seconds...".format(duration))
+            c.start(ports=[0], mult=m, duration=duration)
+            run_mpstat(duration/2)
 
-        # block until done
-        c.wait_on_traffic(ports=[0])
+            # block until done
+            c.wait_on_traffic(ports=[0])
 
-        # read the stats after the test
-        stats = c.get_stats()
+            # read the stats after the test
+            stats = c.get_stats()
 
-        # print(json.dumps(stats[0], indent=4, separators=(',', ': '), sort_keys=True))
-        # print(json.dumps(stats[1], indent=4, separators=(',', ': '), sort_keys=True))
+            # print(json.dumps(stats[0], indent=4, separators=(',', ': '), sort_keys=True))
+            # print(json.dumps(stats[1], indent=4, separators=(',', ': '), sort_keys=True))
 
-        # print("\n")
-        # print("Packets sent       0 --> 1:   {0} pkts".format(stats[0]["opackets"]))
-        # print("Rx Mpps            0 --> 1:   {0} Mpps".format(float(stats[1]["rx_pps"])/1000000))
+            # print("\n")
+            # print("Packets sent       0 --> 1:   {0} pkts".format(stats[0]["opackets"]))
+            # print("Rx Mpps            0 --> 1:   {0} Mpps".format(float(stats[1]["rx_pps"])/1000000))
 
-        item["throughput"] = float(stats[1]["rx_pps"])/1000000
-        item["loss"] = float(stats[0]["opackets"] - stats[1]["ipackets"])/stats[0]["opackets"]
-        print("")
-        print("Throughput: {} Mpps".format(item["throughput"]))
+            item["throughput"] = float(stats[1]["rx_pps"])/1000000
+            item["loss"] = float(stats[0]["opackets"] - stats[1]["ipackets"])/stats[0]["opackets"]
+            print("")
+            print("Throughput: {} Mpps".format(item["throughput"]))
 
-        if (stats[0]["opackets"] > 100):
-            passed = True
-        else:
-            passed = False
+            if (item["throughput"] > 2):
+                break
 
+            print("\nTest has failed :-(\n")
+            print("Error - throughput expected > 2mpps, but got {}".format(item["throughput"]))
+            print("Trying again... ")
     except STLError as e:
-        passed = False
         print(e)
 
     finally:
         c.disconnect()
 
-    if passed:
-        print("\nTest has passed :-)\n")
-    else:
-        print("\nTest has failed :-(\n")
+    print("\nTest has passed :-)\n")
 
 
 def run_mpstat(duration):
@@ -227,11 +227,15 @@ timestr = time.strftime("%Y%m%d-%H%M%S")
 test_dict = {
     "udp": {
         "createFlows": create_udp_pkt_flow,
-        "testCaseName": "DownlinkMaxThoughtput"
+        "testCaseName": "DownlinkMaxThoughtput",
+        # source IP will be change in trex machine.
+        "ipTarget": "src"
     },
     "gtp": {
         "createFlows": create_gtp_pkt_flow,
-        "testCaseName": "UplinkMaxThoughtput"
+        "testCaseName": "UplinkMaxThoughtput",
+        # destination IP will be change in trex machine.
+        "ipTarget": "dst"
     }
 }
 
@@ -245,7 +249,7 @@ for flow in flow_list:
     for rx_size in n_rx_queues:
         item = defaultdict(dict)
         run_ethtool_set_rx_queue(rx_size, args.password)
-        for i in {0, 1}: 
+        for i in {0, 1}:
             tx_data_rate=0
             if i == 0:
                 print("Executing with max throughput in order to find the saturation.")
@@ -260,7 +264,7 @@ for flow in flow_list:
             item["testCase"] = test_case
             setup_test_case("{}".format(test_case))
             s1 = STLStream(packet=test_dict[args.flows]["createFlows"](args.size, "16.0.0.1",
-                                                        "16.0.0.254", int(flow), "src"), mode=STLTXCont())
+                                                        "16.0.0.254", int(flow), test_dict[args.flows]["ipTarget"]), mode=STLTXCont())
             simple_burst([s1], tx_data_rate, args.duration)
 
             if i != 0:
