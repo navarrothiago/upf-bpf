@@ -35,9 +35,9 @@ static u32 tail_call_next_prog(struct xdp_md *p_ctx, teid_t_ teid, u8 source_val
   __builtin_memset(&map_key, 0, sizeof(struct next_rule_prog_index_key));
 
   map_key.teid = teid;
-  map_key.source_value = INTERFACE_VALUE_CORE;
+  map_key.source_value = source_value;
   map_key.ipv4_address = ipv4_address;
-  bpf_debug("map key teid: %d, source: %d, ip: %d \n", teid, INTERFACE_VALUE_CORE, ipv4_address);
+  bpf_debug("map key teid: %d, source: %d, ip: %d \n", map_key.teid, map_key.source_value, map_key.ipv4_address);
   index_prog = bpf_map_lookup_elem(&m_next_rule_prog_index, &map_key);
 
   if(index_prog){
@@ -58,7 +58,7 @@ static u32 tail_call_next_prog(struct xdp_md *p_ctx, teid_t_ teid, u8 source_val
  * @param p_gtpuh The GTP header.
  * @return u32 The XDP action.
  */
-static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, u32 dest_ip)
+static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, u32 src_ue_ip)
 {
   void *p_data_end = (void *)(long)p_ctx->data_end;
 
@@ -81,7 +81,7 @@ static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, u32 dest_ip
   }
 
   // Jump to session context.
-  tail_call_next_prog(p_ctx, p_gtpuh->teid, INTERFACE_VALUE_ACCESS, dest_ip);
+  tail_call_next_prog(p_ctx, p_gtpuh->teid, INTERFACE_VALUE_ACCESS, src_ue_ip);
   bpf_debug("BPF tail call was not executed! teid %d\n", htonl(p_gtpuh->teid));
 
   return XDP_PASS;
@@ -98,7 +98,7 @@ static u32 gtp_handle(struct xdp_md *p_ctx, struct gtpuhdr *p_gtpuh, u32 dest_ip
  * @param udph The UDP header.
  * @return u32 The XDP action.
  */
-static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph, u32 dest_ip)
+static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph, u32 src_ip, u32 dest_ip)
 {
   void *p_data_end = (void *)(long)p_ctx->data_end;
   struct next_rule_prog_index_key map_key;
@@ -116,8 +116,10 @@ static u32 udp_handle(struct xdp_md *p_ctx, struct udphdr *udph, u32 dest_ip)
 
   switch(dport) {
   case GTP_UDP_PORT:
-    return gtp_handle(p_ctx, (struct gtpuhdr *)(udph + 1), dest_ip);
+    // The source IP is the UE IP address (uplink).
+    return gtp_handle(p_ctx, (struct gtpuhdr *)(udph + 1), src_ip);
   default:
+    // The destination IP is the UE IP address (donwlink).
     tail_call_next_prog(p_ctx, 0, INTERFACE_VALUE_CORE, dest_ip);
 
     return XDP_PASS;
@@ -139,6 +141,7 @@ static u32 ipv4_handle(struct xdp_md *p_ctx, struct iphdr *iph)
 {
   void *p_data_end = (void *)(long)p_ctx->data_end;
   // Type need to match map.
+  u32 ip_src;
   u32 ip_dest;
 
   // Hint: +1 is sizeof(struct iphdr)
@@ -146,12 +149,13 @@ static u32 ipv4_handle(struct xdp_md *p_ctx, struct iphdr *iph)
     bpf_debug("Invalid IPv4 packet");
     return XDP_ABORTED;
   }
+  ip_src = iph->saddr;
   ip_dest = iph->daddr;
 
   bpf_debug("Valid IPv4 packet: raw daddr:0x%x", ip_dest);
   switch(iph->protocol) {
   case IPPROTO_UDP:
-    return udp_handle(p_ctx, (struct udphdr *)(iph + 1), ip_dest);
+    return udp_handle(p_ctx, (struct udphdr *)(iph + 1), ip_src, ip_dest);
   case IPPROTO_TCP:
   default:
     bpf_debug("TCP protocol L4");

@@ -168,7 +168,7 @@ static u32 create_outer_header_gtpu_ipv4(struct xdp_md *p_ctx, pfcp_far_t_ *p_fa
  * @return u32 XDP action.
  */
 
-static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far, enum FlowDirection direction)
+static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far)
 {
   void *p_data = (void *)(long)p_ctx->data;
   void *p_data_end = (void *)(long)p_ctx->data_end;
@@ -226,7 +226,7 @@ static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far, enum FlowDir
         // Adjust head to the right.
         bpf_xdp_adjust_head(p_ctx, GTP_ENCAPSULATED_SIZE);
 
-        return bpf_redirect_map(&m_redirect_interfaces, direction, 0);
+        return bpf_redirect_map(&m_redirect_interfaces, UPLINK, 0);
         bpf_debug("OUTER_HEADER_CREATION_UDP_IPV4 REDIRECT FAILED\n");
         break;
       case OUTER_HEADER_CREATION_UDP_IPV6:
@@ -243,7 +243,7 @@ static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far, enum FlowDir
       case OUTER_HEADER_CREATION_GTPU_UDP_IPV4:
         bpf_debug("OUTER_HEADER_CREATION_GTPU_UDP_IPV4");
         create_outer_header_gtpu_ipv4(p_ctx, p_far);
-        return bpf_redirect_map(&m_redirect_interfaces, direction, 0);
+        return bpf_redirect_map(&m_redirect_interfaces, DOWNLINK, 0);
         break;
       case OUTER_HEADER_CREATION_GTPU_UDP_IPV6:
         bpf_debug("OUTER_HEADER_CREATION_GTPU_UDP_IPV6");
@@ -263,11 +263,13 @@ int far_entry_point(struct xdp_md *p_ctx)
 {
   pfcp_far_t_ *p_far;
   u32 key = 0;
-  bpf_debug("XDP SESSION CONTEXT - DOWNLINK\n");
+  bpf_debug("XDP FAR CONTEXT\n");
 
   // Lets apply the forwarding actions rule.
   p_far = bpf_map_lookup_elem(&m_far, &key);
-  return pfcp_far_apply(p_ctx, p_far, DOWNLINK);
+
+  // TODO - DONWLINK UPLINK LOGIC
+  return pfcp_far_apply(p_ctx, p_far);
 }
 
 // For printk.
