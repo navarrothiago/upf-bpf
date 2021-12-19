@@ -31,11 +31,6 @@ void SessionProgramManager::create(uint32_t seid)
 {
   LOG_FUNC();
 
-  if(!mpOnNewSessionProgramObserver){
-    LOG_ERROR("Observer is invalid")
-    throw std::runtime_error("Observer is invalid");
-  }
-
   // Check if there is a key with seid value.
   // TODO navarrothiago - check if can be abstract the programMap.
 
@@ -60,12 +55,6 @@ void SessionProgramManager::create(uint32_t seid)
 
   // Update the SessionProgram map.
   mSessionProgramMap.insert(std::pair<uint32_t, std::shared_ptr<SessionProgram>>(seid, pSessionProgram));
-
-  // Notify observer that a SessionProgram was created.
-  // TODO - Pass the pSessionProgram in the arg.
-  // mpOnNewSessionProgramObserver->onNewSessionProgram(seid, pSessionProgram->getUplinkFileDescriptor());
-
-  // The mpProgramMap will be update when a PDR, which contain the TEID, is created.
 }
 
 void SessionProgramManager::remove(uint32_t seid)
