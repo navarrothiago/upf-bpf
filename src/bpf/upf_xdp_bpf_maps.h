@@ -44,6 +44,6 @@ struct bpf_map_def SEC("maps") m_next_rule_prog_index = {
     .max_entries = 10,
 };
 
-BPF_ANNOTATE_KV_PAIR(m_next_rule_prog_index, struct next_rule_prog_index_key, u32);
+//BPF_ANNOTATE_KV_PAIR(m_next_rule_prog_index, struct next_rule_prog_index_key, u32);
 
 #endif // __MAPS_H__
