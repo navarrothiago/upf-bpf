@@ -30,15 +30,17 @@ def create_pdr_rule(num, session, n_rules):
     pdrid = session * 100 + 1 + 2 * num
     farid = pdrid
     teid = pdrid
+    precedence = pdrid
     offset = (session - 1) * n_rules + num + 1
     x = int(offset / 256)
     y = offset % 256
     ip = "10.1."+str(x)+"."+str(y)
-    pdr = [{ "pdrId":pdrid,"farId":farid, "outerHeaderRemoval": "OUTER_HEADER_REMOVAL_UDP_IPV4", "pdi": {"teid":teid,"sourceInterface": "INTERFACE_VALUE_CORE","ueIPAddress":ip}}]
+    pdr = [{ "pdrId":pdrid,"farId":farid, "outerHeaderRemoval": "OUTER_HEADER_REMOVAL_UDP_IPV4", "pdi": {"teid":teid,"sourceInterface": "INTERFACE_VALUE_CORE","ueIPAddress":ip}, "precedence": precedence}]
     pdrid += 1
     farid += 1
     teid += 1
-    pdr.extend([{"pdrId":pdrid, "farId":farid, "outerHeaderRemoval": "OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4","pdi": {"teid":teid,"sourceInterface": "INTERFACE_VALUE_ACCESS","ueIPAddress":ip}}])
+    precedence += 1
+    pdr.extend([{"pdrId":pdrid, "farId":farid, "outerHeaderRemoval": "OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4","pdi": {"teid":teid,"sourceInterface": "INTERFACE_VALUE_ACCESS","ueIPAddress":ip}, "precedence": precedence}])
     return pdr
 
 def create_body(session_id, n_rules):
