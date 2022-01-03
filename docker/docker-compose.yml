@@ -17,6 +17,8 @@ services:
     #tty: true
     volumes:
       - ${VOLUME}
+    ports:
+      - "1234:1234"
 
 secrets:
   SSH_PRIV_KEY:
