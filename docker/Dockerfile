@@ -22,6 +22,8 @@ RUN apt-get update && \
       tcpdump libelf-dev zlib1g clang llvm libasan5 linux-tools-common linux-headers-generic \
       g++-multilib libc6-dev-i386 gosu
 
+RUN pip3 install numpy
+
 #Downloading Docker Compose
 RUN   LATEST_COMPOSE_VERSION=$(curl -sSL "https://api.github.com/repos/docker/compose/releases/latest" | grep -o -P '(?<="tag_name": ").+(?=")') \
       && curl -sSL "https://github.com/docker/compose/releases/download/${LATEST_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
