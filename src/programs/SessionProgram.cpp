@@ -54,12 +54,6 @@ int SessionProgram::getDownlinkFileDescriptor() const
   return bpf_program__fd(mpLifeCycle->getBPFSkeleton()->progs.downlink_entry_point);
 }
 
-std::shared_ptr<BPFMap> SessionProgram::getPDRMap() const
-{
-  LOG_FUNC();
-  return mpPDRMap;
-}
-
 std::shared_ptr<BPFMap> SessionProgram::getFARMap() const
 {
   LOG_FUNC();
@@ -104,7 +98,6 @@ void SessionProgram::initializeMaps()
 
   // Warning - The name of the map must be the same of the BPF program.
   // Initialize maps.
-  mpPDRMap = std::make_shared<BPFMap>(mpMaps->getMap("m_pdrs"));
   mpFARMap = std::make_shared<BPFMap>(mpMaps->getMap("m_fars"));
   mpUplinkPDRsMap = std::make_shared<BPFMap>(mpMaps->getMap("m_teid_pdr"));
   mpDownlinkPDRsMap = std::make_shared<BPFMap>(mpMaps->getMap("m_ueip_pdr"));

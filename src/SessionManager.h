@@ -131,6 +131,14 @@ private:
    */
   template <class KeyType>
   pdrs_t lookupPDRs(KeyType key, std::shared_ptr<BPFMap> pBPFMap);
+  /**
+   * @brief Apply hash to the UE IP address.
+   *
+   * @param ueIp The UE IP address.
+   * @return uint32_t The hash.
+   */
+  uint32_t hash(uint32_t ueIp);
+
   // Store the abstraction of the BPF map.
   std::shared_ptr<BPFMap> mpDownlinkPDRsMap;
   std::shared_ptr<BPFMap> mpTeidSessionMap;
