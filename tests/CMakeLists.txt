@@ -44,22 +44,8 @@ target_link_libraries(UPFProgramTests
   spdlog::spdlog
 )
 
-add_executable(ControlPlaneTests
-  ControlPlaneTests.cpp
-  interfaces/ForwardingActionRulesImpl.cpp
-  interfaces/PacketDetectionRulesImpl.cpp
-  interfaces/RulesUtilitiesImpl.cpp
-  interfaces/SessionBpfImpl.cpp
-)
-
-target_link_libraries(ControlPlaneTests
-  PUBLIC upf_xdp
-  asan
-  spdlog::spdlog
-)
-
 install(
-    TARGETS UPFProgramTests ControlPlaneTests
+    TARGETS UPFProgramTests
     RUNTIME
 )
 
