@@ -30,7 +30,7 @@ The high level design is shown in figure below.
 
 <img src="img/up-ebpf-xdp-high-level.svg" alt="drawing" width="500"/>
 
-The library has a component, called `PFCP Session Manager`, which is a C++ API responsible for managing PFCP (Packet Forwarding Control Protocol) sessions. For each session, there is an eBPF program that represents the PFCP context in the fast path. These programs are managed by the `eBPF Program Manager` component. The fast path is composed of three main functions: parser, traffic classifier and traffic forwarder. The image below shows this in more detail.
+The library has a component, called `PFCP Session Manager`, which is a C++ API responsible for managing PFCP (Packet Forwarding Control Protocol) sessions. For each session, there is an eBPF program that represents the PFCP context in the fast path. These programs are managed by the `eBPF Program Manager` component. The fast path is composed of three main functions: parser, traffic detection and traffic forwarder. The image below shows this in more detail.
 
 <img src="img/up-ebpf-xdp-high-level2.svg" alt="drawing" width="500"/>
 
@@ -222,10 +222,10 @@ Check the [Jupyter notebook](notebook.ipynb) to see how the graphics are generat
 
 ### Jupyter Notebook
 
-There are already avaliable the data collected during the uplink (GTP decapsulation) and downlink (GTP encapsulation) e2e testing:
+The data collected for uplink (GTP decapsulation) and downlink (GTP encapsulation) e2e testing are available:
 
-- [Uplink - GTP Decapsulation Report](tests/reports/UplinkMaxThoughtput.json)
-- [Downlink - GTP Encapsulation Report](tests/reports/DownlinkMaxThoughtput.json)
+- [Uplink - GTP Decapsulation Report](tests/reports/v2.0.0/UplinkMaxThoughtput.json)
+- [Downlink - GTP Encapsulation Report](tests/reports/v2.0.0/DownlinkMaxThoughtput.json)
 
  Firtly, you need to install the python dependencies:
 
