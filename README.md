@@ -1,6 +1,6 @@
-# 5G UPF using eBPF/XDP
+# 5G UPF using BPF/XDP
 
-An open source C++ library powered by eBPF/XDP for user plane in the mobile core network (5G/LTE).
+An open source C++ library powered by BPF/XDP for user plane in the mobile core network (5G/LTE).
 
 The key pillars of this project are:
 
@@ -8,7 +8,7 @@ The key pillars of this project are:
 - Flexible and programmable dataplane
 - Portable to different systems
 
-These points are achieved mainly by eBPF/XDP and CO-RE (Compile Once - Run Everywhere) technologies.
+These points are achieved mainly by BPF/XDP and CO-RE (Compile Once - Run Everywhere) technologies.
 
 This project is based on the following 3GPP Technical Specification:
 - LTE; 5G; Interface between the Control Plane and the User Plane nodes (3GPP TS 29.244 version 16.5.0 Release 16)
@@ -23,20 +23,30 @@ Possible scenarios that take advantage of this type of technology: MEC, 5G NPN (
 ## Design
 
 The library is divided in layers:
-- **Management Layer**: An user space layer responsible to receive requests from the third-party UPF/SPGWu components to manage PFCP sessions and eBPF programs lifecycle
-- **Datapath Layer**: A kernel space layer representing by eBPF/XDP programs responsible to handle the user traffic (datapath) for fast packet processing
+- **Management Layer**: An user space layer responsible to receive requests from the third-party UPF/SPGWu components to manage PFCP sessions and BPF programs lifecycle
+- **Datapath Layer**: A kernel space layer representing by BPF/XDP programs responsible to handle the user traffic (datapath) for fast packet processing
 
 The high level design is shown in figure below.
 
 <img src="img/up-ebpf-xdp-high-level.svg" alt="drawing" width="500"/>
 
-The library has a component, called `PFCP Session Manager`, which is a C++ API responsible for managing PFCP (Packet Forwarding Control Protocol) sessions. For each session, there is an eBPF program that represents the PFCP context in the fast path. These programs are managed by the `eBPF Program Manager` component. The fast path is composed of three main functions: parser, traffic detection and traffic forwarder. The image below shows this in more detail.
+The library has a component, called `PFCP Session Manager`, which is a C++ API responsible for managing PFCP (Packet Forwarding Control Protocol) sessions. This layer selects the highest PDR and its rules for each PFCP session to compose the datapath Linux kernel. It is the `eBPF Program Manager`, which is responsible to load/unload the BPF programs. The BPF program is mapped to each rule defined in highest precedence PDR (e.g. FAR) for each PFCP session created. The fast path is composed of three main functions: Parser, Detection (both in entry BPF section) and Rule. The image below shows this in more detail.
 
 <img src="img/up-ebpf-xdp-high-level2.svg" alt="drawing" width="500"/>
 
+- Parser: responsible to parse the GTP and UDP packets
+- Detector: responsible match the Packet Detection Information (TEID, source interface and UE IP address) with the header of the packet. If matches, so the rules of the PFCP session context must be applied
+- Rule: resonsible to encapsulate the logic of one rule (e.g. FAR, QER, BAR, etc). Depending on the PFCP session context, it might have more than one rule available in the datapath.
+
+> The FAR is madatory according to the 3GPP specification
+
 A low-level design (Datapath Layer) is shown below.
 
-<img src="img/up-ebpf-xdp-low-level.svg" alt="drawing" width="500"/>
+<img src="img/v2-bpf-pipeline-base.svg" alt="drawing" width="500"/>
+
+The figure below show two pipeline examples in the datapath. One with only the FAR, the other one wit QER and FAR.
+
+<img src="img/v2-bpf-pipeline.svg" alt="drawing" width="500"/>
 
 ## Features
 
@@ -49,7 +59,7 @@ Management Layer - CRUD
 
 Fast Datapath Layer
 - UDP and GTP parse
-- Traffic classification based on PDR
+- Traffic detection based on PDR
 - Traffic forwarding based on FAR
 
 The logical data model between PFCP Session and IEs is shown in the image below. For more detail, see 3GPP TS 29.244 version 16.5.0 Release 16.
@@ -59,7 +69,7 @@ The logical data model between PFCP Session and IEs is shown in the image below.
 ## :construction: Future Work
 
 - QER (QoS Enforcement Rule)
-- CO-RE
+- CO-RE for tracing.
 - PoC with OpenAirInterface
 
 ## Main Dependencies
@@ -211,7 +221,7 @@ Setup: Intel(R) Xeon(R) CPU E5-2620 v2 @ 2.10GHz, 32GiB of the DRAM, 15M of L3 c
 
 > Disable the hyper-threading with `echo off > /sys/devices/system/cpu/smt/control`
 
-Downlink | Uplink
+**Downlink** | **Uplink**
 ---|---
 <img src="tests/reports/img/Downlink Max Throughput.svg" alt="drawing" width="500"/>| <img src="tests/reports/img/Uplink Max Throughput.svg" alt="drawing" width="500"/>
 <img src="tests/reports/img/Downlink Max ThroughputLoad per Core - 6 Rx Queue.svg" alt="drawing" width="500"/>| <img src="tests/reports/img/Uplink Max ThroughputLoad per Core - 6 Rx Queue.svg" alt="drawing" width="500"/>
@@ -219,6 +229,15 @@ Downlink | Uplink
 Check the [Jupyter notebook](notebook.ipynb) to see how the graphics are generated.
 
 > :memo: For more graphics, check [this](tests/reports/img) folder.
+
+Time spent to inject BPF program into the kernel after receive the PFCP Establishement Request message.
+
+**Version**| **BPF section** | **BPF Insn** | **Injection (ms)**
+--|--|--|--
+v1.0.0|PFCP Session|402|27
+v2.0.0|FAR|272|1
+
+> :memo: The main reason is due the logic related to lookup the PDR is implemented in the control plane (Management Layer) in v2.0.0 and in the data plane in v1.0.0. The PFCP session was composed with only one FAR.
 
 ### Jupyter Notebook
 
@@ -277,7 +296,7 @@ PRs ARE WELCOME :+1:
 
 The paper is available [here](docs/Paper___An_In_Kernel_Solution_Based_on_XDP__Design__Prototype_and_Performance_Evaluation.pdf).
 
-```
+```bibtex
 @INPROCEEDINGS{Amar2110:Kernel,
 AUTHOR="Thiago Arruda Navarro do Amaral and Raphael {Vicente Rosa} and David Moura
 and Christian {Esteve Rothenberg}",
@@ -312,7 +331,6 @@ CPU with 6 cores."
 
 - [Discord Server](https://discord.gg/TtdUvnA4nq)
 - Mail: <navarro (dot) ime (at) gmail [dot] com>
-- GitHub: [@navarrothiago](https://github.com/navarrothiago/)
 - Twitter: [@navarr0thiag0](https://twitter.com/navarr0thiag0)
 
 ## :information_source: References
