@@ -30,6 +30,7 @@ The high level design is shown in figure below.
 
 <img src="img/up-ebpf-xdp-high-level.svg" alt="drawing" width="500"/>
 
+
 The library has a component, called `PFCP Session Manager`, which is a C++ API responsible for managing PFCP (Packet Forwarding Control Protocol) sessions. This layer selects the highest PDR and its rules for each PFCP session to compose the datapath Linux kernel. It is the `eBPF Program Manager`, which is responsible for loading/unloading the BPF programs. The BPF program is mapped to each rule defined in highest precedence PDR (e.g. FAR) for each PFCP session created. The fast path is composed of three main functions: Parser, Detection (both in entry BPF section) and Rule. The image below shows this in more detail.
 
 <img src="img/up-ebpf-xdp-high-level2.svg" alt="drawing" width="500"/>
@@ -44,9 +45,16 @@ A low-level design (Datapath Layer) is shown below.
 
 <img src="img/v2-bpf-pipeline-base.svg" alt="drawing" width="500"/>
 
-The figure below shows two pipeline examples in the datapath. One with only the FAR, the other one with QER and FAR.
+### Activity Diagrams
+
+Figure: PFCP session creation activity diagram in Management Layer.
+
+<img src="img/v2-management-layer.svg" alt="drawing" width="500"/>
+
+Figure: On new packet received activity diagram in Datapath Layer. There are two pipeline: one with only the FAR and the other one with QER and FAR.
 
 <img src="img/v2-bpf-pipeline.svg" alt="drawing" width="500"/>
+
 
 ## Features
 
