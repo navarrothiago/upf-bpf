@@ -208,7 +208,7 @@ export PYTHONPATH='/workspaces/tests/trex/trex_client/interactive/'
 
 There is a tmux session script available [here](tests/scripts/start_session) that were developed to a specific scenario. Some parameters are hardcoded. Feel free to change according to your needs. If you need any help, open an issue or contact me. PR are welcome!!
 
-<img src="img/screenshot-tmux.png" alt="drawing" width="600"/>
+<img src="img/screenshot-tmux.png" alt="drawing" width="700"/>
 
 > :warning: Some scripts were developed to work in one environment. As you can see in [.env.sample.sh](.env.sample.sh), there are variables to configure the jump server, trex version, GTP and UDP interfaces (downlink and uplink), etc. **You might face some problems when trying to execute some of them, because they were not exhaustive tests in other environments.**
 
@@ -343,6 +343,7 @@ CPU with 6 cores."
 
 ## :information_source: References
 
+- [Paper - Run-time Adaptive In-Kernel BPF/XDP Solution for 5G UPF](docs/Paper___Run-time_Adaptive_In-Kernel_BPF_XDP_Solution_for_5G_UPF.pdf)
 - [Paper - An In-Kernel Solution Based on XDP for 5G UPF: Design, Prototype and Performance Evaluation](docs/Paper___An_In_Kernel_Solution_Based_on_XDP__Design__Prototype_and_Performance_Evaluation.pdf)
 - [Video - Project Overview](https://youtu.be/Av_k_fZKCfM)
 - [Slides - Project Overview](https://docs.google.com/presentation/d/1osOheCFV3c3wn4hDbo5R3coL8nDeaxjVb7D33QT41jw/edit?usp=sharing)
