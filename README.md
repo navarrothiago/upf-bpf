@@ -1,3 +1,5 @@
+> :memo: Note: This is still an experimental project. The releases were just for quick access of the artifacts presented in the publications (See [docs](docs/) folder.)
+
 # 5G UPF using BPF/XDP
 
 An open source C++ library powered by BPF/XDP for user planes in the mobile core network (5G/LTE).
