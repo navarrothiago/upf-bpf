@@ -208,9 +208,15 @@ parser.add_argument('-p',
                     '--password',
                     default="",
                     help="Password of the DUT host")
+parser.add_argument('-r',
+                    '--runs',
+                    type=int,
+                    default=1,
+                    help="Number of runs.")
 args = parser.parse_args()
 
 json_output = {
+    "runs": args.runs,
     "items": []
 }
 
@@ -243,32 +249,35 @@ test_dict = {
 
 test_case_name = test_dict[args.flows]["testCaseName"]
 
+for run in range(1, args.runs + 1, 1):
+    for flow in flow_list:
+        for rx_size in n_rx_queues:
+            print("================================")
+            print("run: {}, rx queue: {}".format(run, rx_size))
+            print("================================")
+            item = defaultdict(dict)
+            run_ethtool_set_rx_queue(rx_size, args.password)
+            for i in {0, 1}:
+                tx_data_rate=0
+                if i == 0:
+                    print("Executing with max throughput in order to find the saturation.")
+                    print("The packet loss and CPU load will increase!!")
+                    tx_data_rate=args.multiplier
+                else:
+                    print("Executing with the target throughput in order to avoiding packet loss")
+                    print("The packet loss and CPU load will be fine now!!")
+                    tx_data_rate=str(item["throughput"]) + "mpps"
+                test_case = "{}-{}-{}flow-{}rx".format(timestr, test_case_name, flow, rx_size)
+                # test_case = test_case_name
+                item["testCase"] = test_case
+                setup_test_case("{}".format(test_case))
+                s1 = STLStream(packet=test_dict[args.flows]["createFlows"](args.size, "16.0.0.1",
+                                                            "16.0.0.254", int(flow), test_dict[args.flows]["ipTarget"]), mode=STLTXCont())
+                simple_burst([s1], tx_data_rate, args.duration)
 
-
-for flow in flow_list:
-    for rx_size in n_rx_queues:
-        item = defaultdict(dict)
-        run_ethtool_set_rx_queue(rx_size, args.password)
-        for i in {0, 1}:
-            tx_data_rate=0
-            if i == 0:
-                print("Executing with max throughput in order to find the saturation.")
-                print("The packet loss and CPU load will increase!!")
-                tx_data_rate=args.multiplier
-            else:
-                print("Executing with the target throughput in order to avoiding packet loss")
-                print("The packet loss and CPU load will be fine now!!")
-                tx_data_rate=str(item["throughput"]) + "mpps"
-            test_case = "{}-{}-{}flow-{}rx".format(timestr, test_case_name, flow, rx_size)
-            # test_case = test_case_name
-            item["testCase"] = test_case
-            setup_test_case("{}".format(test_case))
-            s1 = STLStream(packet=test_dict[args.flows]["createFlows"](args.size, "16.0.0.1",
-                                                        "16.0.0.254", int(flow), test_dict[args.flows]["ipTarget"]), mode=STLTXCont())
-            simple_burst([s1], tx_data_rate, args.duration)
-
-            if i != 0:
-                json_output["items"].append(item)
+                if i != 0:
+                    json_output["items"].append(item)
+    time.sleep(10)
 
 reports_path = "tests/reports"
 filename = "{}-{}.json".format(timestr, test_case)
