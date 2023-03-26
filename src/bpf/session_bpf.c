@@ -49,6 +49,7 @@ static u32 update_dst_mac_address(struct iphdr *p_ip, struct ethhdr *p_eth)
 {
   void *p_mac_address;
 
+  // Check if the destination IP address is in the ARP table.
   p_mac_address = bpf_map_lookup_elem(&m_arp_table, &p_ip->daddr);
   if(!p_mac_address) {
     bpf_debug("mac not found!!\n");
@@ -203,26 +204,36 @@ static u32 pfcp_far_apply(struct xdp_md *p_ctx, pfcp_far_t_ *p_far, enum FlowDir
       switch(outer_header_creation) {
       case OUTER_HEADER_CREATION_UDP_IPV4:
         bpf_debug("OUTER_HEADER_CREATION_UDP_IPV4\n");
+        // The packet is composed by the following headers:
+        // - eth, ip, udp, gtpu, ip, udp, payload
+        // We need to keep just the inner ip and udp headers.
+        // So, we need to remove the total bytes related to the ip, udp and gtpu headers.
+        // In the end, the new packet will be composed by the following headers:
+        // - eth (new), ip, udp, payload.
         struct ethhdr *p_new_eth = p_data + GTP_ENCAPSULATED_SIZE;
 
-        // Move eth header forward.
+        // Check if the new eth pointer is valid.
         if((void *)(p_new_eth + 1) > p_data_end) {
           return 1;
         }
         __builtin_memcpy(p_new_eth, p_eth, sizeof(*p_eth));
 
-        // Update destination mac address.
+        // Get the inner ip header.
         struct iphdr *p_ip = (void *)(p_new_eth + 1);
 
+        // Check if the ip pointer is valid.
         if((void *)(p_ip + 1) > p_data_end) {
           return XDP_DROP;
         }
 
+        // Update the destination mac address of the new eth header.
         if(update_dst_mac_address(p_ip, p_new_eth)) {
           return XDP_DROP;
         }
 
-        // Adjust head to the right.
+        // TODO: Update UDP port number according to the FAR.
+
+        // Shrinks the packet by GTP_ENCAPSULATED_SIZE bytes.
         bpf_xdp_adjust_head(p_ctx, GTP_ENCAPSULATED_SIZE);
 
         return bpf_redirect_map(&m_redirect_interfaces, direction, 0);
