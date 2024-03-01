@@ -1,5 +1,5 @@
 > :memo: NOTE 1: This is still an experimental project. The releases were just for quick access of the artifacts presented in the publications (See [docs](docs/) folder.)
-> 
+>
 > :memo: NOTE 2: There is task force to improve and integrate the upf-bpf project inside the OAI 5G UPF. See [here](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-upf/-/tree/develop/src/upf_app) for more information.
 
 # 5G UPF using BPF/XDP
@@ -169,6 +169,10 @@ Requirements:
 Test environment:
 
 <img src="img/setup-performance-evaluation.svg" alt="drawing" width="500"/>
+
+Network topology:
+
+<img src="img/network.svg" alt="drawing" width="500"/>
 
 ### Setup Trex Traffic Generator Server
 
